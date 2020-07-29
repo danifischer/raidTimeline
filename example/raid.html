@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #272b30;
+            font-family: Helvetica, sans-serif;
+            overflow-y: scroll;
+        }
+
+        /* Header stuff */
+        .header {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .noselect {
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Old versions of Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+        }
+
+        .box {
+            margin-top: 20px;
+            margin-bottom: 0px;
+            padding: 0px;
+            position: relative;
+            left: 25%;
+            border-style: solid;
+            border-width: 5px;
+            border-color: #aaa;
+            width: 50%;
+            border-radius: 6px;
+            background-color: #444950;
+            cursor: pointer;
+        }
+
+            .box:hover {
+                background-color: #555;
+            }
+
+        .text {
+            color: #aaa;
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
+
+        /* The actual timeline (the vertical ruler) */
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+            overflow: hidden;
+        }
+
+            /* The actual timeline (the vertical ruler) */
+            .timeline::after {
+                content: '';
+                position: absolute;
+                width: 6px;
+                background-color: #aaa;
+                top: 0;
+                bottom: 0;
+                left: 50%;
+                margin-left: -3px;
+            }
+
+        /* Container around content */
+        .container {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+        }
+
+            /* The circles on the timeline */
+            .container::after {
+                content: '';
+                position: absolute;
+                width: 25px;
+                height: 25px;
+                right: -17px;
+                background-color: white;
+                border: 4px solid #aaa;
+                top: 15px;
+                border-radius: 50%;
+                z-index: 1;
+            }
+
+            .container.right::after {
+                background-color: #272b30;
+                background-image: url("https://wiki.guildwars2.com/images/4/46/Cross_red.png");
+                background-repeat: no-repeat;
+                background-position-x: 50%;
+                background-position-y: 75%;
+                background-size: 95%;
+                border: 4px solid #aaa;
+            }
+
+            .container.left::after {
+                background-color: #272b30;
+                background-image: url("https://wiki.guildwars2.com/images/5/52/Tick_green.png");
+                background-repeat: no-repeat;
+                background-position-x: 50%;
+                background-position-y: 75%;
+                background-size: 90%;
+                border: 4px solid #aaa;
+            }
+
+        /* Place the container to the left */
+        .left {
+            left: 0;
+        }
+
+        /* Place the container to the right */
+        .right {
+            left: 50%;
+            border-color: red;
+        }
+
+        /* Add arrows to the left container (pointing right) */
+        .left::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            right: 30px;
+            border: medium solid #444950;
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent #444950;
+        }
+
+        /* Add arrows to the right container (pointing left) */
+        .right::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            left: 30px;
+            border: medium solid #444950;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent #444950 transparent transparent;
+        }
+
+        /* Fix the circle for containers on the right side */
+        .right::after {
+            left: -16px;
+        }
+
+        /* The actual content */
+        .content {
+            padding: 20px 30px;
+            background-color: #444950;
+            position: relative;
+            border-radius: 6px;
+        }
+
+        /* Media queries - Responsive timeline on screens less than 600px wide */
+        @media screen and (max-width: 600px) {
+            /* Place the timelime to the left */
+            .timeline::after {
+                left: 31px;
+            }
+
+            .box {
+                width: 100%;
+                left: 0%;
+            }
+
+            /* Full-width containers */
+            .container {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+
+                /* Make sure that all arrows are pointing leftwards */
+                .container::before {
+                    left: 60px;
+                    border: medium solid white;
+                    border-width: 10px 10px 10px 0;
+                    border-color: transparent white transparent transparent;
+                }
+
+            /* Make sure all circles are at the same spot */
+            .left::after, .right::after {
+                left: 15px;
+            }
+
+            /* Make all right containers behave like the left ones */
+            .right {
+                left: 0%;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+				<div class="header noselect">
+					<div class="box">
+						<div class="text">
+							<h2 style="text-align: center; margin-top: 15px; margin-bottom: 5px;">20.07.2020</h2>
+							<div style="padding: 5px;">
+								 <img src="https://wiki.guildwars2.com/images/2/20/Event_star_red_%28map_icon%29.png"
+									style="position: relative; top: 12px; left: 3px; height: 32px; width: 32px;" title="Total Raid time">
+									<b>Total:</b> 3h 8m 19s
+								 <img src="https://wiki.guildwars2.com/images/d/d4/Casino_Blitz_%28map_icon%29.png"
+									style="position: relative; top: 12px; left: 3px; height: 32px; width: 32px;" title="Fight time">
+									<b>Fight:</b> 1h 1m 54s
+							 </div>
+							<div style="padding: 5px;">
+								<img src="https://wiki.guildwars2.com/images/thumb/b/b0/Red_Boss.png/20px-Red_Boss.png" style="position: relative; top: 4px; left: 0px;"
+									title="# of different bosses">
+									10
+								<img src="https://wiki.guildwars2.com/images/5/52/Tick_green.png" style="position: relative; top: 4px; left: 0px;"
+									title="# of kills">
+									10
+								<img src="https://wiki.guildwars2.com/images/4/46/Cross_red.png" style="position: relative; top: 4px; left: 0px;"
+									title="# of fails">
+									5
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="timeline">
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-190853_sabir_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/f/fc/Mini_Air_Djinn.png" alt="Cardinal Sabir" width="64" height="64" style="float: right;">
+						<h2>Cardinal Sabir</h2>
+						<p>20.07.2020 19:08:53 - 06m 19s 243ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-191553_adina_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/a/a0/Mini_Earth_Djinn.png" alt="Cardinal Adina" width="64" height="64" style="float: right;">
+						<h2>Cardinal Adina</h2>
+						<p>20.07.2020 19:15:53 - 04m 53s 611ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container right">
+				<div class="content">
+					<a href="20200720-192201_prlqadim_fail.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/8/8b/Mini_Qadim_the_Peerless.png" alt="Qadim the Peerless" width="64" height="64" style="float: right;">
+						<h2>Qadim the Peerless</h2>
+						<p>20.07.2020 19:22:01 - 00m 57s 422ms
+					</a>
+					<div title="88.38% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 88.38%, 88.38%, green 11.620000000000005%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container right">
+				<div class="content">
+					<a href="20200720-192355_prlqadim_fail.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/8/8b/Mini_Qadim_the_Peerless.png" alt="Qadim the Peerless" width="64" height="64" style="float: right;">
+						<h2>Qadim the Peerless</h2>
+						<p>20.07.2020 19:23:55 - 01m 15s 348ms
+					</a>
+					<div title="80.03% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 80.03%, 80.03%, green 19.97%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-193257_prlqadim_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/8/8b/Mini_Qadim_the_Peerless.png" alt="Qadim the Peerless" width="64" height="64" style="float: right;">
+						<h2>Qadim the Peerless</h2>
+						<p>20.07.2020 19:32:57 - 07m 25s 876ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-193929_ca_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://i.imgur.com/eLyIWd2.png" alt="Conjured Amalgamate" width="64" height="64" style="float: right;">
+						<h2>Conjured Amalgamate</h2>
+						<p>20.07.2020 19:39:29 - 04m 02s 732ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-194935_twinlargos_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://i.imgur.com/6O5MT7v.png" alt="Twin Largos" width="64" height="64" style="float: right;">
+						<h2>Twin Largos</h2>
+						<p>20.07.2020 19:49:35 - 05m 38s 418ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-211329_vg_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/f/fb/Mini_Vale_Guardian.png" alt="Vale Guardian" width="64" height="64" style="float: right;">
+						<h2>Vale Guardian</h2>
+						<p>20.07.2020 21:13:29 - 03m 04s 605ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container right">
+				<div class="content">
+					<a href="20200720-212511_gors_fail.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/d/d1/Mini_Gorseval_the_Multifarious.png" alt="Gorseval the Multifarious" width="64" height="64" style="float: right;">
+						<h2>Gorseval the Multifarious</h2>
+						<p>20.07.2020 21:25:11 - 02m 20s 380ms
+					</a>
+					<div title="32.57% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 32.57%, 32.57%, green 67.43%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-212855_gors_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/d/d1/Mini_Gorseval_the_Multifarious.png" alt="Gorseval the Multifarious" width="64" height="64" style="float: right;">
+						<h2>Gorseval the Multifarious</h2>
+						<p>20.07.2020 21:28:55 - 02m 59s 92ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-213817_sab_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/5/54/Mini_Sabetha.png" alt="Sabetha the Saboteur" width="64" height="64" style="float: right;">
+						<h2>Sabetha the Saboteur</h2>
+						<p>20.07.2020 21:38:17 - 04m 52s 5ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container right">
+				<div class="content">
+					<a href="20200720-215317_trio_fail.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://i.imgur.com/UZZQUdf.png" alt="Bandit Trio" width="64" height="64" style="float: right;">
+						<h2>Bandit Trio</h2>
+						<p>20.07.2020 21:53:17 - 06m 26s 987ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+					<div title="86.77% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 86.77%, 86.77%, green 13.230000000000004%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-220118_trio_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://i.imgur.com/UZZQUdf.png" alt="Bandit Trio" width="64" height="64" style="float: right;">
+						<h2>Bandit Trio</h2>
+						<p>20.07.2020 22:01:18 - 06m 34s 168ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container right">
+				<div class="content">
+					<a href="20200720-220539_matt_fail.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/5/5d/Mini_Matthias_Abomination.png" alt="Matthias Gabrel" width="64" height="64" style="float: right;">
+						<h2>Matthias Gabrel</h2>
+						<p>20.07.2020 22:05:39 - 00m 14s 68ms
+					</a>
+					<div title="99.85% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 99.85%, 99.85%, green 0.15000000000000568%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200720-221050_matt_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/5/5d/Mini_Matthias_Abomination.png" alt="Matthias Gabrel" width="64" height="64" style="float: right;">
+						<h2>Matthias Gabrel</h2>
+						<p>20.07.2020 22:10:50 - 03m 34s 991ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			</div>
+				<div class="header noselect">
+					<div class="box">
+						<div class="text">
+							<h2 style="text-align: center; margin-top: 15px; margin-bottom: 5px;">23.07.2020</h2>
+							<div style="padding: 5px;">
+								 <img src="https://wiki.guildwars2.com/images/2/20/Event_star_red_%28map_icon%29.png"
+									style="position: relative; top: 12px; left: 3px; height: 32px; width: 32px;" title="Total Raid time">
+									<b>Total:</b> 1h 5m 31s
+								 <img src="https://wiki.guildwars2.com/images/d/d4/Casino_Blitz_%28map_icon%29.png"
+									style="position: relative; top: 12px; left: 3px; height: 32px; width: 32px;" title="Fight time">
+									<b>Fight:</b> 0h 43m 21s
+							 </div>
+							<div style="padding: 5px;">
+								<img src="https://wiki.guildwars2.com/images/thumb/b/b0/Red_Boss.png/20px-Red_Boss.png" style="position: relative; top: 4px; left: 0px;"
+									title="# of different bosses">
+									7
+								<img src="https://wiki.guildwars2.com/images/5/52/Tick_green.png" style="position: relative; top: 4px; left: 0px;"
+									title="# of kills">
+									7
+								<img src="https://wiki.guildwars2.com/images/4/46/Cross_red.png" style="position: relative; top: 4px; left: 0px;"
+									title="# of fails">
+									2
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="timeline">
+			<div class="container left">
+				<div class="content">
+					<a href="20200723-192251_kc_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/e/ea/Mini_Keep_Construct.png" alt="Keep Construct" width="64" height="64" style="float: right;">
+						<h2>Keep Construct</h2>
+						<p>23.07.2020 19:22:51 - 06m 38s 755ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200723-192613_twstcstl_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://i.imgur.com/xpQnu35.png" alt="Twisted Castle" width="64" height="64" style="float: right;">
+						<h2>Twisted Castle</h2>
+						<p>23.07.2020 19:26:13 - 02m 36s 643ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200723-193659_xera_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/4/4b/Mini_Xera.png" alt="Xera" width="64" height="64" style="float: right;">
+						<h2>Xera</h2>
+						<p>23.07.2020 19:36:59 - 05m 33s 857ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200723-194155_cairn_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/b/b8/Mini_Cairn_the_Indomitable.png" alt="Cairn" width="64" height="64" style="float: right;">
+						<h2>Cairn</h2>
+						<p>23.07.2020 19:41:55 - 02m 13s 440ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200723-194608_mo_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/c/c8/Mini_Mursaat_Overseer.png" alt="Mursaat Overseer" width="64" height="64" style="float: right;">
+						<h2>Mursaat Overseer</h2>
+						<p>23.07.2020 19:46:08 - 01m 36s 539ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200723-195359_sam_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/f/f0/Mini_Samarog.png" alt="Samarog" width="64" height="64" style="float: right;">
+						<h2>Samarog</h2>
+						<p>23.07.2020 19:53:59 - 05m 45s 172ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container right">
+				<div class="content">
+					<a href="20200723-200301_dei_fail.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/e/e0/Mini_Ragged_White_Mantle_Figurehead.png" alt="Deimos" width="64" height="64" style="float: right;">
+						<h2>Deimos</h2>
+						<p>23.07.2020 20:03:01 - 06m 05s 95ms
+					</a>
+					<div title="20.86% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 20.86%, 20.86%, green 79.14%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container right">
+				<div class="content">
+					<a href="20200723-201312_dei_fail.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/e/e0/Mini_Ragged_White_Mantle_Figurehead.png" alt="Deimos" width="64" height="64" style="float: right;">
+						<h2>Deimos</h2>
+						<p>23.07.2020 20:13:12 - 04m 59s 569ms
+					</a>
+					<div title="19.48% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 19.48%, 19.48%, green 80.52%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			<div class="container left">
+				<div class="content">
+					<a href="20200723-202136_dei_kill.html" style="color: #aaa; text-decoration: none;">
+						<img src="https://wiki.guildwars2.com/images/e/e0/Mini_Ragged_White_Mantle_Figurehead.png" alt="Deimos" width="64" height="64" style="float: right;">
+						<h2>Deimos</h2>
+						<p>23.07.2020 20:21:36 - 07m 03s 507ms
+					</a>
+					<div title="0% left" style="background: rgba(0, 0, 0, 0)
+						linear-gradient(to right, red 0%, 0%, green 100%)
+						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;">
+					</div>
+				</div>
+			</div>
+			</div>
+
+    <script>
+		var coll = document.getElementsByClassName("box");
+		var i;
+
+		for (i = 0; i < coll.length; i++) {
+			coll[i].addEventListener("click", function() {
+			this.classList.toggle("active");
+			var content = this.parentElement.nextElementSibling;
+			if (content.style.display === "block") {
+				content.style.display = "none";
+			} else {
+				content.style.display = "block";
+			}
+			});
+		}
+    </script>
+</body>
+</html>
