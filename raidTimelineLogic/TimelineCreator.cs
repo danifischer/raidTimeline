@@ -71,6 +71,5 @@ namespace raidTimelineLogic
 
 			sb.Append(HtmlCreator.CreateHeaderHtml(raidDate.Key, killed, failed, tryTime, raidTime, bosses));
 		}
-
 	}
 }

@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text;
 
 namespace raidTimelineLogic
 {
@@ -20,7 +18,7 @@ namespace raidTimelineLogic
 			SetGeneralInformation(model, logData);
 			SetTime(i => model.OccurenceStart = i, encounter, "Time Start: ");
 			SetTime(i => model.OccurenceEnd = i, encounter, "Time End: ");
-			
+
 			return model;
 		}
 
@@ -63,4 +61,3 @@ namespace raidTimelineLogic
 		}
 	}
 }
-
