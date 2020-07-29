@@ -2,6 +2,10 @@
 
 Best via this GitHub Page: https://github.com/danifischer/raidTimeline
 
+## Example
+
+You can download the repository and look in the `example` folder ot go [here](http://fischer87.de/logs/raidTimeline/raid.html).
+
 # Raid Timeline
 
 Ever wanted to to see an overiew of the raid you just ran? Interested in displaying your Elite Insight logs in a nice and beautiful way?  
