@@ -7,9 +7,9 @@ namespace raidTimelineLogic
 {
 	internal class EiHtmlParser
 	{
-		internal RaidModel ParseLog(string path, string file)
+		internal RaidModel ParseLog(string path, string filePath)
 		{
-			var model = new RaidModel(file, path);
+			var model = new RaidModel(filePath, path);
 			var encounter = File.ReadAllText(model.LogPath);
 
 			dynamic logData = GetLogData(encounter);
@@ -25,7 +25,7 @@ namespace raidTimelineLogic
 		private static void SetTime(Action<DateTime> setAction, string encounter, string startString)
 		{
 			var indexStart = encounter.IndexOf(startString);
-			var indexEnd = encounter.IndexOf(" +", indexStart);
+			var indexEnd = encounter.IndexOf(" ", indexStart + startString.Length + 19);
 			var encounterStart = encounter.Substring(indexStart + startString.Length, indexEnd - (indexStart + startString.Length));
 
 			setAction(DateTime.ParseExact(encounterStart

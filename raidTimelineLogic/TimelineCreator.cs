@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RestSharp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +10,7 @@ namespace raidTimelineLogic
 {
 	public class TimelineCreator : ITimelineCreator
 	{
-		public void CreateTimelineFile(string path, string outputFileName)
+		public void CreateTimelineFileFromDisk(string path, string outputFileName)
 		{
 			var htmlFileName = outputFileName;
 			string htmlFilePath = Path.Combine(path, htmlFileName);
@@ -21,13 +23,75 @@ namespace raidTimelineLogic
 				File.Delete(Path.Combine(htmlFilePath));
 			}
 
-			foreach (var file in Directory.GetFiles(path))
+			foreach (var filePath in Directory.GetFiles(path))
 			{
 				Console.WriteLine("Parsing log ...");
-				var model = parser.ParseLog(path, file);
+				var model = parser.ParseLog(path, filePath);
 				models.Add(model);
 			}
 
+			StringBuilder sb = new StringBuilder();
+
+			foreach (var raidDate in models.GroupBy(i => i.OccurenceStart.Date))
+			{
+				CreateHeader(sb, raidDate);
+				CreateTimeline(sb, raidDate);
+				sb.Append("</div>");
+			}
+
+			Console.WriteLine("HTML Magic ...");
+			WriteHtmlFile(htmlFileName, htmlFilePath, sb);
+		}
+
+		public void CreateTimelineFileFromWeb(string path, string outputFileName, string token, int numberOfLogs)
+		{
+			var htmlFileName = outputFileName;
+			string htmlFilePath = Path.Combine(path, htmlFileName);
+			var parser = new EiHtmlParser();
+
+			var models = new List<RaidModel>();
+
+			if (File.Exists(htmlFilePath))
+			{
+				File.Delete(Path.Combine(htmlFilePath));
+			}
+
+			var page = 0;
+			var filePath = Path.Combine(path, "test.html");
+			var wc = new System.Net.WebClient();
+
+			while (numberOfLogs > 0)
+			{
+				var client = new RestClient("https://dps.report/");
+				var request = new RestRequest($"getUploads?userToken={token}&page={page++}", DataFormat.Json);
+				var response = client.Get(request);
+
+				var content = response.Content;
+				var json = (dynamic)JsonConvert.DeserializeObject(content);
+
+				foreach (var upload in json.uploads)
+				{
+					if (numberOfLogs <= 0) break;
+
+					Console.WriteLine("Loading log ...");
+					wc.DownloadFile(upload.permalink.Value, filePath);
+
+					var html = File.ReadAllText(filePath);
+					html = html.Replace("/cache/", "https://dps.report/cache/");
+					File.WriteAllText(filePath, html);
+
+					Console.WriteLine("Parsing log ...");
+					var model = parser.ParseLog(path, filePath);
+					model.LogUrl = upload.permalink.Value;
+					models.Add(model);
+
+					numberOfLogs--;
+				}
+
+				if (page > json.pages.Value) break;
+			}
+
+			File.Delete(filePath);
 			StringBuilder sb = new StringBuilder();
 
 			foreach (var raidDate in models.GroupBy(i => i.OccurenceStart.Date))

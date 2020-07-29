@@ -6,9 +6,9 @@ namespace raidTimelineLogic
 {
 	internal class RaidModel
 	{
-		public RaidModel(string filename, string path)
+		public RaidModel(string filePath, string path)
 		{
-			LogPath = filename;
+			LogPath = filePath;
 			LogUrl = LogPath.Replace(path, "").Replace("\\", "");
 
 			HpLeft = new List<double>();

@@ -9,26 +9,28 @@ namespace raidTimeline
 	{
 		static void Main(string[] args)
 		{
-			string path = "";
+			var path = ParseArgs(args, "-path");
+			var outputFileName = ParseArgs(args, "-output", "index.html");
+			var token = ParseArgs(args, "-token");
+			var number = ParseArgs(args, "-number", "25");
 
-			if (args.Length == 1)
+			if(!Directory.Exists(path))
 			{
-				path = args[0];
-				if (!Directory.Exists(path))
-				{
-					Console.WriteLine("Wrong Path");
-					Environment.Exit(1);
-				}
-			}
-			else
-			{
-				Console.WriteLine("No Path");
+				Console.WriteLine("Non-valid path");
 				Environment.Exit(1);
 			}
 
-			new TimelineCreator().CreateTimelineFile(path, "raid.html");
+			var tc = new TimelineCreator();
+			if (token != null)
+			{
+				tc.CreateTimelineFileFromWeb(path, outputFileName, token, int.Parse(number));
+			}
+			else
+			{
+				tc.CreateTimelineFileFromDisk(path, outputFileName);
+			}
 
-			var htmlFilePath = Path.Combine(path, "raid.html");
+			var htmlFilePath = Path.Combine(path, outputFileName);
 
 			ProcessStartInfo psi = new ProcessStartInfo
 			{
@@ -36,6 +38,20 @@ namespace raidTimeline
 				UseShellExecute = true
 			};
 			Process.Start(psi);
+		}
+
+		static string ParseArgs(string[] args, string search, string defaultValue = null)
+		{
+			var pathIndex = Array.IndexOf(args, search);
+
+			if (pathIndex >= 0 && args.Length >= pathIndex + 1)
+			{
+				return args[pathIndex + 1];
+			}
+			else
+			{
+				return defaultValue;
+			}
 		}
 	}
 }
