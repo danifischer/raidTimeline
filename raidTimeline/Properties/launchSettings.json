@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "raidTimeline": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\danie\\OneDrive\\Dokumente\\Guild Wars 2\\logs\""
+    }
+  }
+}
