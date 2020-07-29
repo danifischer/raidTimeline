@@ -78,7 +78,7 @@ This is done by parsing the HTML files and combining the information from the lo
 
 ## Special thanks / Mentions
 
-To the whole Elite Insights team, you provide a great product. Keep on coding ;)
-To dps.report for their great API
+To the whole Elite Insights team, you provide a great product. Keep on coding ;)  
+To dps.report for their great API  
 To the Guild Wars 2 Wiki, which as great icons :D
 
