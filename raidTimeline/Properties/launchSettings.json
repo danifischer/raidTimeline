@@ -1,8 +1,7 @@
 {
   "profiles": {
     "raidTimeline": {
-      "commandName": "Project",
-      "commandLineArgs": "-path \"C:\\Users\\danie\\OneDrive\\Dokumente\\Guild Wars 2\\logs\" -token m6ur5nkgs24if84vsr4sjenoebaoblic"
+      "commandName": "Project"
     }
   }
 }
