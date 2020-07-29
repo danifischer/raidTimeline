@@ -1,6 +1,6 @@
 ## Contact
 
-Best via this GitHub Page: 
+Best via this GitHub Page: https://github.com/danifischer/raidTimeline
 
 # Raid Timeline
 
