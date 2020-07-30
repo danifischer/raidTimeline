@@ -4,8 +4,7 @@ Best via this GitHub Page: https://github.com/danifischer/raidTimeline
 
 ## Example
 
-You can download the repository and look in the `example` folder ot go [here](http://fischer87.de/logs/raidTimeline/raid.html).  
-A preview of the next features can be found [here](http://fischer87.de/logs/raidTimeline/index.html).
+You can download the repository and look in the `example` folder ot go [here](http://fischer87.de/logs/raidTimeline/index.html).
 
 # Raid Timeline
 
