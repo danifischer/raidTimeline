@@ -24,11 +24,12 @@ namespace raidTimelineLogic
 				File.Delete(Path.Combine(htmlFilePath));
 			}
 
-			foreach (var filePath in Directory.GetFiles(path))
+			foreach (var filePath in Directory.GetFiles(path, "*.html"))
 			{
-				Console.WriteLine("Parsing log ...");
+				Console.WriteLine($"Parsing log: {Path.GetFileName(filePath)}");
 				var model = parser.ParseLog(filePath);
-				models.Add(model);
+				if(model != null)
+					models.Add(model);
 			}
 
 			StringBuilder sb = new StringBuilder();
@@ -74,17 +75,18 @@ namespace raidTimelineLogic
 				{
 					if (numberOfLogs <= 0) break;
 
-					Console.WriteLine("Loading log ...");
+					Console.WriteLine($"Loading log {upload.permalink.Value}");
 					wc.DownloadFile(upload.permalink.Value, filePath);
 
 					var html = File.ReadAllText(filePath);
 					html = html.Replace("/cache/", "https://dps.report/cache/");
 					File.WriteAllText(filePath, html);
 
-					Console.WriteLine("Parsing log ...");
+					Console.WriteLine($"Parsing log {upload.permalink.Value}");
 					var model = parser.ParseLog(filePath);
 					model.LogUrl = upload.permalink.Value;
-					models.Add(model);
+					if (model != null)
+						models.Add(model);
 
 					numberOfLogs--;
 				}

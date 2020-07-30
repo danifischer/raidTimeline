@@ -13,23 +13,31 @@ namespace raidTimelineLogic
 			var model = new RaidModel(filePath);
 			var encounter = File.ReadAllText(model.LogPath);
 
-			dynamic logData = GetLogData(encounter);
-
-			SetRemainingHealth(model, logData);
-			SetGeneralInformation(model, logData);
-			SetTime(i => model.OccurenceStart = i, encounter, "Time Start: ");
-			SetTime(i => model.OccurenceEnd = i, encounter, "Time End: ");
-
-			var fightDuration = (long)logData.phases[0].duration.Value;
-	
-			foreach(var player in logData.players)
+			try
 			{
-				var playerModel = new PlayerModel();
-				var targets = player.details.dmgDistributionsTargets[0];
-				playerModel.Damage = (long)targets[0].totalDamage.Value;
-				playerModel.AccountName = player.acc;
-				playerModel.Dps = playerModel.Damage * 1000 / fightDuration;
-				model.Players.Add(playerModel);
+				dynamic logData = GetLogData(encounter);
+
+				SetRemainingHealth(model, logData);
+				SetGeneralInformation(model, logData);
+				SetTime(i => model.OccurenceStart = i, encounter, "Time Start: ");
+				SetTime(i => model.OccurenceEnd = i, encounter, "Time End: ");
+
+				var fightDuration = (long)logData.phases[0].duration.Value;
+
+				foreach (var player in logData.players)
+				{
+					var playerModel = new PlayerModel();
+					var targets = player.details.dmgDistributionsTargets[0];
+					playerModel.Damage = (long)targets[0].totalDamage.Value;
+					playerModel.AccountName = player.acc;
+					playerModel.Dps = playerModel.Damage * 1000 / fightDuration;
+					model.Players.Add(playerModel);
+				}
+			}
+			catch
+			{
+				Console.WriteLine($"{filePath} cannot be parsed.");
+				return null;
 			}
 
 			return model;
