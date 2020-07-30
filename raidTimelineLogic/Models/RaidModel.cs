@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 
 namespace raidTimelineLogic.Models
 {
 	internal class RaidModel
 	{
-		public RaidModel(string filePath, string path)
+		public RaidModel(string filePath)
 		{
 			LogPath = filePath;
-			LogUrl = LogPath.Replace(path, "").Replace("\\", "");
-
+			LogUrl = Path.GetFileName(filePath);
 			HpLeft = new List<double>();
 			Players = new List<PlayerModel>();
 		}

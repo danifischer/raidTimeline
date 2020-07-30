@@ -27,7 +27,7 @@ namespace raidTimelineLogic
 			foreach (var filePath in Directory.GetFiles(path))
 			{
 				Console.WriteLine("Parsing log ...");
-				var model = parser.ParseLog(path, filePath);
+				var model = parser.ParseLog(filePath);
 				models.Add(model);
 			}
 
@@ -82,7 +82,7 @@ namespace raidTimelineLogic
 					File.WriteAllText(filePath, html);
 
 					Console.WriteLine("Parsing log ...");
-					var model = parser.ParseLog(path, filePath);
+					var model = parser.ParseLog(filePath);
 					model.LogUrl = upload.permalink.Value;
 					models.Add(model);
 

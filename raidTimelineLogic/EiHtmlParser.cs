@@ -8,9 +8,9 @@ namespace raidTimelineLogic
 {
 	internal class EiHtmlParser
 	{
-		internal RaidModel ParseLog(string path, string filePath)
+		internal RaidModel ParseLog(string filePath)
 		{
-			var model = new RaidModel(filePath, path);
+			var model = new RaidModel(filePath);
 			var encounter = File.ReadAllText(model.LogPath);
 
 			dynamic logData = GetLogData(encounter);
