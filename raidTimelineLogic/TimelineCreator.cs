@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using raidTimelineLogic.Models;
 using RestSharp;
 using System;
 using System.Collections.Generic;

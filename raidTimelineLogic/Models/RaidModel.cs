@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace raidTimelineLogic
+namespace raidTimelineLogic.Models
 {
 	internal class RaidModel
 	{
@@ -12,6 +12,7 @@ namespace raidTimelineLogic
 			LogUrl = LogPath.Replace(path, "").Replace("\\", "");
 
 			HpLeft = new List<double>();
+			Players = new List<PlayerModel>();
 		}
 
 		public DateTime OccurenceStart { get; set; }
@@ -23,6 +24,7 @@ namespace raidTimelineLogic
 		public string EncounterName { get; set; }
 		public string EncounterIcon { get; set; }
 		public List<double> HpLeft { get; set; }
+		public List<PlayerModel> Players { get; set; }
 
 		public string DoubleAsHtml(double value) => value.ToString(new CultureInfo("en-US"));
 	}

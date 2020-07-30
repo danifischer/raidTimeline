@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using raidTimelineLogic.Models;
 using System;
 using System.Globalization;
 using System.IO;
@@ -18,6 +19,18 @@ namespace raidTimelineLogic
 			SetGeneralInformation(model, logData);
 			SetTime(i => model.OccurenceStart = i, encounter, "Time Start: ");
 			SetTime(i => model.OccurenceEnd = i, encounter, "Time End: ");
+
+			var fightDuration = (long)logData.phases[0].duration.Value;
+	
+			foreach(var player in logData.players)
+			{
+				var playerModel = new PlayerModel();
+				var targets = player.details.dmgDistributionsTargets[0];
+				playerModel.Damage = (long)targets[0].totalDamage.Value;
+				playerModel.AccountName = player.acc;
+				playerModel.Dps = playerModel.Damage * 1000 / fightDuration;
+				model.Players.Add(playerModel);
+			}
 
 			return model;
 		}

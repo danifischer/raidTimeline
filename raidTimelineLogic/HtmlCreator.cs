@@ -1,4 +1,6 @@
-﻿using System;
+﻿using raidTimelineLogic.Models;
+using System;
+using System.Linq;
 
 namespace raidTimelineLogic
 {
@@ -55,11 +57,12 @@ namespace raidTimelineLogic
 
 			var top = $@"
 				<div class=""content"">
-					<a href=""{model.LogUrl}"" style=""color: #aaa; text-decoration: none;"">
+					<a href=""{model.LogUrl}"" target=""_blank"" style=""color: #aaa; text-decoration: none;"">
 						<img src=""{model.EncounterIcon}"" alt=""{model.EncounterName}"" width=""64"" height=""64"" style=""float: right;"">
 						<h2>{model.EncounterName}</h2>
 						<p>{model.OccurenceStart.ToLongTimeString()} &rArr; {model.OccurenceEnd.ToLongTimeString()} ({encounterTime.Minutes}m {encounterTime.Seconds}s)
-					</a>";
+					</a>
+					";
 
 			foreach (var value in model.HpLeft)
 			{
@@ -70,6 +73,23 @@ namespace raidTimelineLogic
 					</div>";
 				top += mid;
 			}
+
+			top += @"<table class=""dpsTable"">";
+
+			var allDamage = model.Players.Sum(i => i.Damage) != 0 ? model.Players.Sum(i => i.Damage) : 1;
+
+			foreach (var player in model.Players.OrderByDescending(i => i.Dps).Take(3))
+			{
+				var mid = $@"
+					<tr style=""color: #aaa"">
+						<td>{player.AccountName}</td> 
+						<td title=""Total Damage: {player.Damage}"">{player.Dps} dps</td>
+						<td>{Math.Round((double)player.Damage / allDamage * 100, 2):F}%</td>
+					</tr>";
+				top += mid;
+			}
+
+			top += "</table>";
 
 			var bot = $@"
 				</div>
