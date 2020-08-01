@@ -19,8 +19,21 @@ namespace raidTimelineLogic
 
 				SetRemainingHealth(model, logData);
 				SetGeneralInformation(model, logData);
-				SetTime(i => model.OccurenceStart = i, encounter, "Time Start: ");
-				SetTime(i => model.OccurenceEnd = i, encounter, "Time End: ");
+
+				if (logData.eiVersion != null)
+				{
+					// Starting 2.26 EI has the date in a different way
+					model.OccurenceStart = DateTime.ParseExact(
+						logData.encounterStart.Value, "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
+					model.OccurenceEnd = DateTime.ParseExact(
+						logData.encounterEnd.Value, "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
+				}
+				else
+				{
+					// Support for versions of EI < 2.26
+					SetTime(i => model.OccurenceStart = i, encounter, "Time Start: ");
+					SetTime(i => model.OccurenceEnd = i, encounter, "Time End: ");
+				}
 
 				var fightDuration = (long)logData.phases[0].duration.Value;
 
@@ -34,7 +47,7 @@ namespace raidTimelineLogic
 					model.Players.Add(playerModel);
 				}
 			}
-			catch
+			catch (Exception e)
 			{
 				Console.WriteLine($"{filePath} cannot be parsed.");
 				return null;
@@ -46,11 +59,11 @@ namespace raidTimelineLogic
 		private static void SetTime(Action<DateTime> setAction, string encounter, string startString)
 		{
 			var indexStart = encounter.IndexOf(startString);
-			var indexEnd = encounter.IndexOf(" ", indexStart + startString.Length + 19);
+			var indexEnd = indexStart + startString.Length + 26;
 			var encounterStart = encounter.Substring(indexStart + startString.Length, indexEnd - (indexStart + startString.Length));
 
 			setAction(DateTime.ParseExact(encounterStart
-					, "yyyy-MM-dd HH:mm:ss"
+					, "yyyy-MM-dd HH:mm:ss zzz"
 					, CultureInfo.InvariantCulture));
 		}
 

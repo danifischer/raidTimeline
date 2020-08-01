@@ -58,7 +58,7 @@ namespace raidTimelineLogic
 				File.Delete(Path.Combine(htmlFilePath));
 			}
 
-			var page = 0;
+			var page = 1;
 			var filePath = Path.Combine(path, "test.html");
 			var wc = new System.Net.WebClient();
 
