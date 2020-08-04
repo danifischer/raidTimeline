@@ -1,6 +1,7 @@
 ﻿using raidTimelineLogic.Models;
 using System;
 using System.Linq;
+using System.Web;
 
 namespace raidTimelineLogic
 {
@@ -58,8 +59,8 @@ namespace raidTimelineLogic
 			var top = $@"
 				<div class=""content"">
 					<a href=""{model.LogUrl}"" target=""_blank"" style=""color: #aaa; text-decoration: none;"">
-						<img src=""{model.EncounterIcon}"" alt=""{model.EncounterName}"" width=""64"" height=""64"" style=""float: right;"">
-						<h2>{model.EncounterName}</h2>
+						<img src=""{model.EncounterIcon}"" alt=""{HttpUtility.HtmlEncode(model.EncounterName)}"" width=""64"" height=""64"" style=""float: right;"">
+						<h2>{HttpUtility.HtmlEncode(model.EncounterName)}</h2>
 						<p>{model.OccurenceStart.ToLongTimeString()} &rArr; {model.OccurenceEnd.ToLongTimeString()} ({encounterTime.Minutes}m {encounterTime.Seconds}s)
 					</a>
 					";
@@ -82,7 +83,7 @@ namespace raidTimelineLogic
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
-						<td>{player.AccountName}</td> 
+						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td> 
 						<td title=""Total Damage: {player.Damage}"">{player.Dps} dps</td>
 						<td>{Math.Round((double)player.Damage / allDamage * 100, 2):F}%</td>
 					</tr>";
