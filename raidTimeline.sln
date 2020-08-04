@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30225.117
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raidTimeline", "raidTimeline\raidTimeline.csproj", "{CB546D94-C45B-4C76-95FB-5177EB844F32}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raidTimeline", "raidTimeline\raidTimeline.csproj", "{CB546D94-C45B-4C76-95FB-5177EB844F32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raidTimelineLogic", "raidTimelineLogic\raidTimelineLogic.csproj", "{34112E9B-A72E-4F96-8658-1B788D82B181}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raidTimelineLogic", "raidTimelineLogic\raidTimelineLogic.csproj", "{34112E9B-A72E-4F96-8658-1B788D82B181}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raidTimelineLogicTests", "raidTimelineLogicTests\raidTimelineLogicTests.csproj", "{E9993407-4169-4F66-87CE-DEF211E9BAFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{34112E9B-A72E-4F96-8658-1B788D82B181}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34112E9B-A72E-4F96-8658-1B788D82B181}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34112E9B-A72E-4F96-8658-1B788D82B181}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9993407-4169-4F66-87CE-DEF211E9BAFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9993407-4169-4F66-87CE-DEF211E9BAFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9993407-4169-4F66-87CE-DEF211E9BAFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9993407-4169-4F66-87CE-DEF211E9BAFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,8 @@
 {
   "profiles": {
     "raidTimeline": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": ""
     }
   }
 }
