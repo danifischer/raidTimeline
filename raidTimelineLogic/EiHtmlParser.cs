@@ -3,6 +3,9 @@ using raidTimelineLogic.Models;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("raidTimelineLogicTests")]
 
 namespace raidTimelineLogic
 {
