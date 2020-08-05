@@ -26,7 +26,7 @@ namespace raidTimelineLogicTests
 		[DataTestMethod]
 		[DataRow(@"Files\version_2_25.html", DisplayName = "Version 2.25.")]
 		[DataRow(@"Files\version_2_26.html", DisplayName = "Version 2.26.")]
-		public void ParseLog_Default_GeneralInformationHasExpectedValues(string path)
+		public void ParseLog_Default_HasExpectedValues(string path)
 		{
 			var parser = new EiHtmlParser();
 

@@ -41,7 +41,7 @@ namespace raidTimelineLogicTests
 		[DataTestMethod]
 		[DataRow(@"EliteInsightsVersions\2.25.0.0\GuildWars2EliteInsights.exe", DisplayName = "Version 2.25.")]
 		[DataRow(@"EliteInsightsVersions\2.26.0.0\GuildWars2EliteInsights.exe", DisplayName = "Version 2.26.")]
-		public void ParseLog_EliteInsights0226_ShouldParse(string pathToEi)
+		public void ParseLog_SpecificEliteInsightVersion_ShouldParse(string pathToEi)
 		{
 			// Prepare
 			var htmlFile = CreateHtmlLog(pathToEi);
