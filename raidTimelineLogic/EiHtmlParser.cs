@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("raidTimelineLogicTests")]
+
 namespace raidTimelineLogic
 {
 	internal class EiHtmlParser

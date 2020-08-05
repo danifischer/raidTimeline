@@ -19,9 +19,88 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="20200801-211921.zevtc">
+    <None Update="EliteInsightsVersions\2.25.0.0\Content\SkillList.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="EliteInsightsVersions\2.25.0.0\Content\SpecList.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.25.0.0\GuildWars2EliteInsights.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.25.0.0\GuildWars2EliteInsights.exe.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.25.0.0\Newtonsoft.Json.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.25.0.0\Settings\sample.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\Content\SkillList.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\Content\SpecList.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\Discord.Net.Core.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\Discord.Net.Rest.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\Discord.Net.Webhook.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\GuildWars2EliteInsights.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\GuildWars2EliteInsights.exe.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\Microsoft.Bcl.AsyncInterfaces.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\Newtonsoft.Json.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\Settings\sample.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\System.Collections.Immutable.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\System.Interactive.Async.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\System.Linq.Async.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\System.Runtime.CompilerServices.Unsafe.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.26.0.0\System.Threading.Tasks.Extensions.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\20200801-211921.zevtc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\test_log.zevtc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\version_2_25.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\version_2_26.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\fetchAndBuildEi.cmd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="EliteInsightsVersions\" />
   </ItemGroup>
 
 </Project>
