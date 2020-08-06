@@ -28,4 +28,4 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'test'
-    arguments: '/TestCaseFilter:"TestCategory!=Offline"'
+    arguments: '--filter TestCategory!=Offline'
