@@ -18,10 +18,10 @@ namespace raidTimelineLogicTests
 		private const int ExpectedNumberOfHpLeft = 1;
 		private const double ExpectedHpLeft = 0;
 		private const int ExpectedPlayers = 10;
-		private readonly DateTime ExpectedOccurenceStart = DateTime.ParseExact("2020-08-01 21:15:19",
-			"yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-		private readonly DateTime ExpectedOccurenceEnd = DateTime.ParseExact("2020-08-01 21:19:21",
-			"yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+		private readonly DateTime ExpectedOccurenceStart = DateTime.ParseExact("2020-08-01 21:15:19 +02:00",
+			"yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
+		private readonly DateTime ExpectedOccurenceEnd = DateTime.ParseExact("2020-08-01 21:19:21 +02:00",
+			"yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
 
 		[DataTestMethod]
 		[DataRow(@"Files\version_2_25.html", DisplayName = "Version 2.25.")]
