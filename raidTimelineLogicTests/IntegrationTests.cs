@@ -1,9 +1,14 @@
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using raidTimelineLogic;
+using RestSharp;
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using raidTimelineLogic;
-using FluentAssertions;
+using System.Net;
 
 namespace raidTimelineLogicTests
 {
@@ -13,7 +18,8 @@ namespace raidTimelineLogicTests
 		private static readonly string TestFile = Path.Combine(Directory.GetCurrentDirectory(), @"Files\test_log.zevtc");
 
 		[TestMethod]
-		public void ParseLog_Latest_ShouldParse()
+		[TestCategory("Offline")]
+		public void ParseLog_LatestMain_ShouldParse()
 		{
 			// Prepare
 			ProcessStartInfo psi1 = new ProcessStartInfo
@@ -36,6 +42,29 @@ namespace raidTimelineLogicTests
 			// Cleanup
 			File.Delete(htmlFile);
 			DeleteDirectory("GW2-Elite-Insights-Parser");
+		}
+
+		[TestMethod]
+		public void ParseLog_LatestRelease_ShouldParse()
+		{
+			// Prepare
+			Directory.CreateDirectory("temp");
+			string x = GetDownloadPathForLatestVersion();
+			DownloadLatestVersion(x);
+
+			var pathToEi = Path.Combine(Directory.GetCurrentDirectory(), @"temp\GuildWars2EliteInsights.exe");
+			var htmlFile = CreateHtmlLog(pathToEi);
+			var parser = new EiHtmlParser();
+
+			// Test
+			var log = parser.ParseLog(htmlFile);
+
+			// Check
+			log.Should().NotBeNull();
+
+			// Cleanup
+			File.Delete(htmlFile);
+			DeleteDirectory("temp");
 		}
 
 		[DataTestMethod]
@@ -72,8 +101,34 @@ namespace raidTimelineLogicTests
 			return htmlFile;
 		}
 
-		// This is needed as Directory.Delete is stupid ... 
-		public void DeleteDirectory(string targetDir)
+		private static void DownloadLatestVersion(string x)
+		{
+			var wc = new WebClient();
+			wc.DownloadFile(x, @"temp\version.zip");
+			ZipFile.ExtractToDirectory(@"temp\version.zip", "temp");
+		}
+
+		private static string GetDownloadPathForLatestVersion()
+		{
+			var client = new RestClient("https://api.github.com/");
+			var request = new RestRequest("repos/baaron4/GW2-Elite-Insights-Parser/releases/latest", DataFormat.Json);
+			var response = client.Get(request);
+			var content = response.Content;
+			var json = (dynamic)JsonConvert.DeserializeObject(content);
+
+			foreach (var assert in json.assets)
+			{
+				if (assert.name == "GW2EI.zip")
+				{
+					return assert.browser_download_url;
+				}
+			}
+
+			throw new Exception("Latest version could not be found.");
+		}
+
+		// This is needed as Directory.Delete is stupid ...
+		private void DeleteDirectory(string targetDir)
 		{
 			File.SetAttributes(targetDir, FileAttributes.Normal);
 
