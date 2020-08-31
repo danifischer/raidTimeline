@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raidTimelineLogic", "raidTi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raidTimelineLogicTests", "raidTimelineLogicTests\raidTimelineLogicTests.csproj", "{E9993407-4169-4F66-87CE-DEF211E9BAFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raidTimelineAuto", "raidTimelineAuto\raidTimelineAuto.csproj", "{950D0F24-A302-4FE9-8648-93FADA1173CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{E9993407-4169-4F66-87CE-DEF211E9BAFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9993407-4169-4F66-87CE-DEF211E9BAFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9993407-4169-4F66-87CE-DEF211E9BAFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{950D0F24-A302-4FE9-8648-93FADA1173CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{950D0F24-A302-4FE9-8648-93FADA1173CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{950D0F24-A302-4FE9-8648-93FADA1173CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{950D0F24-A302-4FE9-8648-93FADA1173CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,6 @@
 ﻿namespace raidTimelineLogic.Models
 {
-	internal class PlayerModel
+	public class PlayerModel
 	{
 		public long Damage { get; set; }
 		public long Dps { get; set; }

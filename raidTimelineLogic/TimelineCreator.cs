@@ -13,23 +13,55 @@ namespace raidTimelineLogic
 	{
 		public void CreateTimelineFileFromDisk(string path, string outputFileName)
 		{
-			var htmlFileName = outputFileName;
-			string htmlFilePath = Path.Combine(path, htmlFileName);
 			var parser = new EiHtmlParser();
-
 			var models = new List<RaidModel>();
-
-			if (File.Exists(htmlFilePath))
-			{
-				File.Delete(Path.Combine(htmlFilePath));
-			}
 
 			foreach (var filePath in Directory.GetFiles(path, "*.html"))
 			{
 				Console.WriteLine($"Parsing log: {Path.GetFileName(filePath)}");
 				var model = parser.ParseLog(filePath);
-				if(model != null)
+				if (model != null)
 					models.Add(model);
+			}
+
+			BuildHtmlFile(path, outputFileName, models);
+		}
+
+		public List<RaidModel> CreateTimelineFileFromWatching(string path, string outputFileName, List<RaidModel> models)
+		{
+			var parser = new EiHtmlParser();
+			var knownFiles = models.Select(i => i.LogPath);
+			var numberOfModels = models.Count;
+
+			foreach (var filePath in Directory.GetFiles(path, "*.html"))
+			{
+				if (knownFiles.Contains(filePath)) continue;
+				if (filePath.EndsWith(outputFileName)) continue;
+
+				Console.Write($"Parsing log: {Path.GetFileName(filePath)} ");
+				var model = parser.ParseLog(filePath);
+				if (model != null)
+				{
+					Console.WriteLine(">>> Ok");
+					models.Add(model);
+				}
+			}
+
+			if(models.Count() > numberOfModels)
+				BuildHtmlFile(path, outputFileName, models);
+
+			return models;
+		}
+
+
+		public void BuildHtmlFile(string path, string outputFileName, List<RaidModel> models)
+		{
+			var htmlFileName = outputFileName;
+			string htmlFilePath = Path.Combine(path, htmlFileName);
+
+			if (File.Exists(htmlFilePath))
+			{
+				File.Delete(Path.Combine(htmlFilePath));
 			}
 
 			StringBuilder sb = new StringBuilder();
@@ -47,16 +79,8 @@ namespace raidTimelineLogic
 
 		public void CreateTimelineFileFromWeb(string path, string outputFileName, string token, int numberOfLogs)
 		{
-			var htmlFileName = outputFileName;
-			string htmlFilePath = Path.Combine(path, htmlFileName);
 			var parser = new EiHtmlParser();
-
 			var models = new List<RaidModel>();
-
-			if (File.Exists(htmlFilePath))
-			{
-				File.Delete(Path.Combine(htmlFilePath));
-			}
 
 			var page = 1;
 			var filePath = Path.Combine(path, "test.html");
@@ -95,17 +119,7 @@ namespace raidTimelineLogic
 			}
 
 			File.Delete(filePath);
-			StringBuilder sb = new StringBuilder();
-
-			foreach (var raidDate in models.GroupBy(i => i.OccurenceStart.Date))
-			{
-				CreateHeader(sb, raidDate);
-				CreateTimeline(sb, raidDate);
-				sb.Append("</div>");
-			}
-
-			Console.WriteLine("HTML Magic ...");
-			WriteHtmlFile(htmlFileName, htmlFilePath, sb);
+			BuildHtmlFile(path, outputFileName, models);
 		}
 
 		private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb)

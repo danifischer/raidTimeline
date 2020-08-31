@@ -5,7 +5,7 @@ using System.IO;
 
 namespace raidTimelineLogic.Models
 {
-	internal class RaidModel
+	public class RaidModel
 	{
 		public RaidModel(string filePath)
 		{
