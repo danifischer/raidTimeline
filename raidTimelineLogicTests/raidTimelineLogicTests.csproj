@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -80,6 +80,81 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="EliteInsightsVersions\2.26.0.0\System.Threading.Tasks.Extensions.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\Content\SkillList.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\Content\SpecList.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\Discord.Net.Core.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\Discord.Net.Rest.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\Discord.Net.Webhook.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GuildWars2EliteInsights.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GuildWars2EliteInsights.exe.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIBuilders.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIBuilders.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIDiscord.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIDiscord.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIDPSReport.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIDPSReport.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIEvtcParser.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIEvtcParser.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIGW2API.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\GW2EIGW2API.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\Microsoft.Bcl.AsyncInterfaces.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\Newtonsoft.Json.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\Settings\sample.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\System.Collections.Immutable.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\System.Interactive.Async.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\System.Linq.Async.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\System.Runtime.CompilerServices.Unsafe.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EliteInsightsVersions\2.27.0.0\System.Threading.Tasks.Extensions.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Files\20200801-211921.zevtc">
