@@ -48,6 +48,10 @@ namespace raidTimelineLogicTests
 		public void ParseLog_LatestRelease_ShouldParse()
 		{
 			// Prepare
+			if(Directory.Exists("temp"))
+			{
+				DeleteDirectory("temp");
+			}
 			Directory.CreateDirectory("temp");
 			string x = GetDownloadPathForLatestVersion();
 			DownloadLatestVersion(x);
@@ -70,6 +74,7 @@ namespace raidTimelineLogicTests
 		[DataTestMethod]
 		[DataRow(@"EliteInsightsVersions\2.25.0.0\GuildWars2EliteInsights.exe", DisplayName = "Version 2.25.")]
 		[DataRow(@"EliteInsightsVersions\2.26.0.0\GuildWars2EliteInsights.exe", DisplayName = "Version 2.26.")]
+		[DataRow(@"EliteInsightsVersions\2.27.0.0\GuildWars2EliteInsights.exe", DisplayName = "Version 2.27.")]
 		public void ParseLog_SpecificEliteInsightVersion_ShouldParse(string pathToEi)
 		{
 			// Prepare
