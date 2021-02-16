@@ -59,7 +59,7 @@ namespace raidTimelineLogic
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine($"{filePath} cannot be parsed.");
+				Console.WriteLine($">>> {filePath} cannot be parsed.");
 				return null;
 			}
 

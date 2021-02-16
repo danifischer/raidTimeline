@@ -8,12 +8,13 @@ using System.Linq;
 
 namespace raidTimelineAuto
 {
-	internal class Program
+	internal static class Program
 	{
 		private static void Main(string[] args)
 		{
 			var path = ParseArgs(args, "-path");
 			var outputFileName = ParseArgs(args, "-output", "index.html");
+			var reverse = Array.IndexOf(args, "-reverse") >= 0;
 			var htmlFilePath = Path.Combine(path, outputFileName);
 
 			Console.CancelKeyPress += delegate
@@ -45,7 +46,7 @@ namespace raidTimelineAuto
 				watcher.Changed += (object source, FileSystemEventArgs e) =>
 				{
 					var oldModels = models.ConvertAll(i => i);
-					models = tc.CreateTimelineFileFromWatching(path, outputFileName, models);
+					models = tc.CreateTimelineFileFromWatching(path, outputFileName, models, reverse);
 					var newModels = models.Where(i => !oldModels.Select(j => j.LogPath).Contains(i.LogPath));
 				};
 				watcher.EnableRaisingEvents = true;

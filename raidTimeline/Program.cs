@@ -12,7 +12,8 @@ namespace raidTimeline
 			var path = ParseArgs(args, "-path");
 			var outputFileName = ParseArgs(args, "-output", "index.html");
 			var token = ParseArgs(args, "-token");
-			var number = ParseArgs(args, "-number", "25");
+			var number = ParseArgs(args, "-number", "19");
+			var reverse = Array.IndexOf(args, "-reverse") >= 0;
 
 			if(!Directory.Exists(path))
 			{
@@ -23,11 +24,11 @@ namespace raidTimeline
 			var tc = new TimelineCreator();
 			if (token != null)
 			{
-				tc.CreateTimelineFileFromWeb(path, outputFileName, token, int.Parse(number));
+				tc.CreateTimelineFileFromWeb(path, outputFileName, token, int.Parse(number), reverse);
 			}
 			else
 			{
-				tc.CreateTimelineFileFromDisk(path, outputFileName);
+				tc.CreateTimelineFileFromDisk(path, outputFileName, reverse);
 			}
 
 			var htmlFilePath = Path.Combine(path, outputFileName);

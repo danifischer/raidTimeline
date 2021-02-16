@@ -11,7 +11,7 @@ namespace raidTimelineLogic
 {
 	public class TimelineCreator : ITimelineCreator
 	{
-		public void CreateTimelineFileFromDisk(string path, string outputFileName)
+		public void CreateTimelineFileFromDisk(string path, string outputFileName, bool reverse = false)
 		{
 			var parser = new EiHtmlParser();
 			var models = new List<RaidModel>();
@@ -24,10 +24,10 @@ namespace raidTimelineLogic
 					models.Add(model);
 			}
 
-			BuildHtmlFile(path, outputFileName, models);
+			BuildHtmlFile(path, outputFileName, models, reverse);
 		}
 
-		public List<RaidModel> CreateTimelineFileFromWatching(string path, string outputFileName, List<RaidModel> models)
+		public List<RaidModel> CreateTimelineFileFromWatching(string path, string outputFileName, List<RaidModel> models, bool reverse = false)
 		{
 			var parser = new EiHtmlParser();
 			var knownFiles = models.Select(i => i.LogPath);
@@ -47,14 +47,13 @@ namespace raidTimelineLogic
 				}
 			}
 
-			if(models.Count() > numberOfModels)
-				BuildHtmlFile(path, outputFileName, models);
+			if (models.Count() > numberOfModels)
+				BuildHtmlFile(path, outputFileName, models, reverse);
 
 			return models;
 		}
 
-
-		public void BuildHtmlFile(string path, string outputFileName, List<RaidModel> models)
+		public void BuildHtmlFile(string path, string outputFileName, List<RaidModel> models, bool reverse = false)
 		{
 			var htmlFileName = outputFileName;
 			string htmlFilePath = Path.Combine(path, htmlFileName);
@@ -66,18 +65,23 @@ namespace raidTimelineLogic
 
 			StringBuilder sb = new StringBuilder();
 
-			foreach (var raidDate in models.GroupBy(i => i.OccurenceStart.Date))
+			var ordered = reverse
+				? models.OrderByDescending(i => i.OccurenceStart)
+				: models.OrderBy(i => i.OccurenceStart);
+
+			foreach (var raidDate in ordered.GroupBy(i => i.OccurenceStart.Date))
 			{
 				CreateHeader(sb, raidDate);
-				CreateTimeline(sb, raidDate);
+				CreateTimeline(sb, raidDate, reverse);
 				sb.Append("</div>");
 			}
 
-			Console.WriteLine("HTML Magic ...");
+			Console.Write("HTML Magic ");
 			WriteHtmlFile(htmlFileName, htmlFilePath, sb);
+			Console.WriteLine(">>> Done");
 		}
 
-		public void CreateTimelineFileFromWeb(string path, string outputFileName, string token, int numberOfLogs)
+		public void CreateTimelineFileFromWeb(string path, string outputFileName, string token, int numberOfLogs, bool reverse = false)
 		{
 			var parser = new EiHtmlParser();
 			var models = new List<RaidModel>();
@@ -119,7 +123,7 @@ namespace raidTimelineLogic
 			}
 
 			File.Delete(filePath);
-			BuildHtmlFile(path, outputFileName, models);
+			BuildHtmlFile(path, outputFileName, models, reverse);
 		}
 
 		private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb)
@@ -130,9 +134,13 @@ namespace raidTimelineLogic
 			File.Move(htmlFileName, htmlFilePath);
 		}
 
-		private static void CreateTimeline(StringBuilder sb, IGrouping<DateTime, RaidModel> raidDate)
+		private static void CreateTimeline(StringBuilder sb, IGrouping<DateTime, RaidModel> raidDate, bool reverse)
 		{
-			foreach (var model in raidDate.OrderBy(i => i.OccurenceEnd))
+			var ordered = reverse
+				? raidDate.OrderByDescending(i => i.OccurenceEnd)
+				: raidDate.OrderBy(i => i.OccurenceEnd);
+
+			foreach (var model in ordered)
 			{
 				if (model.Killed)
 					sb.Append(HtmlCreator.CreateEncounterHtmlPass(model));
