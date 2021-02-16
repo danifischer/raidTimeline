@@ -9,6 +9,8 @@ namespace raidTimelineLogic
 	{
 		public static string CreateHeaderHtml(DateTime key, int killed, int failed, TimeSpan tryTime, TimeSpan raidTime, int bosses)
 		{
+			var downTime = raidTime - tryTime;
+
 			return $@"
 				<div class=""header noselect"">
 					<div class=""box"">
@@ -21,6 +23,9 @@ namespace raidTimelineLogic
 								 <img src=""https://wiki.guildwars2.com/images/d/d4/Casino_Blitz_%28map_icon%29.png""
 									style=""position: relative; top: 12px; left: 3px; height: 32px; width: 32px;"" title=""Fight time"">
 									<b>Fight:</b> {tryTime.Hours}h {tryTime.Minutes}m {tryTime.Seconds}s
+							     <img src=""https://wiki.guildwars2.com/images/c/c6/Downed_enemy.png""
+									style=""position: relative; top: 12px; left: 3px; height: 32px; width: 32px;"" title=""Down time"">
+									<b>Down:</b> {downTime.Hours}h {downTime.Minutes}m {downTime.Seconds}s
 							 </div>
 							<div style=""padding: 5px;"">
 								<img src=""https://wiki.guildwars2.com/images/thumb/b/b0/Red_Boss.png/20px-Red_Boss.png"" style=""position: relative; top: 4px; left: 0px;""

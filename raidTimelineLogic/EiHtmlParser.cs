@@ -44,7 +44,14 @@ namespace raidTimelineLogic
 				{
 					var playerModel = new PlayerModel();
 					var targets = player.details.dmgDistributionsTargets[0];
-					playerModel.Damage = (long)targets[0].totalDamage.Value;
+
+					playerModel.Damage = 0;
+
+					for (int i = 0; i < logData.phases[0].targets.Count; i++)
+					{
+						playerModel.Damage += (long)targets[i].totalDamage.Value;
+					}
+
 					playerModel.AccountName = player.acc;
 					playerModel.Dps = playerModel.Damage * 1000 / fightDuration;
 					model.Players.Add(playerModel);

@@ -5,22 +5,19 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace raidTimelineAuto
 {
-	class Program
+	internal class Program
 	{
-		static void Main(string[] args)
+		private static void Main(string[] args)
 		{
-
-			var path = ParseArgs(args, "-path", @"");
+			var path = ParseArgs(args, "-path");
 			var outputFileName = ParseArgs(args, "-output", "index.html");
 			var htmlFilePath = Path.Combine(path, outputFileName);
-			var uploader = new SftpUpload();
 
-			Console.CancelKeyPress += delegate {
-
+			Console.CancelKeyPress += delegate
+			{
 				ProcessStartInfo psi = new ProcessStartInfo
 				{
 					FileName = htmlFilePath,
@@ -40,26 +37,24 @@ namespace raidTimelineAuto
 			var tc = new TimelineCreator();
 			var models = new List<RaidModel>();
 
-			while (true)
+			using (var watcher = new FileSystemWatcher())
 			{
-				var oldModels = models.Select(i => i).ToList();
-				models = tc.CreateTimelineFileFromWatching(path, outputFileName, models);
-				var newModels = models.Where(i => !oldModels.Select(j => j.LogPath).Contains(i.LogPath));
-
-				foreach (var model in newModels)
+				watcher.Path = path;
+				watcher.Filter = "*.html";
+				watcher.NotifyFilter = NotifyFilters.LastWrite;
+				watcher.Changed += (object source, FileSystemEventArgs e) =>
 				{
-					uploader.UploadFile(model.LogPath, "/logs/upload/");
-				}
-				if (newModels.Any())
-				{
-					uploader.UploadFile(htmlFilePath, "/logs/upload/");
-				}
+					var oldModels = models.ConvertAll(i => i);
+					models = tc.CreateTimelineFileFromWatching(path, outputFileName, models);
+					var newModels = models.Where(i => !oldModels.Select(j => j.LogPath).Contains(i.LogPath));
+				};
+				watcher.EnableRaisingEvents = true;
 
-				Thread.Sleep(2000);
+				while (Console.Read() != 'q') ;
 			}
 		}
 
-		static string ParseArgs(string[] args, string search, string defaultValue = null)
+		private static string ParseArgs(string[] args, string search, string defaultValue = null)
 		{
 			var pathIndex = Array.IndexOf(args, search);
 
