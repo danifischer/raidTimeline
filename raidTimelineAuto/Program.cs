@@ -5,17 +5,37 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace raidTimelineAuto
 {
 	internal static class Program
 	{
+		private static string logPath;
+		private static string outPath;
+
 		private static void Main(string[] args)
 		{
-			var path = ParseArgs(args, "-path");
+			var confPath = ParseArgs(args, "-confPath");
+			var eiPath = ParseArgs(args, "-eiPath");
 			var outputFileName = ParseArgs(args, "-output", "index.html");
 			var reverse = Array.IndexOf(args, "-reverse") >= 0;
-			var htmlFilePath = Path.Combine(path, outputFileName);
+
+			if (!File.Exists(confPath))
+			{
+				Console.WriteLine("Non-valid conf path");
+				Environment.Exit(1);
+			}
+
+			ReadConfFile(confPath);
+
+			if (!Directory.Exists(outPath) || !Directory.Exists(logPath) || !File.Exists(eiPath))
+			{
+				Console.WriteLine("Non-valid ei, out or log path");
+				Environment.Exit(1);
+			}
+
+			var htmlFilePath = Path.Combine(outPath, outputFileName);
 
 			Console.CancelKeyPress += delegate
 			{
@@ -29,30 +49,64 @@ namespace raidTimelineAuto
 				Environment.Exit(0);
 			};
 
-			if (!Directory.Exists(path))
+			Task.Run(() => WatchForArcDpsFiles(new List<string>(), confPath, eiPath));
+			Task.Run(() => WatchForEiFiles(new TimelineCreator(), new List<RaidModel>(), outputFileName, reverse));
+
+			while (true);
+		}
+
+		private static void ReadConfFile(string confPath)
+		{
+			var text = File.ReadAllText(confPath);
+			const string eiPathOption = "AutoAddPath=";
+			const string outPathOption = "OutLocation=";
+
+			try
 			{
-				Console.WriteLine("Non-valid path");
-				Environment.Exit(1);
+				logPath = text[(text.IndexOf(eiPathOption) + eiPathOption.Length)..text.IndexOf("\n", text.IndexOf(eiPathOption))];
+				outPath = text[(text.IndexOf(outPathOption) + outPathOption.Length)..text.IndexOf("\n", text.IndexOf(outPathOption))];
 			}
-
-			var tc = new TimelineCreator();
-			var models = new List<RaidModel>();
-
-			using (var watcher = new FileSystemWatcher())
+			catch
 			{
-				watcher.Path = path;
-				watcher.Filter = "*.html";
-				watcher.NotifyFilter = NotifyFilters.LastWrite;
-				watcher.Changed += (object source, FileSystemEventArgs e) =>
+				Console.WriteLine("Non-valid conf file");
+			}
+		}
+
+		private static void WatchForEiFiles(TimelineCreator tc, List<RaidModel> models, string outputFileName, bool reverse)
+		{
+			models = tc.CreateTimelineFileFromWatching(outPath, outputFileName, models, reverse);
+			var watcher = new FileSystemWatcher();
+			watcher.Path = outPath;
+			watcher.Filter = "*.html";
+			watcher.NotifyFilter = NotifyFilters.LastWrite;
+			watcher.Changed += (object source, FileSystemEventArgs e)
+				=> models = tc.CreateTimelineFileFromWatching(outPath, outputFileName, models, reverse);
+			watcher.EnableRaisingEvents = true;
+		}
+
+		private static void WatchForArcDpsFiles(List<string> seenFiles, string confPath, string eiPath)
+		{
+			var watcher = new FileSystemWatcher();
+			watcher.Path = logPath;
+			watcher.IncludeSubdirectories = true;
+			watcher.Filter = "*.zevtc";
+			watcher.Renamed += (object source, RenamedEventArgs e) =>
+			{
+				if (!seenFiles.Contains(e.FullPath))
 				{
-					var oldModels = models.ConvertAll(i => i);
-					models = tc.CreateTimelineFileFromWatching(path, outputFileName, models, reverse);
-					var newModels = models.Where(i => !oldModels.Select(j => j.LogPath).Contains(i.LogPath));
-				};
-				watcher.EnableRaisingEvents = true;
-
-				while (Console.Read() != 'q') ;
-			}
+					seenFiles.Add(e.FullPath);
+					Console.WriteLine($"Parsing raw: {e.Name} ");
+					ProcessStartInfo psi = new ProcessStartInfo
+					{
+						FileName = eiPath,
+						Arguments = $"-c \"{confPath}\" \"{e.FullPath}\"",
+						UseShellExecute = false,
+						RedirectStandardError = true
+					};
+					Process.Start(psi).WaitForExit();
+				}
+			};
+			watcher.EnableRaisingEvents = true;
 		}
 
 		private static string ParseArgs(string[] args, string search, string defaultValue = null)
