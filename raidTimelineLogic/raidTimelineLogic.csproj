@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Product>raidTimeline</Product>
+    <Company />
+    <Authors>Daniel Fischer</Authors>
   </PropertyGroup>
 
   <ItemGroup>

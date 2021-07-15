@@ -51,8 +51,25 @@ namespace raidTimelineAuto
 
 			Task.Run(() => WatchForArcDpsFiles(new List<string>(), confPath, eiPath));
 			Task.Run(() => WatchForEiFiles(new TimelineCreator(), new List<RaidModel>(), outputFileName, reverse));
+			Task.Run(() => WatchConsole());
 
 			while (true);
+		}
+
+		private static void WatchConsole()
+		{
+			var input = Console.ReadLine().Replace("\"", "");
+
+			if (File.Exists(input))
+			{
+				var name = Path.GetFileName(input);
+				var path = Path.GetFullPath(input).Replace(name, "");
+
+				File.Move(Path.Combine(path, name), Path.Combine(path, "temp.old"));
+				File.Move(Path.Combine(path, "temp.old"), Path.Combine(path, name));
+			}
+
+			WatchConsole();
 		}
 
 		private static void ReadConfFile(string confPath)

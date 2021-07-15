@@ -96,11 +96,9 @@ namespace raidTimelineLogic
 
 		private static dynamic GetLogData(string encounter)
 		{
-			var indexStart = encounter.IndexOf("var logData = ");
-			var indexEnd = encounter.IndexOf("</script>", indexStart);
-			var json = encounter.Substring(indexStart + 14, indexEnd - (indexStart + 14));
-			var semiColon = json.LastIndexOf(";");
-			json = json.Substring(0, semiColon);
+			var indexStart = encounter.IndexOf("var _logData = ");
+			var indexEnd = encounter.IndexOf("]};", indexStart) + 2;
+			var json = encounter.Substring(indexStart + 15, indexEnd - (indexStart + 15));
 			return (dynamic)JsonConvert.DeserializeObject(json);
 		}
 	}
