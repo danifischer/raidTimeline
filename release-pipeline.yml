@@ -16,5 +16,5 @@ steps:
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: $(System.DefaultWorkingDirectory)/raidTimeline/publish
+    targetPath: $(System.DefaultWorkingDirectory)/raidTimeline/publish/
     artifactName: build
