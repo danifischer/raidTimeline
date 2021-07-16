@@ -13,6 +13,8 @@ steps:
     publishWebProjects: false
     projects: '**/raidTimeline.csproj'
     arguments: '-p:PublishProfile=FolderProfile'
+    zipAfterPublish: false
+    modifyOutputPath: false
 
 - task: PowerShell@2
   inputs:
