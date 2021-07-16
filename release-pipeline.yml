@@ -6,7 +6,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  project: '$(Build.SourcesDirectory)/Source/raidTimeline/raidTimeline.csproj'
+  project: '$(Build.SourcesDirectory)\Source\raidTimeline\raidTimeline.csproj'
 
 steps:
 - task: DotNetCoreCLI@2
