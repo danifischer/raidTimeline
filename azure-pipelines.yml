@@ -29,3 +29,9 @@ steps:
   inputs:
     command: 'test'
     arguments: '--filter TestCategory!=Offline'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
