@@ -16,19 +16,21 @@ steps:
     zipAfterPublish: false
     modifyOutputPath: false
 
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Write your PowerShell commands here.
-      ls $(System.DefaultWorkingDirectory)
-      
-      ls $(System.DefaultWorkingDirectory)/raidTimeline
-      
-      ls $(System.DefaultWorkingDirectory)/raidTimeline/publish
-    errorActionPreference: 'continue'
-
 - task: PublishPipelineArtifact@1
+  displayName: 'Upload artifact'
   inputs:
     targetPath: $(System.DefaultWorkingDirectory)/raidTimeline/publish/
     artifactName: build
+    
+- task: GitHubRelease@1
+  inputs:
+    gitHubConnection: 'danifischer (1)'
+    repositoryName: 'raidTimeline'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'gitTag'
+    assets: '$(System.DefaultWorkingDirectory)/raidTimeline/publish/'
+    isDraft: true
+    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogType: 'commitBased'
+
