@@ -3,16 +3,22 @@ trigger: none
 pr: none
 
 pool:
-  vmImage: ubuntu-latest
-
-variables:
-  project: '$(Build.SourcesDirectory)/Source/raidTimeline/raidTimeline.csproj'
+  vmImage: windows-latest
 
 steps:
 - task: DotNetCoreCLI@2
   displayName: 'Publish'
   inputs:
     command: 'publish'
-    projects: $(project)
+    publishWebProjects: false
+    projects: '**/raidTimeline.csproj'
     arguments: '-p:PublishProfile=FolderProfile'
+    zipAfterPublish: false
+    modifyOutputPath: false
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Upload artifact'
+  inputs:
+    targetPath: $(System.DefaultWorkingDirectory)/raidTimeline/publish/
+    artifactName: build
 
