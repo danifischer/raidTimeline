@@ -21,16 +21,4 @@ steps:
   inputs:
     targetPath: $(System.DefaultWorkingDirectory)/raidTimeline/publish/
     artifactName: build
-    
-- task: GitHubRelease@1
-  inputs:
-    gitHubConnection: 'raidTimeline_release_connection'
-    repositoryName: 'danifischer/raidTimeline'
-    action: 'create'
-    target: '$(Build.SourceVersion)'
-    tagSource: 'gitTag'
-    assets: '$(System.DefaultWorkingDirectory)/raidTimeline/publish/'
-    isDraft: true
-    changeLogCompareToRelease: 'lastFullRelease'
-    changeLogType: 'commitBased'
 
