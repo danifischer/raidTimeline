@@ -24,8 +24,8 @@ steps:
     
 - task: GitHubRelease@1
   inputs:
-    gitHubConnection: 'danifischer (1)'
-    repositoryName: 'raidTimeline'
+    gitHubConnection: 'raidTimeline_release_connection'
+    repositoryName: 'danifischer/raidTimeline'
     action: 'create'
     target: '$(Build.SourceVersion)'
     tagSource: 'gitTag'
