@@ -12,5 +12,4 @@ steps:
     command: 'publish'
     publishWebProjects: false
     projects: '**/raidTimeline.csproj'
-    arguments: '-p:PublishProfile=FolderProfile''
-
+    arguments: '-p:PublishProfile=FolderProfile'
