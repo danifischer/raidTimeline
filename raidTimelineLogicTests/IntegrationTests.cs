@@ -71,26 +71,6 @@ namespace raidTimelineLogicTests
 			DeleteDirectory("temp");
 		}
 
-		[DataTestMethod]
-		[DataRow(@"EliteInsightsVersions\2.25.0.0\GuildWars2EliteInsights.exe", DisplayName = "Version 2.25.")]
-		[DataRow(@"EliteInsightsVersions\2.26.0.0\GuildWars2EliteInsights.exe", DisplayName = "Version 2.26.")]
-		[DataRow(@"EliteInsightsVersions\2.27.0.0\GuildWars2EliteInsights.exe", DisplayName = "Version 2.27.")]
-		public void ParseLog_SpecificEliteInsightVersion_ShouldParse(string pathToEi)
-		{
-			// Prepare
-			var htmlFile = CreateHtmlLog(pathToEi);
-			var parser = new EiHtmlParser();
-
-			// Test
-			var log = parser.ParseLog(htmlFile);
-
-			// Check
-			log.Should().NotBeNull();
-
-			// Cleanup
-			File.Delete(htmlFile);
-		}
-
 		private static string CreateHtmlLog(string pathToEi)
 		{
 			string htmlFile;

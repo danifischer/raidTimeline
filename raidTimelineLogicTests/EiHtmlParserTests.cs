@@ -11,21 +11,20 @@ namespace raidTimelineLogicTests
 	[TestClass]
 	public class EiHtmlParserTests
 	{
-		private const string ExpectedEncounterName = "Vale Guardian";
-		private const string ExpectedEncounterTime = "03m 59s 857ms";
-		private const string ExpectedEncounterIcon = "https://wiki.guildwars2.com/images/f/fb/Mini_Vale_Guardian.png";
+		private const string ExpectedEncounterName = "Soulless Horror";
+		private const string ExpectedEncounterTime = "03m 57s 362ms";
+		private const string ExpectedEncounterIcon = "https://wiki.guildwars2.com/images/d/d4/Mini_Desmina.png";
 		private const bool ExpectedKilled = true;
 		private const int ExpectedNumberOfHpLeft = 1;
 		private const double ExpectedHpLeft = 0;
 		private const int ExpectedPlayers = 10;
-		private readonly DateTime ExpectedOccurenceStart = DateTime.ParseExact("2020-08-01 21:15:19 +02:00",
+		private readonly DateTime ExpectedOccurenceStart = DateTime.ParseExact("2021-07-15 20:14:12 +02:00",
 			"yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
-		private readonly DateTime ExpectedOccurenceEnd = DateTime.ParseExact("2020-08-01 21:19:21 +02:00",
+		private readonly DateTime ExpectedOccurenceEnd = DateTime.ParseExact("2021-07-15 20:18:22 +02:00",
 			"yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
 
 		[DataTestMethod]
-		[DataRow(@"Files\version_2_25.html", DisplayName = "Version 2.25.")]
-		[DataRow(@"Files\version_2_26.html", DisplayName = "Version 2.26.")]
+		[DataRow(@"Files\parsed_test_log.html", DisplayName = "Version 2.35.2.0 log")]
 		public void ParseLog_Default_HasExpectedValues(string path)
 		{
 			var parser = new EiHtmlParser();

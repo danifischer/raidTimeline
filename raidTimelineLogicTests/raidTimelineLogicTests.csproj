@@ -160,6 +160,9 @@
     <None Update="Files\20200801-211921.zevtc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Files\parsed_test_log.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Files\test_log.zevtc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
