@@ -29,6 +29,18 @@ namespace raidTimelineLogic.Mechanics
 			_strategies.Add(new MursaatOverseerMechanics());
 			_strategies.Add(new SamarogMechanics());
 			_strategies.Add(new DeimosMechanics());
+
+			// W5
+			_strategies.Add(new SoullessHorrorMechanics());
+			_strategies.Add(new RiverOfSoulsMechanics());
+			_strategies.Add(new StatueOfIceMechanics());
+			_strategies.Add(new StatueOfDeathMechanics());
+			_strategies.Add(new StatueOfDarknessMechanics());
+			_strategies.Add(new DhuumMechanics());
+
+			// W6
+
+			// W7
 		}
 
 		public IMechanics FindStrategy(string iconUrl)
