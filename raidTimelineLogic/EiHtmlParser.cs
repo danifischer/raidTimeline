@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
+using raidTimelineLogic.Mechanics;
 using raidTimelineLogic.Models;
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -12,6 +12,13 @@ namespace raidTimelineLogic
 {
 	internal class EiHtmlParser
 	{
+		private MechanicsFactory _mechanicsFactory;
+
+		public EiHtmlParser()
+		{
+			_mechanicsFactory = new MechanicsFactory();
+		}
+
 		internal RaidModel ParseLog(string filePath)
 		{
 			var model = new RaidModel(filePath);
@@ -21,9 +28,9 @@ namespace raidTimelineLogic
 				var encounter = File.ReadAllText(model.LogPath);
 				dynamic logData = GetLogData(encounter);
 
-				#if DEBUG
+#if DEBUG
 				File.WriteAllText(@"d:\temp.json", JsonConvert.SerializeObject(logData));
-				#endif
+#endif
 
 				SetRemainingHealth(model, logData);
 				SetGeneralInformation(model, logData);
@@ -54,6 +61,7 @@ namespace raidTimelineLogic
 
 					ParseSupportStats(logData, playerModel);
 					ParseDamageStats(logData, playerModel, fightDuration);
+					ParseMechanics(logData, playerModel, model);
 
 					model.Players.Add(playerModel);
 				}
@@ -61,13 +69,18 @@ namespace raidTimelineLogic
 			catch (Exception e)
 			{
 				Console.WriteLine($">>> {filePath} cannot be parsed.");
-				#if DEBUG
+#if DEBUG
 				Console.WriteLine(e.Message);
-				#endif 
+#endif
 				return null;
 			}
 
 			return model;
+		}
+
+		private void ParseMechanics(dynamic logData, PlayerModel playerModel, RaidModel raidModel)
+		{
+			_mechanicsFactory.FindStrategy(raidModel.EncounterIcon)?.Parse(logData, playerModel);
 		}
 
 		private static void ParseDamageStats(dynamic logData, PlayerModel playerModel, long fightDuration)

@@ -1,4 +1,6 @@
-﻿namespace raidTimelineLogic.Models
+﻿using System.Collections.Generic;
+
+namespace raidTimelineLogic.Models
 {
 	public class PlayerModel
 	{
@@ -9,5 +11,6 @@
 		public double ResTime { get; set; }
 		public int ResAmmount { get; set; }
 		public string AccountName  { get; set; }
+		public Dictionary<string, int> Mechanics { get; set; } = new Dictionary<string, int>();
 	}
 }

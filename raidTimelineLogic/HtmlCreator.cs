@@ -1,4 +1,5 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Mechanics;
+using raidTimelineLogic.Models;
 using System;
 using System.Linq;
 using System.Web;
@@ -59,6 +60,7 @@ namespace raidTimelineLogic
 
 		private static string CommonHtml(RaidModel model)
 		{
+			var mechanicsFactory = new MechanicsFactory();
 			var encounterTime = model.OccurenceEnd - model.OccurenceStart;
 
 			var top = $@"
@@ -127,6 +129,8 @@ namespace raidTimelineLogic
 			}
 
 			top += "</table>";
+
+			top += mechanicsFactory.FindStrategy(model.EncounterIcon)?.CreateHtml(model);
 
 			var bot = $@"
 				</div>

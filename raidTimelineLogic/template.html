@@ -313,6 +313,11 @@
                     <img src="https://wiki.guildwars2.com/images/3/3d/Downed_ally.png">Show resurrects
                 </a>
             </li>
+            <li>
+                <a href="#" class="" id="mechanicsButton" onclick="showMechanics(); return false;">
+                    <img src="https://wiki.guildwars2.com/images/e/e2/Event_wrench_%28map_icon%29.png">Show mechanics
+                </a>
+            </li>
             <li class="placeholder"></li>
             <li>
                 <a href="#" class="" onclick="showAll(); return false;">
@@ -368,9 +373,11 @@
                 setTableVisibility("resTable", "none")
                 setTableVisibility("ccTable", "none")
                 setTableVisibility("dpsTable", "table")
+				setTableVisibility("mechanicsTable", "none")
                 toggleButton("resButton", false);
                 toggleButton("ccButton", false);
                 toggleButton("dpsButton", true);
+				toggleButton("mechanicsButton", false);
             }
         }
 
@@ -405,9 +412,11 @@
                 setTableVisibility("resTable", "none")
                 setTableVisibility("ccTable", "table")
                 setTableVisibility("dpsTable", "none")
+				setTableVisibility("mechanicsTable", "none")
                 toggleButton("resButton", false);
                 toggleButton("ccButton", true);
                 toggleButton("dpsButton", false);
+				toggleButton("mechanicsButton", false);
             }
         }
 
@@ -422,11 +431,32 @@
                 setTableVisibility("resTable", "table")
                 setTableVisibility("ccTable", "none")
                 setTableVisibility("dpsTable", "none")
+				setTableVisibility("mechanicsTable", "none")
                 toggleButton("resButton", true);
                 toggleButton("ccButton", false);
                 toggleButton("dpsButton", false);
+				toggleButton("mechanicsButton", false);
             }
         }
+
+		function showMechanics() {
+			var dpsButton = document.getElementById("mechanicsButton")
+
+			if (dpsButton.classList.contains("active")) {
+				setTableVisibility("mechanicsTable", "none")
+				toggleButton("mechanicsButton", false);
+			}
+			else {
+				setTableVisibility("resTable", "none")
+				setTableVisibility("ccTable", "none")
+				setTableVisibility("dpsTable", "none")
+				setTableVisibility("mechanicsTable", "table")
+				toggleButton("resButton", false);
+				toggleButton("ccButton", false);
+				toggleButton("dpsButton", false);
+				toggleButton("mechanicsButton", true);
+			}
+		}
     </script>
 </body>
 </html>
