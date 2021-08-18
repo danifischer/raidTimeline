@@ -164,83 +164,93 @@
         }
 
         /* The actual content */
-		.content {
-			padding: 20px 30px;
-			background-color: #444950;
-			position: relative;
-			border-radius: 6px;
-		}
+        .content {
+            padding: 20px 30px;
+            background-color: #444950;
+            position: relative;
+            border-radius: 6px;
+        }
 
-		table {
-			font-family: Helvetica, sans-serif;
-			border-collapse: collapse;
-			width: 75%;
-			text-align: center;
-			margin-top: 10px;
-			position: relative;
-			left: 12%;
-			font-size: 14px;
-		}
+        table {
+            font-family: Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 75%;
+            text-align: center;
+            margin-top: 10px;
+            position: relative;
+            left: 12%;
+            font-size: 14px;
+        }
 
-		td {
-			padding: 2px;
-		}
+        td {
+            padding: 2px;
+        }
 
-		tr {
-			background-color: #31363c;
-		}
+        tr {
+            background-color: #31363c;
+        }
 
-			tr:nth-child(even) {
-				background-color: #3d444b;
-			}
-
-		
-		li a img {
-			position: relative;
-			top: 3px;
-			height: 16px;
-			width: 16px;
-			margin-right: 5px;
-		}
+            tr:nth-child(even) {
+                background-color: #3d444b;
+            }
 
 
-		ul {
-			list-style-type: none;
-			margin: 0;
-			padding: 0;
-			overflow: hidden;
-			background-color: #333;
-			position: fixed;
-			top: 0;
-			width: 100%;
+        li a img {
+            position: relative;
+            top: 3px;
+            height: 16px;
+            width: 16px;
+            margin-right: 5px;
+        }
+
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333;
+            position: fixed;
+            top: 0;
+            width: 100%;
             z-index: 10;
-		}
+        }
 
-		li {
-			float: left;
-		}
+        li {
+            float: left;
+        }
 
-		li a {
-			display: block;
-			color: #aaa;
-			text-align: center;
-			padding: 14px 16px;
-			text-decoration: none;
-		}
+            li a {
+                display: block;
+                color: #aaa;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
 
-		li a:hover:not(.active) {
-			background-color: #111;
-		}
+                li a:hover:not(.active) {
+                    background-color: #111;
+                }
 
-		li a.active {
-			background-color: #4CAF50;
-            color: white;
-            cursor: default;
-		}
+                li a.active {
+                    background-color: #4CAF50;
+                    color: white;
+                    cursor: default;
+                }
 
-		.raids {
-			margin-top: 70px;
-		}
+            li.placeholder {
+                display: block;
+                background: #aaa;
+                margin: 5px 0px 5px 0px;
+                padding-top: 40px;
+                padding-left: 2px;
+                margin-top: 4px;
+                margin: 4px 4px;
+            }
+
+        .raids {
+            margin-top: 70px;
+        }
 
         /* Media queries - Responsive timeline on screens less than 600px wide */
         @media screen and (max-width: 600px) {
@@ -279,9 +289,9 @@
                 left: 0%;
             }
 
-			.raids {
-				margin-top: 120px;
-			}
+            .raids {
+                margin-top: 120px;
+            }
         }
     </style>
 </head>
@@ -289,15 +299,21 @@
     <div class="menu">
         <ul>
             <li>
-                <a href="#" onclick="return false;" class="active">
-                    Raid Timeline
+                <a href="#" class="active" id="dpsButton" onclick="showDps(); return false;">
+                    <img src="https://wiki.guildwars2.com/images/6/67/Event_swords_%28map_icon%29.png">Show dps
                 </a>
             </li>
             <li>
-                <a href="#" class="" onclick="showDps(); return false;">
-                    <img src="https://wiki.guildwars2.com/images/6/67/Event_swords_%28map_icon%29.png">Show/Hide dps
+                <a href="#" class="" id="ccButton" onclick="showCc(); return false;">
+                    <img src="https://wiki.guildwars2.com/images/a/ae/Unshakable.png">Show cc
                 </a>
             </li>
+            <li>
+                <a href="#" class="" id="resButton" onclick="showRes(); return false;">
+                    <img src="https://wiki.guildwars2.com/images/3/3d/Downed_ally.png">Show resurrects
+                </a>
+            </li>
+            <li class="placeholder"></li>
             <li>
                 <a href="#" class="" onclick="showAll(); return false;">
                     <img src="https://wiki.guildwars2.com/images/8/86/Raid_%28map_icon%29.png">Show/Hide all days
@@ -311,48 +327,106 @@
     </div>
 
     <script>
-		var coll = document.getElementsByClassName("box");
-		var i;
+        var coll = document.getElementsByClassName("box");
+        var i;
 
-		for (i = 0; i < coll.length; i++) {
-			coll[i].addEventListener("click", function() {
-			this.classList.toggle("active");
-			var content = this.parentElement.nextElementSibling;
-			if (content.style.display === "block") {
-				content.style.display = "none";
-			} else {
-				content.style.display = "block";
-			}
-			});
+        for (i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function () {
+                this.classList.toggle("active");
+                var content = this.parentElement.nextElementSibling;
+                if (content.style.display === "block") {
+                    content.style.display = "none";
+                } else {
+                    content.style.display = "block";
+                }
+            });
         }
 
         function showAll() {
-			var days = document.getElementsByClassName("box");
+            var days = document.getElementsByClassName("box");
             var i;
-			var init = days[0].parentElement.nextElementSibling.style.display;
+            var init = days[0].parentElement.nextElementSibling.style.display;
 
             for (i = 0; i < days.length; i++) {
-				var content = days[i].parentElement.nextElementSibling;
-				if (init === "block") {
-					content.style.display = "none";
-				} else {
-					content.style.display = "block";
-				}
-			}
-        }
-
-		function showDps() {
-            var dpsTables = document.getElementsByClassName("dpsTable");
-			var i;
-
-			for (i = 0; i < dpsTables.length; i++) {
-				if (dpsTables[i].style.display === "none") {
-					dpsTables[i].style.display = "table";
+                var content = days[i].parentElement.nextElementSibling;
+                if (init === "block") {
+                    content.style.display = "none";
                 } else {
-					dpsTables[i].style.display = "none";
+                    content.style.display = "block";
                 }
             }
-  		} 
+        }
+
+        function showDps() {
+            var dpsButton = document.getElementById("dpsButton")
+
+            if (dpsButton.classList.contains("active")) {
+                setTableVisibility("dpsTable", "none")
+                toggleButton("dpsButton", false);
+            }
+            else {
+                setTableVisibility("resTable", "none")
+                setTableVisibility("ccTable", "none")
+                setTableVisibility("dpsTable", "table")
+                toggleButton("resButton", false);
+                toggleButton("ccButton", false);
+                toggleButton("dpsButton", true);
+            }
+        }
+
+        function setTableVisibility(tableName, visibility) {
+            var dpsTables = document.getElementsByClassName(tableName);
+            var i;
+
+            for (i = 0; i < dpsTables.length; i++) {
+                dpsTables[i].style.display = visibility;
+            }
+        }
+
+        function toggleButton(buttonName, status) {
+            var dpsButton = document.getElementById(buttonName)
+
+            if (status === false) {
+                dpsButton.classList.remove("active");
+            }
+            else {
+                dpsButton.classList.add("active");
+            }
+        }
+
+        function showCc() {
+            var dpsButton = document.getElementById("ccButton")
+
+            if (dpsButton.classList.contains("active")) {
+                setTableVisibility("ccTable", "none")
+                toggleButton("ccButton", false);
+            }
+            else {
+                setTableVisibility("resTable", "none")
+                setTableVisibility("ccTable", "table")
+                setTableVisibility("dpsTable", "none")
+                toggleButton("resButton", false);
+                toggleButton("ccButton", true);
+                toggleButton("dpsButton", false);
+            }
+        }
+
+        function showRes() {
+            var dpsButton = document.getElementById("resButton")
+
+            if (dpsButton.classList.contains("active")) {
+                setTableVisibility("resTable", "none")
+                toggleButton("resButton", false);
+            }
+            else {
+                setTableVisibility("resTable", "table")
+                setTableVisibility("ccTable", "none")
+                setTableVisibility("dpsTable", "none")
+                toggleButton("resButton", true);
+                toggleButton("ccButton", false);
+                toggleButton("dpsButton", false);
+            }
+        }
     </script>
 </body>
 </html>

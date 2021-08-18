@@ -97,6 +97,37 @@ namespace raidTimelineLogic
 
 			top += "</table>";
 
+			top += @"<table class=""ccTable"" style=""display: none;"">";
+
+			var allCC = model.Players.Sum(i => i.Cc) != 0 ? model.Players.Sum(i => i.Cc) : 1;
+
+			foreach (var player in model.Players.OrderByDescending(i => i.Cc).Take(3))
+			{
+				var mid = $@"
+					<tr style=""color: #aaa"">
+						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td> 
+						<td title=""Total CC: {player.Cc}"">{player.Cc} cc</td>
+						<td>{Math.Round((double)player.Cc / allCC * 100, 2):F}%</td>
+					</tr>";
+				top += mid;
+			}
+
+			top += "</table>";
+
+			top += @"<table class=""resTable"" style=""display: none;"">";
+
+			foreach (var player in model.Players.OrderByDescending(i => i.ResTime).Take(3))
+			{
+				var mid = $@"
+					<tr style=""color: #aaa"">
+						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td> 
+						<td title=""Total res: {player.ResTime}"">{player.ResTime}s ({player.ResAmmount}x)</td>
+					</tr>";
+				top += mid;
+			}
+
+			top += "</table>";
+
 			var bot = $@"
 				</div>
 			</div>

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using raidTimelineLogic.Models;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -19,6 +20,10 @@ namespace raidTimelineLogic
 			{
 				var encounter = File.ReadAllText(model.LogPath);
 				dynamic logData = GetLogData(encounter);
+
+				#if DEBUG
+				File.WriteAllText(@"d:\temp.json", JsonConvert.SerializeObject(logData));
+				#endif
 
 				SetRemainingHealth(model, logData);
 				SetGeneralInformation(model, logData);
@@ -40,30 +45,49 @@ namespace raidTimelineLogic
 
 				var fightDuration = (long)logData.phases[0].duration.Value;
 
-				foreach (var player in logData.players)
+				for (int j = 0; j < logData.players.Count; j++)
 				{
 					var playerModel = new PlayerModel();
-					var targets = player.details.dmgDistributionsTargets[0];
 
-					playerModel.Damage = 0;
+					playerModel.Index = j;
+					playerModel.AccountName = logData.players[j].acc;
 
-					for (int i = 0; i < logData.phases[0].targets.Count; i++)
-					{
-						playerModel.Damage += (long)targets[i].totalDamage.Value;
-					}
+					ParseSupportStats(logData, playerModel);
+					ParseDamageStats(logData, playerModel, fightDuration);
 
-					playerModel.AccountName = player.acc;
-					playerModel.Dps = playerModel.Damage * 1000 / fightDuration;
 					model.Players.Add(playerModel);
 				}
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine($">>> {filePath} cannot be parsed.");
+				#if DEBUG
+				Console.WriteLine(e.Message);
+				#endif 
 				return null;
 			}
 
 			return model;
+		}
+
+		private static void ParseDamageStats(dynamic logData, PlayerModel playerModel, long fightDuration)
+		{
+			var targets = logData.players[playerModel.Index].details.dmgDistributionsTargets[0];
+			playerModel.Damage = 0;
+
+			for (int i = 0; i < logData.phases[0].targets.Count; i++)
+			{
+				playerModel.Damage += (long)targets[i].totalDamage.Value;
+			}
+
+			playerModel.Dps = playerModel.Damage * 1000 / fightDuration;
+		}
+
+		private static void ParseSupportStats(dynamic logData, PlayerModel playerModel)
+		{
+			playerModel.ResAmmount = (int)logData.phases[0].supportStats[playerModel.Index][6];
+			playerModel.ResTime = (double)logData.phases[0].supportStats[playerModel.Index][7];
+			playerModel.Cc = (long)logData.players[playerModel.Index].details.dmgDistributions[0].totalBreakbarDamage.Value;
 		}
 
 		private static void SetTime(Action<DateTime> setAction, string encounter, string startString)
@@ -73,8 +97,8 @@ namespace raidTimelineLogic
 			var encounterStart = encounter.Substring(indexStart + startString.Length, indexEnd - (indexStart + startString.Length));
 
 			setAction(DateTime.ParseExact(encounterStart
-					, "yyyy-MM-dd HH:mm:ss zzz"
-					, CultureInfo.InvariantCulture));
+			, "yyyy-MM-dd HH:mm:ss zzz"
+			, CultureInfo.InvariantCulture));
 		}
 
 		private static void SetGeneralInformation(RaidModel model, dynamic logData)
