@@ -6,6 +6,7 @@
     <Product>raidTimeline</Product>
     <Company />
     <Authors>Daniel Fischer</Authors>
+    <Version>1.5.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
