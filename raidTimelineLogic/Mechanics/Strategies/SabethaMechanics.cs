@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class SabethaMechanics : IMechanics
+	internal class SabethaMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/5/54/Mini_Sabetha.png";
+		public SabethaMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/5/54/Mini_Sabetha.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -36,18 +40,13 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var flak = (int)mechanics[3][0];
-			var cannon = (int)mechanics[4][0];
-			var flamethrower = (int)mechanics[5][0];
+			var flak = playerModel.Mechanics.GetOrDefault("Flak");
+			var cannon = playerModel.Mechanics.GetOrDefault("Cannon");
+			var flamethrower = playerModel.Mechanics.GetOrDefault("Karde Flame");
 
 			playerModel.Mechanics.Add("sab_flak", flak);
 			playerModel.Mechanics.Add("sab_cannon", cannon);

@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class KeepConstructMechanics : IMechanics
+	internal class KeepConstructMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/e/ea/Mini_Keep_Construct.png";
+		public KeepConstructMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/e/ea/Mini_Keep_Construct.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -36,18 +40,13 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var debris = (int)mechanics[1][0];
-			var pizza = (int)mechanics[2][0];
-			var jump = (int)mechanics[3][0];
+			var debris = playerModel.Mechanics.GetOrDefault("Debris");
+			var pizza = playerModel.Mechanics.GetOrDefault("Pizza");
+			var jump = playerModel.Mechanics.GetOrDefault("Jump");
 
 			playerModel.Mechanics.Add("kc_debris", debris);
 			playerModel.Mechanics.Add("kc_pizza", pizza);

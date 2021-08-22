@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class RiverOfSoulsMechanics : IMechanics
+	internal class RiverOfSoulsMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/thumb/7/7b/Gold_River_of_Souls_Trophy.jpg/220px-Gold_River_of_Souls_Trophy.jpg";
+		public RiverOfSoulsMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/thumb/7/7b/Gold_River_of_Souls_Trophy.jpg/220px-Gold_River_of_Souls_Trophy.jpg";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -32,17 +36,12 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
+			var stun = playerModel.Mechanics.GetOrDefault("Stun Bomb");
 
-			var stun = (int)mechanics[0][0];
-			
 			playerModel.Mechanics.Add("river_stun", stun);
 		}
 	}

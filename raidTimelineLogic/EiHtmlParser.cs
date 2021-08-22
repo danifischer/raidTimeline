@@ -80,7 +80,15 @@ namespace raidTimelineLogic
 
 		private void ParseMechanics(dynamic logData, PlayerModel playerModel, RaidModel raidModel)
 		{
-			_mechanicsFactory.FindStrategy(raidModel.EncounterIcon)?.Parse(logData, playerModel);
+			var strat = _mechanicsFactory.FindStrategy(raidModel.EncounterIcon);
+			try
+			{
+				strat?.Parse(logData, playerModel);
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine(">>> Mechanics not parsable: " + raidModel.LogUrl);
+			}
 		}
 
 		private static void ParseDamageStats(dynamic logData, PlayerModel playerModel, long fightDuration)

@@ -130,7 +130,14 @@ namespace raidTimelineLogic
 
 			top += "</table>";
 
-			top += mechanicsFactory.FindStrategy(model.EncounterIcon)?.CreateHtml(model);
+			try
+			{
+				top += mechanicsFactory.FindStrategy(model.EncounterIcon)?.CreateHtml(model);
+			}
+			catch
+			{
+				//nothing
+			}
 
 			var bot = $@"
 				</div>

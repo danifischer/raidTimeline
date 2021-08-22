@@ -39,8 +39,14 @@ namespace raidTimelineLogic.Mechanics
 			_strategies.Add(new DhuumMechanics());
 
 			// W6
+			_strategies.Add(new ConjuredAmalgamateMechanics());
+			_strategies.Add(new TwinLargosMechanics());
+			_strategies.Add(new QadimMechanics());
 
 			// W7
+			_strategies.Add(new CardinalSabirMechanics());
+			_strategies.Add(new CardinalAdinaMechanics());
+			_strategies.Add(new QadimThePeerlessMechanics());
 		}
 
 		public IMechanics FindStrategy(string iconUrl)

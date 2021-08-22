@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class DhuumMechanics : IMechanics
+	internal class DhuumMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/e/e4/Mini_Dhuum.png";
+		public DhuumMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/e/e4/Mini_Dhuum.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -38,19 +42,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var cone = (int)mechanics[5][0];
-			var crack = (int)mechanics[6][0];
-			var mark = (int)mechanics[7][0];
-			var dip = (int)mechanics[8][0];
+			var cone = playerModel.Mechanics.GetOrDefault("Cone");
+			var crack = playerModel.Mechanics.GetOrDefault("Crack");
+			var mark = playerModel.Mechanics.GetOrDefault("Mark");
+			var dip = playerModel.Mechanics.GetOrDefault("Dip");
 
 			playerModel.Mechanics.Add("dhuum_cone", cone);
 			playerModel.Mechanics.Add("dhuum_crack", crack);

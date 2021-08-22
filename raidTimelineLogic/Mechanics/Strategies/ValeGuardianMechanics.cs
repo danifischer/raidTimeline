@@ -1,14 +1,19 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Mechanics.Strategies;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics
 {
-	internal class ValeGuardianMechanics : IMechanics
+	internal class ValeGuardianMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/f/fb/Mini_Vale_Guardian.png";
+		public ValeGuardianMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/f/fb/Mini_Vale_Guardian.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -36,18 +41,14 @@ namespace raidTimelineLogic.Mechanics
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var tp = (int)mechanics[0][0] + (int)mechanics[1][0];
-			var seeker = (int)mechanics[3][0];
-			var floor = (int)mechanics[6][0] + (int)mechanics[7][0] + (int)mechanics[8][0];
+			var tp = playerModel.Mechanics.GetOrDefault("Split TP") + playerModel.Mechanics.GetOrDefault("Boss TP");
+			var seeker = playerModel.Mechanics.GetOrDefault("Seeker");
+			var floor = playerModel.Mechanics.GetOrDefault("Floor R") + playerModel.Mechanics.GetOrDefault("Floor B") 
+				+ playerModel.Mechanics.GetOrDefault("Floor G");
 
 			playerModel.Mechanics.Add("vg_tp", tp);
 			playerModel.Mechanics.Add("vg_seeker", seeker);

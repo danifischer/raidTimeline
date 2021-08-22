@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class CairnMechanics : IMechanics
+	internal class CairnMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/b/b8/Mini_Cairn_the_Indomitable.png";
+		public CairnMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/b/b8/Mini_Cairn_the_Indomitable.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -38,19 +42,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var port = (int)mechanics[0][0];
-			var green = (int)mechanics[1][0] - (int)mechanics[2][0];
-			var kb = (int)mechanics[4][0];
-			var blackStuff = (int)mechanics[8][0] + (int)mechanics[9][0] + (int)mechanics[10][0];
+			var port = playerModel.Mechanics.GetOrDefault("Port");
+			var green = playerModel.Mechanics.GetOrDefault("Green") - playerModel.Mechanics.GetOrDefault("Stab.Green");
+			var kb = playerModel.Mechanics.GetOrDefault("KB");
+			var blackStuff = playerModel.Mechanics.GetOrDefault("Leap") + playerModel.Mechanics.GetOrDefault("Sweep") + playerModel.Mechanics.GetOrDefault("Donut");
 
 			playerModel.Mechanics.Add("cairn_port", port);
 			playerModel.Mechanics.Add("cairn_green", green);

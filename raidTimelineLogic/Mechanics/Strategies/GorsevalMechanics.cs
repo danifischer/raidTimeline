@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class GorsevalMechanics : IMechanics
+	internal class GorsevalMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/d/d1/Mini_Gorseval_the_Multifarious.png";
+		public GorsevalMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/d/d1/Mini_Gorseval_the_Multifarious.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -38,19 +42,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var slam = (int)mechanics[0][0];
-			var egg = (int)mechanics[1][0];
-			var kick = (int)mechanics[2][0];
-			var black = (int)mechanics[3][0];
+			var slam = playerModel.Mechanics.GetOrDefault("Slam");
+			var egg = playerModel.Mechanics.GetOrDefault("Egg");
+			var kick = playerModel.Mechanics.GetOrDefault("Kick");
+			var black = playerModel.Mechanics.GetOrDefault("Black");
 
 			playerModel.Mechanics.Add("gors_slam", slam);
 			playerModel.Mechanics.Add("gors_egg", egg);

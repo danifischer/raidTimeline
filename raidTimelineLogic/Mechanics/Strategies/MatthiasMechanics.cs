@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class MatthiasMechanics : IMechanics
+	internal class MatthiasMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/5/5d/Mini_Matthias_Abomination.png";
+		public MatthiasMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/5/5d/Mini_Matthias_Abomination.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -38,19 +42,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var jump = (int)mechanics[1][0];
-			var enviroment = (int)mechanics[2][0] + (int)mechanics[3][0];
-			var spirit = (int)mechanics[13][0];
-			var kd = (int)mechanics[10][0];
+			var jump = playerModel.Mechanics.GetOrDefault("Jump Shards");
+			var enviroment = playerModel.Mechanics.GetOrDefault("Tornado") + playerModel.Mechanics.GetOrDefault("Storm");
+			var spirit = playerModel.Mechanics.GetOrDefault("Spirit");
+			var kd = playerModel.Mechanics.GetOrDefault("KD");
 
 			playerModel.Mechanics.Add("matt_jump", jump);
 			playerModel.Mechanics.Add("matt_enviroment", enviroment);

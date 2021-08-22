@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class SlothasorMechanics : IMechanics
+	internal class SlothasorMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/e/ed/Mini_Slubling.png";
+		public SlothasorMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/e/ed/Mini_Slubling.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -16,6 +20,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th>Player</th>
 						<th title=""Tantrum (Triple Circles after Ground slamming)"">Tantrum</th>
 						<th title=""Halitosis (Flame Breath)"">Flame Breath</th>
+						<th title=""Stood in Volatile Poison"">Poison dmg</th>
 						<th title=""Toxic Cloud (stood in green floor poison)"">Floor Poison</th>
 					</tr>";
 
@@ -26,6 +31,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
 						<td>{player.Mechanics["sloth_tantrum"]}</td>
 						<td>{player.Mechanics["sloth_breath"]}</td>
+						<td>{player.Mechanics["sloth_poisonDmg"]}</td>
 						<td>{player.Mechanics["sloth_floor"]}</td>
 					</tr>";
 				top += mid;
@@ -36,21 +42,18 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var tantrum = (int)mechanics[0][0];
-			var breath = (int)mechanics[2][0];
-			var floor = (int)mechanics[6][0];
+			var tantrum = playerModel.Mechanics.GetOrDefault("Tantrum");
+			var breath = playerModel.Mechanics.GetOrDefault("Breath");
+			var poison = playerModel.Mechanics.GetOrDefault("Poison dmg");
+			var floor = playerModel.Mechanics.GetOrDefault("Floor");
 
 			playerModel.Mechanics.Add("sloth_tantrum", tantrum);
 			playerModel.Mechanics.Add("sloth_breath", breath);
+			playerModel.Mechanics.Add("sloth_poisonDmg", poison);
 			playerModel.Mechanics.Add("sloth_floor", floor);
 		}
 	}

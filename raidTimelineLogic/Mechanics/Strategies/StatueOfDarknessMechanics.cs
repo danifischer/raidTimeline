@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class StatueOfDarknessMechanics : IMechanics
+	internal class StatueOfDarknessMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/thumb/a/a7/Eye_of_Fate.jpg/188px-Eye_of_Fate.jpg";
+		public StatueOfDarknessMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/thumb/a/a7/Eye_of_Fate.jpg/188px-Eye_of_Fate.jpg";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -36,18 +40,13 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
-
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var orb = (int)mechanics[0][0];
-			var detonate = (int)mechanics[1][0];
-			var beam = (int)mechanics[2][0];
+			PrepareParsing(logData, playerModel);
+			
+			var orb = playerModel.Mechanics.GetOrDefault("Light Orb");
+			var detonate = playerModel.Mechanics.GetOrDefault("Detonate");
+			var beam = playerModel.Mechanics.GetOrDefault("Beam");
 
 			playerModel.Mechanics.Add("eyes_orb", orb);
 			playerModel.Mechanics.Add("eyes_detonate", detonate);

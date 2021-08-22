@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class MursaatOverseerMechanics : IMechanics
+	internal class MursaatOverseerMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/c/c8/Mini_Mursaat_Overseer.png";
+		public MursaatOverseerMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/c/c8/Mini_Mursaat_Overseer.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -34,17 +38,12 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var jade = (int)mechanics[0][0];
-			var explo = (int)mechanics[1][0];
+			var jade = playerModel.Mechanics.GetOrDefault("Jade");
+			var explo = playerModel.Mechanics.GetOrDefault("Jade Expl");
 
 			playerModel.Mechanics.Add("mo_jade", jade);
 			playerModel.Mechanics.Add("mo_explo", explo);

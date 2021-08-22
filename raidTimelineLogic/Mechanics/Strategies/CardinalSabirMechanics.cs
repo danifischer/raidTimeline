@@ -5,21 +5,20 @@ using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class TrioMechanics : BaseMechanics
+	internal class CardinalSabirMechanics : BaseMechanics
 	{
-		public TrioMechanics()
+		public CardinalSabirMechanics()
 		{
-			EncounterIcon = "https://i.imgur.com/UZZQUdf.png";
+			EncounterIcon = "https://wiki.guildwars2.com/images/f/fc/Mini_Air_Djinn.png";
 		}
-		
+
 		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
 			top += @"<tr style=""color: #aaa"">
 						<th>Player</th>
-						<th title=""Hail of Bullets (Zane Cone Shot)"">Zane Cone</th>
-						<th title=""Fiery Vortex (Tornado)"">Tornado</th>
+						<th title=""Hit by Shockwave"">Shockwave</th>
 					</tr>";
 
 			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
@@ -27,8 +26,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["trio_cone"]}</td>
-						<td>{player.Mechanics["trio_tornado"]}</td>
+						<td>{player.Mechanics["sabir_shockwave"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -42,11 +40,9 @@ namespace raidTimelineLogic.Mechanics.Strategies
 		{
 			PrepareParsing(logData, playerModel);
 
-			var cone = playerModel.Mechanics.GetOrDefault("Zane Cone");
-			var tornado = playerModel.Mechanics.GetOrDefault("Tornado");
+			var shockwave = playerModel.Mechanics.GetOrDefault("Shockwave");
 
-			playerModel.Mechanics.Add("trio_cone", cone);
-			playerModel.Mechanics.Add("trio_tornado", tornado);
+			playerModel.Mechanics.Add("sabir_shockwave", shockwave);
 		}
 	}
 }

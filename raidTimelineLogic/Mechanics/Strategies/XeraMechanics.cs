@@ -1,14 +1,19 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Mechanics.Strategies;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics
 {
-	internal class XeraMechanics : IMechanics
+	internal class XeraMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/4/4b/Mini_Xera.png";
-
-		public string CreateHtml(RaidModel model)
+		public XeraMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/4/4b/Mini_Xera.png";
+		}
+		
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -36,18 +41,13 @@ namespace raidTimelineLogic.Mechanics
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var orb = (int)mechanics[0][0];
-			var orbAoe = (int)mechanics[1][0];
-			var stacks = (int)mechanics[2][0];
+			var orb = playerModel.Mechanics.GetOrDefault("Orb");
+			var orbAoe = playerModel.Mechanics.GetOrDefault("Orb Aoe");
+			var stacks = playerModel.Mechanics.GetOrDefault("Stacks");
 
 			playerModel.Mechanics.Add("xera_orb", orb);
 			playerModel.Mechanics.Add("xera_orbAoe", orbAoe);

@@ -1,14 +1,18 @@
-﻿using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 using System.Linq;
 using System.Web;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {
-	internal class DeimosMechanics : IMechanics
+	internal class DeimosMechanics : BaseMechanics
 	{
-		internal readonly string EncounterIcon = "https://wiki.guildwars2.com/images/e/e0/Mini_Ragged_White_Mantle_Figurehead.png";
+		public DeimosMechanics()
+		{
+			EncounterIcon = "https://wiki.guildwars2.com/images/e/e0/Mini_Ragged_White_Mantle_Figurehead.png";
+		}
 
-		public string CreateHtml(RaidModel model)
+		public override string CreateHtml(RaidModel model)
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
@@ -36,18 +40,13 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			return top;
 		}
 
-		public string GetEncounterIcon()
+		public override void Parse(dynamic logData, PlayerModel playerModel)
 		{
-			return EncounterIcon;
-		}
+			PrepareParsing(logData, playerModel);
 
-		public void Parse(dynamic logData, PlayerModel playerModel)
-		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-
-			var oil = (int)mechanics[1][0];
-			var pizza = (int)mechanics[2][0];
-			var tear = (int)mechanics[4][0];
+			var oil = playerModel.Mechanics.GetOrDefault("Oil T.");
+			var pizza = playerModel.Mechanics.GetOrDefault("Pizza");
+			var tear = playerModel.Mechanics.GetOrDefault("Tear");
 
 			playerModel.Mechanics.Add("dei_oil", oil);
 			playerModel.Mechanics.Add("dei_pizza", pizza);
