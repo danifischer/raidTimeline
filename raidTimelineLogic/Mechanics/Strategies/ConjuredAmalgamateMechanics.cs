@@ -24,15 +24,15 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Tremor (Field adjacent to Arm Slam)"">Tremor</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["ca_arm"]}</td>
-						<td>{player.Mechanics["ca_balls"]}</td>
-						<td>{player.Mechanics["ca_junk"]}</td>
-						<td>{player.Mechanics["ca_tremor"]}</td>
+						<td>{player.CombinedMechanics["ca_arm"]}</td>
+						<td>{player.CombinedMechanics["ca_balls"]}</td>
+						<td>{player.CombinedMechanics["ca_junk"]}</td>
+						<td>{player.CombinedMechanics["ca_tremor"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -51,10 +51,10 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var junk = playerModel.Mechanics.GetOrDefault("Junk");
 			var tremor = playerModel.Mechanics.GetOrDefault("Tremor");
 
-			playerModel.Mechanics.Add("ca_arm", arm);
-			playerModel.Mechanics.Add("ca_balls", balls);
-			playerModel.Mechanics.Add("ca_junk", junk);
-			playerModel.Mechanics.Add("ca_tremor", tremor);
+			playerModel.CombinedMechanics.Add("ca_arm", arm);
+			playerModel.CombinedMechanics.Add("ca_balls", balls);
+			playerModel.CombinedMechanics.Add("ca_junk", junk);
+			playerModel.CombinedMechanics.Add("ca_tremor", tremor);
 		}
 	}
 }

@@ -23,14 +23,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Deep Abyss (ticking eye beam)"">Beam</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Where(k => k.Key == "eyes_beam").Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Where(k => k.Key == "eyes_beam").Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["eyes_orb"]}</td>
-						<td>{player.Mechanics["eyes_detonate"]}</td>
-						<td>{player.Mechanics["eyes_beam"]}</td>
+						<td>{player.CombinedMechanics["eyes_orb"]}</td>
+						<td>{player.CombinedMechanics["eyes_detonate"]}</td>
+						<td>{player.CombinedMechanics["eyes_beam"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -48,9 +48,9 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var detonate = playerModel.Mechanics.GetOrDefault("Detonate");
 			var beam = playerModel.Mechanics.GetOrDefault("Beam");
 
-			playerModel.Mechanics.Add("eyes_orb", orb);
-			playerModel.Mechanics.Add("eyes_detonate", detonate);
-			playerModel.Mechanics.Add("eyes_beam", beam);
+			playerModel.CombinedMechanics.Add("eyes_orb", orb);
+			playerModel.CombinedMechanics.Add("eyes_detonate", detonate);
+			playerModel.CombinedMechanics.Add("eyes_beam", beam);
 		}
 	}
 }

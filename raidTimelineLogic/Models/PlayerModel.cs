@@ -12,5 +12,6 @@ namespace raidTimelineLogic.Models
 		public int ResAmmount { get; set; }
 		public string AccountName  { get; set; }
 		public Dictionary<string, int> Mechanics { get; set; } = new Dictionary<string, int>();
+		public Dictionary<string, int> CombinedMechanics { get; set; } = new Dictionary<string, int>();
 	}
 }

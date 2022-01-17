@@ -21,12 +21,12 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Stunned by Mini Bomb"">Stun Bomb</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["river_stun"]}</td>
+						<td>{player.CombinedMechanics["river_stun"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -42,7 +42,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 
 			var stun = playerModel.Mechanics.GetOrDefault("Stun Bomb");
 
-			playerModel.Mechanics.Add("river_stun", stun);
+			playerModel.CombinedMechanics.Add("river_stun", stun);
 		}
 	}
 }

@@ -22,17 +22,19 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Cull (Fearing Fissures)"">Crack</th>
 						<th title=""Necro Marks during Scythe attack"">Mark</th>
 						<th title=""Lesser Death Mark hit (Dip into ground)"">Dip</th>
+						<th title=""Picked up by Ender's Echo"">Echo</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["dhuum_cone"]}</td>
-						<td>{player.Mechanics["dhuum_crack"]}</td>
-						<td>{player.Mechanics["dhuum_mark"]}</td>
-						<td>{player.Mechanics["dhuum_dip"]}</td>
+						<td>{player.CombinedMechanics["dhuum_cone"]}</td>
+						<td>{player.CombinedMechanics["dhuum_crack"]}</td>
+						<td>{player.CombinedMechanics["dhuum_mark"]}</td>
+						<td>{player.CombinedMechanics["dhuum_dip"]}</td>
+						<td>{player.CombinedMechanics["dhuum_echo"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -50,11 +52,13 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var crack = playerModel.Mechanics.GetOrDefault("Crack");
 			var mark = playerModel.Mechanics.GetOrDefault("Mark");
 			var dip = playerModel.Mechanics.GetOrDefault("Dip");
+			var echo = playerModel.Mechanics.GetOrDefault("Echo PU");
 
-			playerModel.Mechanics.Add("dhuum_cone", cone);
-			playerModel.Mechanics.Add("dhuum_crack", crack);
-			playerModel.Mechanics.Add("dhuum_mark", mark);
-			playerModel.Mechanics.Add("dhuum_dip", dip);
+			playerModel.CombinedMechanics.Add("dhuum_cone", cone);
+			playerModel.CombinedMechanics.Add("dhuum_crack", crack);
+			playerModel.CombinedMechanics.Add("dhuum_mark", mark);
+			playerModel.CombinedMechanics.Add("dhuum_dip", dip);
+			playerModel.CombinedMechanics.Add("dhuum_echo", echo);
 		}
 	}
 }

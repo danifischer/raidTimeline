@@ -24,15 +24,15 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Quad Slash (4 Slices) & Death Bloom (8 Slices)"">Slices</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["sh_donutIn"]}</td>
-						<td>{player.Mechanics["sh_donutOut"]}</td>
-						<td>{player.Mechanics["sh_scythe"]}</td>
-						<td>{player.Mechanics["sh_slices"]}</td>
+						<td>{player.CombinedMechanics["sh_donutIn"]}</td>
+						<td>{player.CombinedMechanics["sh_donutOut"]}</td>
+						<td>{player.CombinedMechanics["sh_scythe"]}</td>
+						<td>{player.CombinedMechanics["sh_slices"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -51,10 +51,10 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var scythe = playerModel.Mechanics.GetOrDefault("Scythe");
 			var slices = playerModel.Mechanics.GetOrDefault("Slice1") + playerModel.Mechanics.GetOrDefault("Slice2") + playerModel.Mechanics.GetOrDefault("8Slice");
 
-			playerModel.Mechanics.Add("sh_donutIn", donutIn);
-			playerModel.Mechanics.Add("sh_donutOut", donutOut);
-			playerModel.Mechanics.Add("sh_scythe", scythe);
-			playerModel.Mechanics.Add("sh_slices", slices);
+			playerModel.CombinedMechanics.Add("sh_donutIn", donutIn);
+			playerModel.CombinedMechanics.Add("sh_donutOut", donutOut);
+			playerModel.CombinedMechanics.Add("sh_scythe", scythe);
+			playerModel.CombinedMechanics.Add("sh_slices", slices);
 		}
 	}
 }

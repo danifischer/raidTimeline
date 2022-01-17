@@ -23,14 +23,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Collected a Demonic Tear"">Tear</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Where(k => k.Key != "dei_tear").Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Where(k => k.Key != "dei_tear").Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["dei_oil"]}</td>
-						<td>{player.Mechanics["dei_pizza"]}</td>
-						<td>{player.Mechanics["dei_tear"]}</td>
+						<td>{player.CombinedMechanics["dei_oil"]}</td>
+						<td>{player.CombinedMechanics["dei_pizza"]}</td>
+						<td>{player.CombinedMechanics["dei_tear"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -48,9 +48,9 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var pizza = playerModel.Mechanics.GetOrDefault("Pizza");
 			var tear = playerModel.Mechanics.GetOrDefault("Tear");
 
-			playerModel.Mechanics.Add("dei_oil", oil);
-			playerModel.Mechanics.Add("dei_pizza", pizza);
-			playerModel.Mechanics.Add("dei_tear", tear);
+			playerModel.CombinedMechanics.Add("dei_oil", oil);
+			playerModel.CombinedMechanics.Add("dei_pizza", pizza);
+			playerModel.CombinedMechanics.Add("dei_tear", tear);
 		}
 	}
 }

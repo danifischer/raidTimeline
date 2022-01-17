@@ -23,14 +23,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Frozen Wind (Stood in Green)"">Green</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Where(k => k.Key == "brokenking_cracks").Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Where(k => k.Key == "brokenking_cracks").Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["brokenking_cone"]}</td>
-						<td>{player.Mechanics["brokenking_cracks"]}</td>
-						<td>{player.Mechanics["brokenking_green"]}</td>
+						<td>{player.CombinedMechanics["brokenking_cone"]}</td>
+						<td>{player.CombinedMechanics["brokenking_cracks"]}</td>
+						<td>{player.CombinedMechanics["brokenking_green"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -48,9 +48,9 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var cracks = playerModel.Mechanics.GetOrDefault("Cracks");
 			var green = playerModel.Mechanics.GetOrDefault("Green");
 
-			playerModel.Mechanics.Add("brokenking_cone", cone);
-			playerModel.Mechanics.Add("brokenking_cracks", cracks);
-			playerModel.Mechanics.Add("brokenking_green", green);
+			playerModel.CombinedMechanics.Add("brokenking_cone", cone);
+			playerModel.CombinedMechanics.Add("brokenking_cracks", cracks);
+			playerModel.CombinedMechanics.Add("brokenking_green", green);
 		}
 	}
 }

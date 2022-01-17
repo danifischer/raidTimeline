@@ -24,14 +24,14 @@ namespace raidTimelineLogic.Mechanics
 						<th title=""Unstable Pylon (Floor dmg)"">Floor</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["vg_tp"]}</td>
-						<td>{player.Mechanics["vg_seeker"]}</td>
-						<td>{player.Mechanics["vg_floor"]}</td>
+						<td>{player.CombinedMechanics["vg_tp"]}</td>
+						<td>{player.CombinedMechanics["vg_seeker"]}</td>
+						<td>{player.CombinedMechanics["vg_floor"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -50,9 +50,9 @@ namespace raidTimelineLogic.Mechanics
 			var floor = playerModel.Mechanics.GetOrDefault("Floor R") + playerModel.Mechanics.GetOrDefault("Floor B") 
 				+ playerModel.Mechanics.GetOrDefault("Floor G");
 
-			playerModel.Mechanics.Add("vg_tp", tp);
-			playerModel.Mechanics.Add("vg_seeker", seeker);
-			playerModel.Mechanics.Add("vg_floor", floor);
+			playerModel.CombinedMechanics.Add("vg_tp", tp);
+			playerModel.CombinedMechanics.Add("vg_seeker", seeker);
+			playerModel.CombinedMechanics.Add("vg_floor", floor);
 		}
 	}
 }

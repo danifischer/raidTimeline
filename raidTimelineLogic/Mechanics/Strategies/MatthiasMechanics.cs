@@ -24,15 +24,15 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Surrender (hit by walking Spirit)"">Spirit</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["matt_jump"]}</td>
-						<td>{player.Mechanics["matt_enviroment"]}</td>
-						<td>{player.Mechanics["matt_kd"]}</td>
-						<td>{player.Mechanics["matt_spirit"]}</td>
+						<td>{player.CombinedMechanics["matt_jump"]}</td>
+						<td>{player.CombinedMechanics["matt_enviroment"]}</td>
+						<td>{player.CombinedMechanics["matt_kd"]}</td>
+						<td>{player.CombinedMechanics["matt_spirit"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -51,10 +51,10 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var spirit = playerModel.Mechanics.GetOrDefault("Spirit");
 			var kd = playerModel.Mechanics.GetOrDefault("KD");
 
-			playerModel.Mechanics.Add("matt_jump", jump);
-			playerModel.Mechanics.Add("matt_enviroment", enviroment);
-			playerModel.Mechanics.Add("matt_spirit", spirit);
-			playerModel.Mechanics.Add("matt_kd", kd);
+			playerModel.CombinedMechanics.Add("matt_jump", jump);
+			playerModel.CombinedMechanics.Add("matt_enviroment", enviroment);
+			playerModel.CombinedMechanics.Add("matt_spirit", spirit);
+			playerModel.CombinedMechanics.Add("matt_kd", kd);
 		}
 	}
 }

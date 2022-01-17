@@ -24,15 +24,15 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Hit by aimed ball or ball explosion"">Ball</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["prlqadim_push"]}</td>
-						<td>{player.Mechanics["prlqadim_lightning"]}</td>
-						<td>{player.Mechanics["prlqadim_fire"]}</td>
-						<td>{player.Mechanics["prlqadim_ball"]}</td>
+						<td>{player.CombinedMechanics["prlqadim_push"]}</td>
+						<td>{player.CombinedMechanics["prlqadim_lightning"]}</td>
+						<td>{player.CombinedMechanics["prlqadim_fire"]}</td>
+						<td>{player.CombinedMechanics["prlqadim_ball"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -51,10 +51,10 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var fire = playerModel.Mechanics.GetOrDefault("Magma.F");
 			var ball = playerModel.Mechanics.GetOrDefault("A.Prj.H") + playerModel.Mechanics.GetOrDefault("A.Prj.E");
 
-			playerModel.Mechanics.Add("prlqadim_push", push);
-			playerModel.Mechanics.Add("prlqadim_lightning", lightning);
-			playerModel.Mechanics.Add("prlqadim_fire", fire);
-			playerModel.Mechanics.Add("prlqadim_ball", ball);
+			playerModel.CombinedMechanics.Add("prlqadim_push", push);
+			playerModel.CombinedMechanics.Add("prlqadim_lightning", lightning);
+			playerModel.CombinedMechanics.Add("prlqadim_fire", fire);
+			playerModel.CombinedMechanics.Add("prlqadim_ball", ball);
 		}
 	}
 }

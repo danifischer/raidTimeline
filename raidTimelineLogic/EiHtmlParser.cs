@@ -37,7 +37,7 @@ namespace raidTimelineLogic
 				if (logData.eiVersion != null || logData.parser != null)
 				{
 					// Starting 2.26 EI has the date in a different way
-					// Note for EI 2.27: F*** verioning I guess ...
+					// Note for EI 2.27: F*** versioning I guess ...
 					model.OccurenceStart = DateTime.ParseExact(
 						logData.encounterStart.Value, "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
 					model.OccurenceEnd = DateTime.ParseExact(

@@ -23,14 +23,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Nikare mechanics (Charge, Pool, Bubbles & Lauch Fields)"">Nikare</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["twinlargos_debuff"]}</td>
-						<td>{player.Mechanics["twinlargos_kenut"]}</td>
-						<td>{player.Mechanics["twinlargos_nikare"]}</td>
+						<td>{player.CombinedMechanics["twinlargos_debuff"]}</td>
+						<td>{player.CombinedMechanics["twinlargos_kenut"]}</td>
+						<td>{player.CombinedMechanics["twinlargos_nikare"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -50,9 +50,9 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var nikare = playerModel.Mechanics.GetOrDefault("Charge") + playerModel.Mechanics.GetOrDefault("Pool") 
 				+ playerModel.Mechanics.GetOrDefault("KB/Launch") + playerModel.Mechanics.GetOrDefault("Float");
 			
-			playerModel.Mechanics.Add("twinlargos_debuff", debuff);
-			playerModel.Mechanics.Add("twinlargos_kenut", kenut);
-			playerModel.Mechanics.Add("twinlargos_nikare", nikare);
+			playerModel.CombinedMechanics.Add("twinlargos_debuff", debuff);
+			playerModel.CombinedMechanics.Add("twinlargos_kenut", kenut);
+			playerModel.CombinedMechanics.Add("twinlargos_nikare", nikare);
 		}
 	}
 }

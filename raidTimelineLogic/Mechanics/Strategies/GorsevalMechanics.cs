@@ -24,15 +24,15 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Hit by Black Goo"">Black</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["gors_slam"]}</td>
-						<td>{player.Mechanics["gors_egg"]}</td>
-						<td>{player.Mechanics["gors_kick"]}</td>
-						<td>{player.Mechanics["gors_black"]}</td>
+						<td>{player.CombinedMechanics["gors_slam"]}</td>
+						<td>{player.CombinedMechanics["gors_egg"]}</td>
+						<td>{player.CombinedMechanics["gors_kick"]}</td>
+						<td>{player.CombinedMechanics["gors_black"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -51,10 +51,10 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var kick = playerModel.Mechanics.GetOrDefault("Kick");
 			var black = playerModel.Mechanics.GetOrDefault("Black");
 
-			playerModel.Mechanics.Add("gors_slam", slam);
-			playerModel.Mechanics.Add("gors_egg", egg);
-			playerModel.Mechanics.Add("gors_kick", kick);
-			playerModel.Mechanics.Add("gors_black", black);
+			playerModel.CombinedMechanics.Add("gors_slam", slam);
+			playerModel.CombinedMechanics.Add("gors_egg", egg);
+			playerModel.CombinedMechanics.Add("gors_kick", kick);
+			playerModel.CombinedMechanics.Add("gors_black", black);
 		}
 	}
 }

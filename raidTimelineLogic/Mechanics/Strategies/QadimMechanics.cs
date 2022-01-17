@@ -24,15 +24,15 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Swap (Ported from below Legendary Creature to Qadim)"">Port</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["qadim_wvyern"]}</td>
-						<td>{player.Mechanics["qadim_destroyer"]}</td>
-						<td>{player.Mechanics["qadim_qadim"]}</td>
-						<td>{player.Mechanics["qadim_port"]}</td>
+						<td>{player.CombinedMechanics["qadim_wvyern"]}</td>
+						<td>{player.CombinedMechanics["qadim_destroyer"]}</td>
+						<td>{player.CombinedMechanics["qadim_qadim"]}</td>
+						<td>{player.CombinedMechanics["qadim_port"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -52,10 +52,10 @@ namespace raidTimelineLogic.Mechanics.Strategies
 				+ playerModel.Mechanics.GetOrDefault("Inf") + playerModel.Mechanics.GetOrDefault("Q.Hitbox");
 			var port = playerModel.Mechanics.GetOrDefault("Port");
 
-			playerModel.Mechanics.Add("qadim_wvyern", wyvern);
-			playerModel.Mechanics.Add("qadim_destroyer", destroyer);
-			playerModel.Mechanics.Add("qadim_qadim", qadim);
-			playerModel.Mechanics.Add("qadim_port", port);
+			playerModel.CombinedMechanics.Add("qadim_wvyern", wyvern);
+			playerModel.CombinedMechanics.Add("qadim_destroyer", destroyer);
+			playerModel.CombinedMechanics.Add("qadim_qadim", qadim);
+			playerModel.CombinedMechanics.Add("qadim_port", port);
 		}
 	}
 }

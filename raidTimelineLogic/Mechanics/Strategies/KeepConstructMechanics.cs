@@ -23,14 +23,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Tower Drop (KC Jump)"">Jump</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["kc_debris"]}</td>
-						<td>{player.Mechanics["kc_pizza"]}</td>
-						<td>{player.Mechanics["kc_jump"]}</td>
+						<td>{player.CombinedMechanics["kc_debris"]}</td>
+						<td>{player.CombinedMechanics["kc_pizza"]}</td>
+						<td>{player.CombinedMechanics["kc_jump"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -48,9 +48,9 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var pizza = playerModel.Mechanics.GetOrDefault("Pizza");
 			var jump = playerModel.Mechanics.GetOrDefault("Jump");
 
-			playerModel.Mechanics.Add("kc_debris", debris);
-			playerModel.Mechanics.Add("kc_pizza", pizza);
-			playerModel.Mechanics.Add("kc_jump", jump);
+			playerModel.CombinedMechanics.Add("kc_debris", debris);
+			playerModel.CombinedMechanics.Add("kc_pizza", pizza);
+			playerModel.CombinedMechanics.Add("kc_jump", jump);
 		}
 	}
 }

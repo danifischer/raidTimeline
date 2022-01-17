@@ -25,16 +25,16 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Looked at Eye"">Eye</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["adina_blind"]}</td>
-						<td>{player.Mechanics["adina_curse"]}</td>
-						<td>{player.Mechanics["adina_pulse"]}</td>
-						<td>{player.Mechanics["adina_mines"]}</td>
-						<td>{player.Mechanics["adina_eye"]}</td>
+						<td>{player.CombinedMechanics["adina_blind"]}</td>
+						<td>{player.CombinedMechanics["adina_curse"]}</td>
+						<td>{player.CombinedMechanics["adina_pulse"]}</td>
+						<td>{player.CombinedMechanics["adina_mines"]}</td>
+						<td>{player.CombinedMechanics["adina_eye"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -54,11 +54,11 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var mines = playerModel.Mechanics.GetOrDefault("Mines");
 			var eye = playerModel.Mechanics.GetOrDefault("Eye");
 
-			playerModel.Mechanics.Add("adina_blind", blind);
-			playerModel.Mechanics.Add("adina_curse", curse);
-			playerModel.Mechanics.Add("adina_pulse", pulse);
-			playerModel.Mechanics.Add("adina_mines", mines);
-			playerModel.Mechanics.Add("adina_eye", eye);
+			playerModel.CombinedMechanics.Add("adina_blind", blind);
+			playerModel.CombinedMechanics.Add("adina_curse", curse);
+			playerModel.CombinedMechanics.Add("adina_pulse", pulse);
+			playerModel.CombinedMechanics.Add("adina_mines", mines);
+			playerModel.CombinedMechanics.Add("adina_eye", eye);
 		}
 	}
 }

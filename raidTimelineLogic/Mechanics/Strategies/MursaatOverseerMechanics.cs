@@ -22,13 +22,13 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Jade Soldier's Death Explosion"">Expl</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["mo_jade"]}</td>
-						<td>{player.Mechanics["mo_explo"]}</td>
+						<td>{player.CombinedMechanics["mo_jade"]}</td>
+						<td>{player.CombinedMechanics["mo_explo"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -45,8 +45,8 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var jade = playerModel.Mechanics.GetOrDefault("Jade");
 			var explo = playerModel.Mechanics.GetOrDefault("Jade Expl");
 
-			playerModel.Mechanics.Add("mo_jade", jade);
-			playerModel.Mechanics.Add("mo_explo", explo);
+			playerModel.CombinedMechanics.Add("mo_jade", jade);
+			playerModel.CombinedMechanics.Add("mo_explo", explo);
 		}
 	}
 }

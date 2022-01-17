@@ -23,14 +23,14 @@ namespace raidTimelineLogic.Mechanics.Strategies
 						<th title=""Spear spawn and attacks"">Spear</th>
 					</tr>";
 
-			foreach (var player in model.Players.OrderByDescending(i => i.Mechanics.Sum(j => j.Value)).Take(3))
+			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
 					<tr style=""color: #aaa"">
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
-						<td>{player.Mechanics["sam_attacks"]}</td>
-						<td>{player.Mechanics["sam_friendFail"]}</td>
-						<td>{player.Mechanics["sam_spear"]}</td>
+						<td>{player.CombinedMechanics["sam_attacks"]}</td>
+						<td>{player.CombinedMechanics["sam_friendFail"]}</td>
+						<td>{player.CombinedMechanics["sam_spear"]}</td>
 					</tr>";
 				top += mid;
 			}
@@ -48,9 +48,9 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			var friendFail = playerModel.Mechanics.GetOrDefault("Gr.Fl");
 			var spear = playerModel.Mechanics.GetOrDefault("S.Pls") + playerModel.Mechanics.GetOrDefault("S.Spwn") + playerModel.Mechanics.GetOrDefault("Shck.Wv Ctr");
 
-			playerModel.Mechanics.Add("sam_attacks", samAttacks);
-			playerModel.Mechanics.Add("sam_friendFail", friendFail);
-			playerModel.Mechanics.Add("sam_spear", spear);
+			playerModel.CombinedMechanics.Add("sam_attacks", samAttacks);
+			playerModel.CombinedMechanics.Add("sam_friendFail", friendFail);
+			playerModel.CombinedMechanics.Add("sam_spear", spear);
 		}
 	}
 }
