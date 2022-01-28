@@ -12,26 +12,17 @@ using System.Runtime.CompilerServices;
 
 namespace raidTimelineLogic
 {
-    internal class EiHtmlParser
+    internal static class EiHtmlParser
     {
-        private readonly MechanicsFactory _mechanicsFactory;
+        private static readonly MechanicsFactory MechanicsFactory = MechanicsFactory.GetMechanicsFactory(); 
 
-        public EiHtmlParser()
-        {
-            _mechanicsFactory = MechanicsFactory.GetMechanicsFactory();
-        }
-
-        internal RaidModel ParseLog(string filePath)
+        internal static RaidModel ParseLog(string filePath)
         {
             var model = new RaidModel(filePath);
 
             try
             {
                 var logData = GetLogData(File.ReadAllText(model.LogPath));
-
-#if DEBUG
-                File.WriteAllText(@"d:\temp.json", JsonConvert.SerializeObject(logData));
-#endif
 
                 SetRemainingHealth(model, logData);
                 SetGeneralInformation(model, logData);
@@ -53,10 +44,10 @@ namespace raidTimelineLogic
                         AccountName = logData.players[j].acc
                     };
 
-                    ParseSupportStats(logData, playerModel);
-                    ParseDamageStats(logData, playerModel, fightDuration);
-                    ParseMechanics(logData, playerModel, model);
-                    ParseBoons(logData, playerModel);
+                    ParseSupportStats(playerModel, logData);
+                    ParseDamageStats(playerModel, fightDuration, logData);
+                    ParseMechanics(playerModel, model, logData);
+                    ParseBoons(playerModel, logData);
 
                     model.Players.Add(playerModel);
                 }
@@ -73,7 +64,7 @@ namespace raidTimelineLogic
             return model;
         }
 
-        private static void ParseBoons(dynamic logData, PlayerModel playerModel)
+        private static void ParseBoons(this PlayerModel playerModel, dynamic logData)
         {
             var boons = logData.boons;
             var boonList = new List<string>();
@@ -130,9 +121,9 @@ namespace raidTimelineLogic
             playerModel.Buffs.AddRange(maps);
         }
 
-        private void ParseMechanics(dynamic logData, PlayerModel playerModel, RaidModel raidModel)
+        private static void ParseMechanics(this PlayerModel playerModel, RaidModel raidModel, dynamic logData)
         {
-            var strategy = _mechanicsFactory.FindStrategy(raidModel.EncounterIcon);
+            var strategy = MechanicsFactory.FindStrategy(raidModel.EncounterIcon);
             try
             {
                 strategy?.Parse(logData, playerModel);
@@ -143,7 +134,7 @@ namespace raidTimelineLogic
             }
         }
 
-        private static void ParseDamageStats(dynamic logData, PlayerModel playerModel, long fightDuration)
+        private static void ParseDamageStats(this PlayerModel playerModel, long fightDuration, dynamic logData)
         {
             var targets = logData.players[playerModel.Index].details.dmgDistributionsTargets[0];
             playerModel.Damage = 0;
@@ -156,7 +147,7 @@ namespace raidTimelineLogic
             playerModel.Dps = playerModel.Damage * 1000 / fightDuration;
         }
 
-        private static void ParseSupportStats(dynamic logData, PlayerModel playerModel)
+        private static void ParseSupportStats(this PlayerModel playerModel, dynamic logData)
         {
             playerModel.ResAmmount = (int)logData.phases[0].supportStats[playerModel.Index][6];
             playerModel.ResTime = (double)logData.phases[0].supportStats[playerModel.Index][7];
@@ -164,20 +155,20 @@ namespace raidTimelineLogic
                 .totalBreakbarDamage.Value;
         }
 
-        private static void SetGeneralInformation(RaidModel model, dynamic logData)
+        private static void SetGeneralInformation(this RaidModel raidModel, dynamic logData)
         {
-            model.EncounterTime = logData.encounterDuration.Value;
-            model.EncounterIcon = logData.fightIcon.Value;
-            model.EncounterName = logData.fightName.Value;
-            model.Killed = logData.success.Value;
+            raidModel.EncounterTime = logData.encounterDuration.Value;
+            raidModel.EncounterIcon = logData.fightIcon.Value;
+            raidModel.EncounterName = logData.fightName.Value;
+            raidModel.Killed = logData.success.Value;
         }
 
-        private static void SetRemainingHealth(RaidModel model, dynamic logData)
+        private static void SetRemainingHealth(this RaidModel raidModel, dynamic logData)
         {
             for (var i = 0; i < logData.phases[0].targets.Count; i++)
             {
                 var targetData = logData.targets[(int)logData.phases[0].targets[i]];
-                model.HpLeft.Add(targetData.hpLeft.Value);
+                raidModel.HpLeft.Add(targetData.hpLeft.Value);
             }
         }
 

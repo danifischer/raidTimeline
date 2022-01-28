@@ -12,8 +12,9 @@ namespace raidTimelineLogic.HtmlBuilders
         {
             var boonList = CombineBoons(raidModel.Players);
             var counter = 0;
+            var increment = boonList.Count / 2;
 
-            while (boonList.Skip(counter).Take(6).Any())
+            while (boonList.Skip(counter).Take(increment).Any())
             {
                 stringBuilder.Append(@"<table class=""boonTable"" style=""display: none;"">");
 
@@ -50,7 +51,7 @@ namespace raidTimelineLogic.HtmlBuilders
                 stringBuilder.Append(boonBody);
 
                 stringBuilder.Append("</table>");
-                counter += 6;
+                counter += increment;
             }
             return stringBuilder;
         }

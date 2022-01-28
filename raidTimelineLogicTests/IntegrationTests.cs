@@ -31,10 +31,9 @@ namespace raidTimelineLogicTests
 
 			var pathToEi = Path.Combine(Directory.GetCurrentDirectory(), @"GW2-Elite-Insights-Parser\GW2EI.bin\Debug\GuildWars2EliteInsights.exe");
 			var htmlFile = CreateHtmlLog(pathToEi);
-			var parser = new EiHtmlParser();
-
+			
 			// Test
-			var log = parser.ParseLog(htmlFile);
+			var log = EiHtmlParser.ParseLog(htmlFile);
 
 			// Check
 			log.Should().NotBeNull();
@@ -58,10 +57,9 @@ namespace raidTimelineLogicTests
 
 			var pathToEi = Path.Combine(Directory.GetCurrentDirectory(), @"temp\GuildWars2EliteInsights.exe");
 			var htmlFile = CreateHtmlLog(pathToEi);
-			var parser = new EiHtmlParser();
-
+			
 			// Test
-			var log = parser.ParseLog(htmlFile);
+			var log = EiHtmlParser.ParseLog(htmlFile);
 
 			// Check
 			log.Should().NotBeNull();

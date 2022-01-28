@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace raidTimelineLogic
 {
@@ -13,40 +14,38 @@ namespace raidTimelineLogic
 	{
 		public void CreateTimelineFileFromDisk(string path, string outputFileName, bool reverse = false)
 		{
-			var parser = new EiHtmlParser();
 			var models = new List<RaidModel>();
 
-			foreach (var filePath in Directory.GetFiles(path, "*.html"))
+			Parallel.ForEach(Directory.GetFiles(path, "*.html"), filePath =>
 			{
 				Console.WriteLine($"Parsing log: {Path.GetFileName(filePath)}");
-				var model = parser.ParseLog(filePath);
+				var model = EiHtmlParser.ParseLog(filePath);
 				if (model != null)
 					models.Add(model);
-			}
+			});
 
 			BuildHtmlFile(path, outputFileName, models, reverse);
 		}
 
-		public List<RaidModel> CreateTimelineFileFromWatching(string path, string outputFileName, 
+		public List<RaidModel> CreateTimelineFileFromWatching(string path, string outputFileName,
 			List<RaidModel> models, bool reverse = false)
 		{
-			var parser = new EiHtmlParser();
-			var knownFiles = models.Select(i => i.LogPath);
+			var knownFiles = models.Select(i => i.LogPath).ToArray();
 			var numberOfModels = models.Count;
 
-			foreach (var filePath in Directory.GetFiles(path, "*.html"))
+			Parallel.ForEach(Directory.GetFiles(path, "*.html"), filePath =>
 			{
-				if (knownFiles.Contains(filePath)) continue;
-				if (filePath.EndsWith(outputFileName)) continue;
+				if (knownFiles.Contains(filePath)) return;
+				if (filePath.EndsWith(outputFileName)) return;
 
-				Console.Write($"Parsing log: {Path.GetFileName(filePath)} ");
-				var model = parser.ParseLog(filePath);
+				Console.WriteLine($"Parsing log: {Path.GetFileName(filePath)} ");
+				var model = EiHtmlParser.ParseLog(filePath);
 				if (model != null)
 				{
-					Console.WriteLine(">>> Ok");
+					Console.WriteLine($"Finished: {Path.GetFileName(filePath)}");
 					models.Add(model);
 				}
-			}
+			});
 
 			if (models.Count() > numberOfModels)
 				BuildHtmlFile(path, outputFileName, models, reverse);
@@ -64,7 +63,7 @@ namespace raidTimelineLogic
 				File.Delete(Path.Combine(htmlFilePath));
 			}
 
-			StringBuilder sb = new StringBuilder();
+			var sb = new StringBuilder();
 
 			var ordered = reverse
 				? models.OrderByDescending(i => i.OccurenceStart)
@@ -85,7 +84,6 @@ namespace raidTimelineLogic
 		public void CreateTimelineFileFromWeb(string path, string outputFileName, string token, int numberOfLogs, 
 			bool reverse = false)
 		{
-			var parser = new EiHtmlParser();
 			var models = new List<RaidModel>();
 
 			var page = 1;
@@ -101,6 +99,8 @@ namespace raidTimelineLogic
 				var content = response.Content;
 				var json = (dynamic)JsonConvert.DeserializeObject(content);
 
+				if (json == null) continue;
+
 				foreach (var upload in json.uploads)
 				{
 					if (numberOfLogs <= 0) break;
@@ -113,7 +113,7 @@ namespace raidTimelineLogic
 					File.WriteAllText(filePath, html);
 
 					Console.WriteLine($"Parsing log {upload.permalink.Value}");
-					var model = parser.ParseLog(filePath);
+					var model = EiHtmlParser.ParseLog(filePath);
 					model.LogUrl = upload.permalink.Value;
 					models.Add(model);
 

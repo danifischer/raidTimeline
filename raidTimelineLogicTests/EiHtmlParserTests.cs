@@ -27,9 +27,7 @@ namespace raidTimelineLogicTests
 		[DataRow(@"Files\parsed_test_log.html", DisplayName = "Version 2.35.2.0 log")]
 		public void ParseLog_Default_HasExpectedValues(string path)
 		{
-			var parser = new EiHtmlParser();
-
-			var log = parser.ParseLog(path);
+			var log = EiHtmlParser.ParseLog(path);
 			
 			AssertExpectations(log);
 		}
