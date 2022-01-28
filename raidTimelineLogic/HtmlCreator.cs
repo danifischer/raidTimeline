@@ -1,9 +1,7 @@
-﻿using raidTimelineLogic.Mechanics;
-using raidTimelineLogic.Models;
+﻿using raidTimelineLogic.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using System.Text;
+using raidTimelineLogic.HtmlBuilders;
 
 namespace raidTimelineLogic
 {
@@ -47,172 +45,33 @@ namespace raidTimelineLogic
 			";
 		}
 
-		public static string CreateEncounterHtmlPass(RaidModel model)
+		public static StringBuilder CreateEncounterHtmlPass(RaidModel model)
 		{
-			var top = $@"<div class=""container left"">";
-			return top + CommonHtml(model);
+			var stringBuilder = 
+				new StringBuilder($@"<div class=""container left"">")
+					.BuildCommonHtml(model);
+			
+			return stringBuilder;
 		}
 
-		public static string CreateEncounterHtmlFail(RaidModel model)
+		public static StringBuilder CreateEncounterHtmlFail(RaidModel model)
 		{
-			var top = $@"<div class=""container right"">";
-			return top + CommonHtml(model);
+			var stringBuilder = 
+				new StringBuilder($@"<div class=""container right"">")
+				.BuildCommonHtml(model);
+			
+			return stringBuilder;
 		}
 
-		private static string CommonHtml(RaidModel model)
+		private static StringBuilder BuildCommonHtml(this StringBuilder stringBuilder, RaidModel model)
 		{
-			var mechanicsFactory = new MechanicsFactory();
-			var encounterTime = model.OccurenceEnd - model.OccurenceStart;
-
-			var top = $@"
-				<div class=""content"">
-					<a href=""{model.LogUrl}"" target=""_blank"" style=""color: #aaa; text-decoration: none;"">
-						<img src=""{model.EncounterIcon}"" alt=""{HttpUtility.HtmlEncode(model.EncounterName)}"" width=""64"" height=""64"" style=""float: right;"">
-						<h2>{HttpUtility.HtmlEncode(model.EncounterName)}</h2>
-						<p>{model.OccurenceStart.ToLongTimeString()} &rArr; {model.OccurenceEnd.ToLongTimeString()} ({encounterTime.Minutes}m {encounterTime.Seconds}s)
-					</a>
-					";
-
-			foreach (var value in model.HpLeft)
-			{
-				var mid = $@"
-					<div title=""{model.DoubleAsHtml(value)}% left"" style=""background: rgba(0, 0, 0, 0)
-						linear-gradient(to right, red {model.DoubleAsHtml(value)}%, {model.DoubleAsHtml(value)}%, green {model.DoubleAsHtml(100 - value)}%)
-						repeat scroll 0% 0%; height: 10px; width: 100%; border-radius: 5px; margin-top: 3px;"">
-					</div>";
-				top += mid;
-			}
-
-			top += @"<table class=""dpsTable"">";
-
-			var allDamage = model.Players.Sum(i => i.Damage) != 0 ? model.Players.Sum(i => i.Damage) : 1;
-
-			foreach (var player in model.Players.OrderByDescending(i => i.Dps).Take(3))
-			{
-				var mid = $@"
-					<tr style=""color: #aaa"">
-						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td> 
-						<td title=""Total Damage: {player.Damage}"">{player.Dps} dps</td>
-						<td>{Math.Round((double)player.Damage / allDamage * 100, 2):F}%</td>
-					</tr>";
-				top += mid;
-			}
-
-			top += "</table>";
-
-			top += @"<table class=""ccTable"" style=""display: none;"">";
-
-			var allCC = model.Players.Sum(i => i.Cc) != 0 ? model.Players.Sum(i => i.Cc) : 1;
-
-			foreach (var player in model.Players.OrderByDescending(i => i.Cc).Take(3))
-			{
-				var mid = $@"
-					<tr style=""color: #aaa"">
-						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td> 
-						<td title=""Total CC: {player.Cc}"">{player.Cc} cc</td>
-						<td>{Math.Round((double)player.Cc / allCC * 100, 2):F}%</td>
-					</tr>";
-				top += mid;
-			}
-
-			top += "</table>";
-
-			top += @"<table class=""resTable"" style=""display: none;"">";
-
-			foreach (var player in model.Players.OrderByDescending(i => i.ResTime).Take(3))
-			{
-				var mid = $@"
-					<tr style=""color: #aaa"">
-						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td> 
-						<td title=""Total res: {player.ResTime}"">{player.ResTime}s ({player.ResAmmount}x)</td>
-					</tr>";
-				top += mid;
-			}
-
-			top += "</table>";
-
-			var boonList = CombineBoons(model.Players);
-			var counter = 0;
-
-			while (boonList.Skip(counter).Take(6).Any())
-			{
-				top += @"<table class=""boonTable"" style=""display: none;"">";
-
-				var boonHeader = @"<tr style=""color: #aaa"">";
-				var boonBody = @"<tr style=""color: #aaa"">";
-
-				foreach (var boon in boonList.Skip(counter).Take(6))
-				{
-					boonHeader += $@"
-					<th style=""min-width: 35px;"">
-						<img src=""{boon.Icon}"" style=""height: 24px; width: 24px;"" 
-							title=""{boon.Name}"">
-					</th>";
-
-					if (boon.Stacking)
-					{
-						boonBody += $@"
-						<td title=""{Math.Round((double)boon.Stacks, 0)}%"">
-							{Math.Round(boon.Value, 0)}
-						</td>";
-					}
-					else
-					{
-						boonBody += $@"
-						<td>
-							{Math.Round(boon.Value, 0)}%
-						</td>";
-					}
-				}
-
-				boonHeader += @"</tr>";
-				boonBody += @"</tr>";
-
-				top += boonHeader;
-				top += boonBody;
-
-				top += "</table>";
-				counter += 6;
-			}
-
-			try
-			{
-				top += mechanicsFactory.FindStrategy(model.EncounterIcon)?.CreateHtml(model);
-			}
-			catch
-			{
-				//nothing
-			}
-
-			var bot = $@"
-				</div>
-			</div>
-			";
-			top += bot;
-
-			return top;
+			return stringBuilder.BuildEncounterHeader(model)
+				.BuildDamagePerSecondTable(model)
+				.BuildCrowdControlTable(model)
+				.BuildResurrectionTable(model)
+				.BuildBoonTable(model)
+				.BuildMechanicsTable(model)
+				.BuildEncounterFooter();
 		}
-
-        private static List<BuffModel> CombineBoons(List<PlayerModel> players)
-        {
-			var boonList = new List<BuffModel>();
-			var groupedBoons = players.SelectMany(i => i.Buffs).GroupBy(b => b.Id);
-            foreach (var boon in groupedBoons)
-            {
-				var model = new BuffModel();
-
-				var boonInfo = boon.First();
-				model.Id = boonInfo.Id;
-				model.Name = boonInfo.Name;
-				model.Icon = boonInfo.Icon;
-				model.Stacking = boonInfo.Stacking;
-				model.Value = boon.Sum(i => i.Value) / players.Count;
-				model.Stacks = boon.Sum(i => i.Stacks) / players.Count;
-
-				boonList.Add(model);
-            }
-
-			return boonList;
-        }
-    }
+	}
 }

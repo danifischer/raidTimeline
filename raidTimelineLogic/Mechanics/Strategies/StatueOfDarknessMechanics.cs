@@ -16,7 +16,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
-			top += @"<tr style=""color: #aaa"">
+			top += @"<tr>
 						<th>Player</th>
 						<th title=""Light Carrier (picked up a light orb)"">Light Orb</th>
 						<th title=""Flare (detonate light orb to incapacitate eye)"">Detonate</th>
@@ -26,7 +26,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Where(k => k.Key == "eyes_beam").Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
-					<tr style=""color: #aaa"">
+					<tr>
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
 						<td>{player.CombinedMechanics["eyes_orb"]}</td>
 						<td>{player.CombinedMechanics["eyes_detonate"]}</td>

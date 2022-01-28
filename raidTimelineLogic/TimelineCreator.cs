@@ -27,7 +27,8 @@ namespace raidTimelineLogic
 			BuildHtmlFile(path, outputFileName, models, reverse);
 		}
 
-		public List<RaidModel> CreateTimelineFileFromWatching(string path, string outputFileName, List<RaidModel> models, bool reverse = false)
+		public List<RaidModel> CreateTimelineFileFromWatching(string path, string outputFileName, 
+			List<RaidModel> models, bool reverse = false)
 		{
 			var parser = new EiHtmlParser();
 			var knownFiles = models.Select(i => i.LogPath);
@@ -81,7 +82,8 @@ namespace raidTimelineLogic
 			Console.WriteLine(">>> Done");
 		}
 
-		public void CreateTimelineFileFromWeb(string path, string outputFileName, string token, int numberOfLogs, bool reverse = false)
+		public void CreateTimelineFileFromWeb(string path, string outputFileName, string token, int numberOfLogs, 
+			bool reverse = false)
 		{
 			var parser = new EiHtmlParser();
 			var models = new List<RaidModel>();
@@ -113,8 +115,7 @@ namespace raidTimelineLogic
 					Console.WriteLine($"Parsing log {upload.permalink.Value}");
 					var model = parser.ParseLog(filePath);
 					model.LogUrl = upload.permalink.Value;
-					if (model != null)
-						models.Add(model);
+					models.Add(model);
 
 					numberOfLogs--;
 				}
@@ -142,10 +143,9 @@ namespace raidTimelineLogic
 
 			foreach (var model in ordered)
 			{
-				if (model.Killed)
-					sb.Append(HtmlCreator.CreateEncounterHtmlPass(model));
-				else
-					sb.Append(HtmlCreator.CreateEncounterHtmlFail(model));
+				sb.Append(model.Killed
+					? HtmlCreator.CreateEncounterHtmlPass(model)
+					: HtmlCreator.CreateEncounterHtmlFail(model));
 			}
 		}
 
@@ -155,7 +155,8 @@ namespace raidTimelineLogic
 			var failed = raidDate.Count(i => !i.Killed);
 			var bosses = raidDate.Select(i => i.EncounterName).Distinct().Count();
 
-			var tryTime = new TimeSpan(raidDate.Select(i => i.OccurenceEnd - i.OccurenceStart).Sum(i => i.Ticks));
+			var tryTime = new TimeSpan(raidDate.Select(i => i.OccurenceEnd - i.OccurenceStart)
+				.Sum(i => i.Ticks));
 			var raidTime = raidDate.Max(i => i.OccurenceEnd) - raidDate.Min(i => i.OccurenceStart);
 
 			sb.Append(HtmlCreator.CreateHeaderHtml(raidDate.Key, killed, failed, tryTime, raidTime, bosses));

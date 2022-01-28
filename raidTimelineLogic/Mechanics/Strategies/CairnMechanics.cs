@@ -16,7 +16,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
-			top += @"<tr style=""color: #aaa"">
+			top += @"<tr>
 						<th>Player</th>
 						<th title=""Orange Teleport Field"">Port</th>
 						<th title=""Green Spatial Manipulation Field (lift)"">Green</th>
@@ -27,7 +27,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
-					<tr style=""color: #aaa"">
+					<tr>
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
 						<td>{player.CombinedMechanics["cairn_port"]}</td>
 						<td>{player.CombinedMechanics["cairn_green"]}</td>

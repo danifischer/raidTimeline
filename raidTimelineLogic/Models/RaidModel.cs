@@ -26,6 +26,6 @@ namespace raidTimelineLogic.Models
 		public List<double> HpLeft { get; set; }
 		public List<PlayerModel> Players { get; set; }
 
-		public string DoubleAsHtml(double value) => value.ToString(new CultureInfo("en-US"));
+		public static string DoubleAsHtml(double value) => value.ToString(new CultureInfo("en-US"));
 	}
 }

@@ -16,7 +16,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
-			top += @"<tr style=""color: #aaa"">
+			top += @"<tr>
 						<th>Player</th>
 						<th title=""Vortex Slash (Inner Donut hit)"">Donut I.</th>
 						<th title=""Vortex Slash (Outer Donut hit)"">Donut O.</th>
@@ -27,7 +27,7 @@ namespace raidTimelineLogic.Mechanics.Strategies
 			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
-					<tr style=""color: #aaa"">
+					<tr>
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
 						<td>{player.CombinedMechanics["sh_donutIn"]}</td>
 						<td>{player.CombinedMechanics["sh_donutOut"]}</td>

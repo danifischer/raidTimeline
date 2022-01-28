@@ -439,3 +439,6 @@ fabric.properties
 
 # Fody
 */FodyWeavers.xsd
+
+# Raider
+.idea

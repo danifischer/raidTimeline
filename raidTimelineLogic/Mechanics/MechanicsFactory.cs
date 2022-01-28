@@ -7,8 +7,14 @@ namespace raidTimelineLogic.Mechanics
 	internal class MechanicsFactory
 	{
 		private readonly List<IMechanics> _strategies = new List<IMechanics>();
+		private static MechanicsFactory _mechanicsFactory;
 
-		public MechanicsFactory()
+		public static MechanicsFactory GetMechanicsFactory()
+		{
+			return _mechanicsFactory ??= new MechanicsFactory();
+		}
+		
+		private MechanicsFactory()
 		{
 			// W1
 			_strategies.Add(new ValeGuardianMechanics());

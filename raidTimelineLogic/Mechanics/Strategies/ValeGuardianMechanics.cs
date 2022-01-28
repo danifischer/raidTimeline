@@ -1,10 +1,9 @@
-﻿using raidTimelineLogic.Helper;
-using raidTimelineLogic.Mechanics.Strategies;
-using raidTimelineLogic.Models;
-using System.Linq;
+﻿using System.Linq;
 using System.Web;
+using raidTimelineLogic.Helper;
+using raidTimelineLogic.Models;
 
-namespace raidTimelineLogic.Mechanics
+namespace raidTimelineLogic.Mechanics.Strategies
 {
 	internal class ValeGuardianMechanics : BaseMechanics
 	{
@@ -17,7 +16,7 @@ namespace raidTimelineLogic.Mechanics
 		{
 			var top = "";
 			top += @"<table class=""mechanicsTable"" style=""display: none;"">";
-			top += @"<tr style=""color: #aaa"">
+			top += @"<tr>
 						<th>Player</th>
 						<th title=""Unstable Magic Spike (Green Guard or Boss Teleport)"">Ports</th>
 						<th title=""Magic Pulse (Hit by Seeker)"">Seeker</th>
@@ -27,7 +26,7 @@ namespace raidTimelineLogic.Mechanics
 			foreach (var player in model.Players.OrderByDescending(i => i.CombinedMechanics.Sum(j => j.Value)).Take(3))
 			{
 				var mid = $@"
-					<tr style=""color: #aaa"">
+					<tr>
 						<td>{HttpUtility.HtmlEncode(player.AccountName)}</td>
 						<td>{player.CombinedMechanics["vg_tp"]}</td>
 						<td>{player.CombinedMechanics["vg_seeker"]}</td>
