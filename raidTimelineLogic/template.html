@@ -309,6 +309,11 @@
                 </a>
             </li>
             <li>
+                <a href="#" class="" id="boonButton" onclick="showBoons(); return false;">
+                    <img src="https://wiki.guildwars2.com/images/1/11/Event_shield_%28map_icon%29.png">Show boons
+                </a>
+            </li>
+            <li>
                 <a href="#" class="" id="resButton" onclick="showRes(); return false;">
                     <img src="https://wiki.guildwars2.com/images/3/3d/Downed_ally.png">Show resurrects
                 </a>
@@ -373,10 +378,12 @@
                 setTableVisibility("resTable", "none")
                 setTableVisibility("ccTable", "none")
                 setTableVisibility("dpsTable", "table")
+                setTableVisibility("boonTable", "none")
 				setTableVisibility("mechanicsTable", "none")
                 toggleButton("resButton", false);
                 toggleButton("ccButton", false);
                 toggleButton("dpsButton", true);
+                toggleButton("boonButton", false);
 				toggleButton("mechanicsButton", false);
             }
         }
@@ -412,10 +419,12 @@
                 setTableVisibility("resTable", "none")
                 setTableVisibility("ccTable", "table")
                 setTableVisibility("dpsTable", "none")
+                setTableVisibility("boonTable", "none")
 				setTableVisibility("mechanicsTable", "none")
                 toggleButton("resButton", false);
                 toggleButton("ccButton", true);
                 toggleButton("dpsButton", false);
+                toggleButton("boonButton", false);
 				toggleButton("mechanicsButton", false);
             }
         }
@@ -431,10 +440,12 @@
                 setTableVisibility("resTable", "table")
                 setTableVisibility("ccTable", "none")
                 setTableVisibility("dpsTable", "none")
+                setTableVisibility("boonTable", "none")
 				setTableVisibility("mechanicsTable", "none")
                 toggleButton("resButton", true);
                 toggleButton("ccButton", false);
                 toggleButton("dpsButton", false);
+                toggleButton("boonButton", false);
 				toggleButton("mechanicsButton", false);
             }
         }
@@ -450,13 +461,36 @@
 				setTableVisibility("resTable", "none")
 				setTableVisibility("ccTable", "none")
 				setTableVisibility("dpsTable", "none")
+                setTableVisibility("boonTable", "none")
 				setTableVisibility("mechanicsTable", "table")
 				toggleButton("resButton", false);
 				toggleButton("ccButton", false);
 				toggleButton("dpsButton", false);
+				toggleButton("boonButton", false);
 				toggleButton("mechanicsButton", true);
 			}
-		}
+        }
+
+        function showBoons() {
+            var button = document.getElementById("boonButton")
+
+            if (button.classList.contains("active")) {
+                setTableVisibility("boonTable", "none")
+                toggleButton("boonButton", false);
+            }
+            else {
+                setTableVisibility("resTable", "none")
+                setTableVisibility("ccTable", "none")
+                setTableVisibility("dpsTable", "none")
+                setTableVisibility("mechanicsTable", "none")
+                setTableVisibility("boonTable", "table")
+                toggleButton("resButton", false);
+                toggleButton("ccButton", false);
+                toggleButton("dpsButton", false);
+                toggleButton("mechanicsButton", false);
+                toggleButton("boonButton", true);
+            }
+        }
     </script>
 </body>
 </html>

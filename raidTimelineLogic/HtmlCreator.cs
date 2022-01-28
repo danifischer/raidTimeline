@@ -1,6 +1,7 @@
 ﻿using raidTimelineLogic.Mechanics;
 using raidTimelineLogic.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
@@ -130,6 +131,50 @@ namespace raidTimelineLogic
 
 			top += "</table>";
 
+			var boonList = CombineBoons(model.Players);
+			var counter = 0;
+
+			while (boonList.Skip(counter).Take(6).Any())
+			{
+				top += @"<table class=""boonTable"" style=""display: none;"">";
+
+				var boonHeader = @"<tr style=""color: #aaa"">";
+				var boonBody = @"<tr style=""color: #aaa"">";
+
+				foreach (var boon in boonList.Skip(counter).Take(6))
+				{
+					boonHeader += $@"
+					<th style=""min-width: 35px;"">
+						<img src=""{boon.Icon}"" style=""height: 24px; width: 24px;"" 
+							title=""{boon.Name}"">
+					</th>";
+
+					if (boon.Stacking)
+					{
+						boonBody += $@"
+						<td title=""{Math.Round((double)boon.Stacks, 0)}%"">
+							{Math.Round(boon.Value, 0)}
+						</td>";
+					}
+					else
+					{
+						boonBody += $@"
+						<td>
+							{Math.Round(boon.Value, 0)}%
+						</td>";
+					}
+				}
+
+				boonHeader += @"</tr>";
+				boonBody += @"</tr>";
+
+				top += boonHeader;
+				top += boonBody;
+
+				top += "</table>";
+				counter += 6;
+			}
+
 			try
 			{
 				top += mechanicsFactory.FindStrategy(model.EncounterIcon)?.CreateHtml(model);
@@ -147,5 +192,27 @@ namespace raidTimelineLogic
 
 			return top;
 		}
-	}
+
+        private static List<BuffModel> CombineBoons(List<PlayerModel> players)
+        {
+			var boonList = new List<BuffModel>();
+			var groupedBoons = players.SelectMany(i => i.Buffs).GroupBy(b => b.Id);
+            foreach (var boon in groupedBoons)
+            {
+				var model = new BuffModel();
+
+				var boonInfo = boon.First();
+				model.Id = boonInfo.Id;
+				model.Name = boonInfo.Name;
+				model.Icon = boonInfo.Icon;
+				model.Stacking = boonInfo.Stacking;
+				model.Value = boon.Sum(i => i.Value) / players.Count;
+				model.Stacks = boon.Sum(i => i.Stacks) / players.Count;
+
+				boonList.Add(model);
+            }
+
+			return boonList;
+        }
+    }
 }
