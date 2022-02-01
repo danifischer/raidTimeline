@@ -6,9 +6,9 @@ using raidTimelineLogic.Models;
 
 namespace raidTimelineLogic.HtmlBuilders
 {
-    public static class BoonTableBuilder
+    internal static class BoonTableBuilder
     {
-        public static StringBuilder BuildBoonTable(this StringBuilder stringBuilder, RaidModel raidModel)
+        internal static StringBuilder BuildBoonTable(this StringBuilder stringBuilder, RaidModel raidModel)
         {
             var boonList = CombineBoons(raidModel.Players);
             var counter = 0;
@@ -55,7 +55,7 @@ namespace raidTimelineLogic.HtmlBuilders
             }
             return stringBuilder;
         }
-        
+
         private static List<BuffModel> CombineBoons(IReadOnlyCollection<PlayerModel> players)
         {
             var boonList = new List<BuffModel>();

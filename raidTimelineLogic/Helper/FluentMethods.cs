@@ -2,9 +2,9 @@
 
 namespace raidTimelineLogic.Helper
 {
-	public static class FluentMethods
+	internal static class FluentMethods
 	{
-		public static int GetOrDefault(this Dictionary<string, int> dictionary, string key)
+		internal static int GetOrDefault(this Dictionary<string, int> dictionary, string key)
 		{
 			return dictionary.ContainsKey(key) ? dictionary[key] : 0;
 		}

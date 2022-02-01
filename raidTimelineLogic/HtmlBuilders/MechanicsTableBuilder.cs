@@ -4,9 +4,9 @@ using raidTimelineLogic.Models;
 
 namespace raidTimelineLogic.HtmlBuilders
 {
-    public static class MechanicsTableBuilder
+    internal static class MechanicsTableBuilder
     {
-        public static StringBuilder BuildMechanicsTable(this StringBuilder stringBuilder, RaidModel raidModel)
+        internal static StringBuilder BuildMechanicsTable(this StringBuilder stringBuilder, RaidModel raidModel)
         {
             var strategy = MechanicsFactory
                 .GetMechanicsFactory()

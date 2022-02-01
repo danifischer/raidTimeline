@@ -6,9 +6,9 @@ using raidTimelineLogic.Models;
 
 namespace raidTimelineLogic.HtmlBuilders
 {
-    public static class DamagePerSecondTableBuilder
+    internal static class DamagePerSecondTableBuilder
     {
-        public static StringBuilder BuildDamagePerSecondTable(this StringBuilder stringBuilder, RaidModel raidModel)
+        internal static StringBuilder BuildDamagePerSecondTable(this StringBuilder stringBuilder, RaidModel raidModel)
         {
             stringBuilder.Append(@"<table class=""dpsTable"">");
 

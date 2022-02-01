@@ -22,15 +22,12 @@ namespace raidTimeline
 			}
 
 			var tc = new TimelineCreator();
-			if (token != null)
-			{
-				tc.CreateTimelineFileFromWeb(path, outputFileName, token, int.Parse(number), reverse);
-			}
-			else
-			{
-				tc.CreateTimelineFileFromDisk(path, outputFileName, reverse);
-			}
 
+			var models = token != null 
+				? tc.ParseFileFromWeb(path, token, int.Parse(number)) 
+				: tc.ParseFilesFromDisk(path);
+
+			tc.BuildTimelineFile(path, outputFileName, models, reverse);
 			var htmlFilePath = Path.Combine(path, outputFileName);
 
 			ProcessStartInfo psi = new ProcessStartInfo

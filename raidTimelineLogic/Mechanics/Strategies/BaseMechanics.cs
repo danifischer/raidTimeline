@@ -1,5 +1,6 @@
 ﻿using raidTimelineLogic.Models;
 using System.Collections.Generic;
+using raidTimelineLogic.Interfaces;
 
 namespace raidTimelineLogic.Mechanics.Strategies
 {

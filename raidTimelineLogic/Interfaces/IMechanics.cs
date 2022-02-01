@@ -1,6 +1,6 @@
 ﻿using raidTimelineLogic.Models;
 
-namespace raidTimelineLogic.Mechanics
+namespace raidTimelineLogic.Interfaces
 {
 	internal interface IMechanics
 	{

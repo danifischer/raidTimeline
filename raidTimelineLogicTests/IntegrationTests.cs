@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 
 namespace raidTimelineLogicTests
 {
@@ -86,8 +87,12 @@ namespace raidTimelineLogicTests
 
 		private static void DownloadLatestVersion(string x)
 		{
-			var wc = new WebClient();
-			wc.DownloadFile(x, @"temp\version.zip");
+			var client = new HttpClient();
+			var response = client.GetAsync(x).Result;
+			using (var fileStream = new FileStream(@"temp\version.zip", FileMode.Create))
+			{
+				response.Content.CopyToAsync(fileStream).Wait();
+			}
 			ZipFile.ExtractToDirectory(@"temp\version.zip", "temp");
 		}
 

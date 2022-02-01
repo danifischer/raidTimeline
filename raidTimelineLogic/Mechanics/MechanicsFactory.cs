@@ -1,6 +1,7 @@
 ﻿using raidTimelineLogic.Mechanics.Strategies;
 using System.Collections.Generic;
 using System.Linq;
+using raidTimelineLogic.Interfaces;
 
 namespace raidTimelineLogic.Mechanics
 {
@@ -9,7 +10,7 @@ namespace raidTimelineLogic.Mechanics
 		private readonly List<IMechanics> _strategies = new List<IMechanics>();
 		private static MechanicsFactory _mechanicsFactory;
 
-		public static MechanicsFactory GetMechanicsFactory()
+		internal static MechanicsFactory GetMechanicsFactory()
 		{
 			return _mechanicsFactory ??= new MechanicsFactory();
 		}
@@ -55,7 +56,7 @@ namespace raidTimelineLogic.Mechanics
 			_strategies.Add(new QadimThePeerlessMechanics());
 		}
 
-		public IMechanics FindStrategy(string iconUrl)
+		internal IMechanics FindStrategy(string iconUrl)
 		{
 			return _strategies.SingleOrDefault(i => i.GetEncounterIcon() == iconUrl);
 		}

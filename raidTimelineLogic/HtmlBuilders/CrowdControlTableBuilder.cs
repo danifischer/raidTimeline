@@ -6,9 +6,9 @@ using raidTimelineLogic.Models;
 
 namespace raidTimelineLogic.HtmlBuilders
 {
-    public static class CrowdControlTableBuilder
+    internal static class CrowdControlTableBuilder
     {
-        public static StringBuilder BuildCrowdControlTable(this StringBuilder stringBuilder, RaidModel raidModel)
+        internal static StringBuilder BuildCrowdControlTable(this StringBuilder stringBuilder, RaidModel raidModel)
         {
             stringBuilder.Append(@"<table class=""ccTable"" style=""display: none;"">");
 

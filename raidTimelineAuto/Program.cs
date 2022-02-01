@@ -4,15 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using raidTimelineLogic.Interfaces;
 
 namespace raidTimelineAuto
 {
 	internal static class Program
 	{
-		private static string logPath;
-		private static string outPath;
+		private static string _logPath;
+		private static string _outPath;
 
 		private static void Main(string[] args)
 		{
@@ -29,13 +29,13 @@ namespace raidTimelineAuto
 
 			ReadConfFile(confPath);
 
-			if (!Directory.Exists(outPath) || !Directory.Exists(logPath) || !File.Exists(eiPath))
+			if (!Directory.Exists(_outPath) || !Directory.Exists(_logPath) || !File.Exists(eiPath))
 			{
 				Console.WriteLine("Non-valid ei, out or log path");
 				Environment.Exit(1);
 			}
 
-			var htmlFilePath = Path.Combine(outPath, outputFileName);
+			var htmlFilePath = Path.Combine(_outPath, outputFileName);
 
 			Console.CancelKeyPress += delegate
 			{
@@ -51,25 +51,26 @@ namespace raidTimelineAuto
 
 			Task.Run(() => WatchForArcDpsFiles(new List<string>(), confPath, eiPath));
 			Task.Run(() => WatchForEiFiles(new TimelineCreator(), new List<RaidModel>(), outputFileName, reverse));
-			Task.Run(() => WatchConsole());
+			Task.Run(WatchConsole);
 
 			while (true);
 		}
 
 		private static void WatchConsole()
 		{
-			var input = Console.ReadLine().Replace("\"", "");
-
-			if (File.Exists(input))
+			while (true)
 			{
-				var name = Path.GetFileName(input);
-				var path = Path.GetFullPath(input).Replace(name, "");
+				var input = Console.ReadLine()?.Replace("\"", "");
 
-				File.Move(Path.Combine(path, name), Path.Combine(path, "temp.old"));
-				File.Move(Path.Combine(path, "temp.old"), Path.Combine(path, name));
+				if (File.Exists(input))
+				{
+					var name = Path.GetFileName(input);
+					var path = Path.GetFullPath(input).Replace(name, "");
+
+					File.Move(Path.Combine(path, name), Path.Combine(path, "temp.old"));
+					File.Move(Path.Combine(path, "temp.old"), Path.Combine(path, name));
+				}
 			}
-
-			WatchConsole();
 		}
 
 		private static void ReadConfFile(string confPath)
@@ -80,8 +81,13 @@ namespace raidTimelineAuto
 
 			try
 			{
-				logPath = text[(text.IndexOf(eiPathOption) + eiPathOption.Length)..text.IndexOf("\n", text.IndexOf(eiPathOption))];
-				outPath = text[(text.IndexOf(outPathOption) + outPathOption.Length)..text.IndexOf("\n", text.IndexOf(outPathOption))];
+				var eiPathOptionIndex = text.IndexOf(eiPathOption, StringComparison.Ordinal);
+				var outPathOptionIndex = text.IndexOf(outPathOption, StringComparison.Ordinal);
+				
+				_logPath = text[(eiPathOptionIndex + eiPathOption.Length)..text.IndexOf("\n", eiPathOptionIndex, 
+					StringComparison.Ordinal)];
+				_outPath = text[(outPathOptionIndex + outPathOption.Length)..text.IndexOf("\n", outPathOptionIndex, 
+					StringComparison.Ordinal)];
 			}
 			catch
 			{
@@ -89,38 +95,45 @@ namespace raidTimelineAuto
 			}
 		}
 
-		private static void WatchForEiFiles(TimelineCreator tc, List<RaidModel> models, string outputFileName, bool reverse)
+		private static void WatchForEiFiles(ITimelineCreator tc, IList<RaidModel> models, string outputFileName, bool reverse)
 		{
-			models = tc.CreateTimelineFileFromWatching(outPath, outputFileName, models, reverse);
+			models = tc.ParseFilesFromDiskWhileWatching(_outPath, outputFileName, models);
+			tc.BuildTimelineFile(_outPath, outputFileName, models, reverse);
+			
 			var watcher = new FileSystemWatcher();
-			watcher.Path = outPath;
+			watcher.Path = _outPath;
 			watcher.Filter = "*.html";
 			watcher.NotifyFilter = NotifyFilters.LastWrite;
-			watcher.Changed += (object source, FileSystemEventArgs e)
-				=> models = tc.CreateTimelineFileFromWatching(outPath, outputFileName, models, reverse);
+			watcher.Changed += (_, _) =>
+			{
+				var numberOfModels = models.Count;
+				models = tc.ParseFilesFromDiskWhileWatching(_outPath, outputFileName, models);
+				if (models.Count > numberOfModels)
+					tc.BuildTimelineFile(_outPath, outputFileName, models, reverse);
+			};
 			watcher.EnableRaisingEvents = true;
 		}
 
 		private static void WatchForArcDpsFiles(List<string> seenFiles, string confPath, string eiPath)
 		{
 			var watcher = new FileSystemWatcher();
-			watcher.Path = logPath;
+			watcher.Path = _logPath;
 			watcher.IncludeSubdirectories = true;
 			watcher.Filter = "*.zevtc";
-			watcher.Renamed += (object source, RenamedEventArgs e) =>
+			watcher.Renamed += (_, e) =>
 			{
 				if (!seenFiles.Contains(e.FullPath))
 				{
 					seenFiles.Add(e.FullPath);
 					Console.WriteLine($"Parsing raw: {e.Name} ");
-					ProcessStartInfo psi = new ProcessStartInfo
+					var psi = new ProcessStartInfo
 					{
 						FileName = eiPath,
 						Arguments = $"-c \"{confPath}\" \"{e.FullPath}\"",
 						UseShellExecute = false,
 						RedirectStandardError = true
 					};
-					Process.Start(psi).WaitForExit();
+					Process.Start(psi)?.WaitForExit();
 				}
 			};
 			watcher.EnableRaisingEvents = true;

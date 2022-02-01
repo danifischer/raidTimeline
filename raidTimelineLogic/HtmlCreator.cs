@@ -7,7 +7,7 @@ namespace raidTimelineLogic
 {
 	internal static class HtmlCreator
 	{
-		public static string CreateHeaderHtml(DateTime key, int killed, int failed, TimeSpan tryTime, TimeSpan raidTime, int bosses)
+		internal static string CreateHeaderHtml(DateTime key, int killed, int failed, TimeSpan tryTime, TimeSpan raidTime, int bosses)
 		{
 			var downTime = raidTime - tryTime;
 
@@ -45,7 +45,7 @@ namespace raidTimelineLogic
 			";
 		}
 
-		public static StringBuilder CreateEncounterHtmlPass(RaidModel model)
+		internal static StringBuilder CreateEncounterHtmlPass(RaidModel model)
 		{
 			var stringBuilder = 
 				new StringBuilder($@"<div class=""container left"">")
@@ -54,7 +54,7 @@ namespace raidTimelineLogic
 			return stringBuilder;
 		}
 
-		public static StringBuilder CreateEncounterHtmlFail(RaidModel model)
+		internal static StringBuilder CreateEncounterHtmlFail(RaidModel model)
 		{
 			var stringBuilder = 
 				new StringBuilder($@"<div class=""container right"">")

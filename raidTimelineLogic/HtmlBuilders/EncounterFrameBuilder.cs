@@ -4,9 +4,9 @@ using raidTimelineLogic.Models;
 
 namespace raidTimelineLogic.HtmlBuilders
 {
-    public static class EncounterFrameBuilder
+	internal static class EncounterFrameBuilder
     {
-        public static StringBuilder BuildEncounterHeader(this StringBuilder stringBuilder, RaidModel raidModel)
+	    internal static StringBuilder BuildEncounterHeader(this StringBuilder stringBuilder, RaidModel raidModel)
         {
 	        var encounterTime = raidModel.OccurenceEnd - raidModel.OccurenceStart;
 	        
@@ -31,7 +31,7 @@ namespace raidTimelineLogic.HtmlBuilders
             return stringBuilder;
         }
 
-        public static StringBuilder BuildEncounterFooter(this StringBuilder stringBuilder)
+	    internal static StringBuilder BuildEncounterFooter(this StringBuilder stringBuilder)
         {
 	        stringBuilder.Append($@"
 				</div>

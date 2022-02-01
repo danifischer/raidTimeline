@@ -5,9 +5,9 @@ using raidTimelineLogic.Models;
 
 namespace raidTimelineLogic.HtmlBuilders
 {
-    public static class ResurrectionTableBuilder
+    internal static class ResurrectionTableBuilder
     {
-        public static StringBuilder BuildResurrectionTable(this StringBuilder stringBuilder, RaidModel raidModel)
+        internal static StringBuilder BuildResurrectionTable(this StringBuilder stringBuilder, RaidModel raidModel)
         {
             stringBuilder.Append(@"<table class=""resTable"" style=""display: none;"">");
 

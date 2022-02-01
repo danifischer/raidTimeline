@@ -5,14 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using raidTimelineLogic.Interfaces;
 
 namespace raidTimelineLogic
 {
 	public class TimelineCreator : ITimelineCreator
 	{
-		public void CreateTimelineFileFromDisk(string path, string outputFileName, bool reverse = false)
+		/// <summary>
+		/// Parse all elite insights html files in a defined path.
+		/// </summary>
+		/// <param name="path">Path which is used to search for html files in.</param>
+		/// <returns>List of parsed raid models.</returns>
+		public IList<RaidModel> ParseFilesFromDisk(string path)
 		{
 			var models = new List<RaidModel>();
 
@@ -23,15 +30,21 @@ namespace raidTimelineLogic
 				if (model != null)
 					models.Add(model);
 			});
-
-			BuildHtmlFile(path, outputFileName, models, reverse);
+			
+			return models;
 		}
 
-		public List<RaidModel> CreateTimelineFileFromWatching(string path, string outputFileName,
-			List<RaidModel> models, bool reverse = false)
+		/// <summary>
+		/// Parse all elite insights html files in a defined path, but ignores already parsed ones.
+		/// </summary>
+		/// <param name="path">Path which is used to search for html files in.</param>
+		/// <param name="outputFileName">File name if the summary html file.</param>
+		/// <param name="models">List of already parsed raid models.</param>
+		/// <returns>List of parsed raid models.</returns>
+		public IList<RaidModel> ParseFilesFromDiskWhileWatching(string path, string outputFileName, 
+			IList<RaidModel> models)
 		{
 			var knownFiles = models.Select(i => i.LogPath).ToArray();
-			var numberOfModels = models.Count;
 
 			Parallel.ForEach(Directory.GetFiles(path, "*.html"), filePath =>
 			{
@@ -47,13 +60,18 @@ namespace raidTimelineLogic
 				}
 			});
 
-			if (models.Count() > numberOfModels)
-				BuildHtmlFile(path, outputFileName, models, reverse);
-
 			return models;
 		}
 
-		public void BuildHtmlFile(string path, string outputFileName, List<RaidModel> models, bool reverse = false)
+		/// <summary>
+		/// Creates a summary html file from the parsed raid models.
+		/// </summary>
+		/// <param name="path">The path where the file should be saved.</param>
+		/// <param name="outputFileName">The filename which shall be used.</param>
+		/// <param name="models">List of parsed raid models.</param>
+		/// <param name="reverse">If 'true' the order is from newest to oldest, otherwise from oldest to newest.
+		/// Default value is 'false'.</param>
+		public void BuildTimelineFile(string path, string outputFileName, IEnumerable<RaidModel> models, bool reverse = false)
 		{
 			var htmlFileName = outputFileName;
 			string htmlFilePath = Path.Combine(path, htmlFileName);
@@ -81,14 +99,20 @@ namespace raidTimelineLogic
 			Console.WriteLine(">>> Done");
 		}
 
-		public void CreateTimelineFileFromWeb(string path, string outputFileName, string token, int numberOfLogs, 
-			bool reverse = false)
+		/// <summary>
+		/// Parse elite insights html files from dps.report.
+		/// </summary>
+		/// <param name="path">The path which shall be used to temporarily store logs.</param>
+		/// <param name="token">The dps.report token for the user.</param>
+		/// <param name="numberOfLogs">The number of logs which shall be parsed.</param>
+		/// <returns>List of parsed raid models.</returns>
+		public IList<RaidModel> ParseFileFromWeb(string path, string token, int numberOfLogs)
 		{
 			var models = new List<RaidModel>();
 
 			var page = 1;
 			var filePath = Path.Combine(path, "test.html");
-			var wc = new System.Net.WebClient();
+			var httpClient = new HttpClient();
 
 			while (numberOfLogs > 0)
 			{
@@ -106,9 +130,9 @@ namespace raidTimelineLogic
 					if (numberOfLogs <= 0) break;
 
 					Console.WriteLine($"Loading log {upload.permalink.Value}");
-					wc.DownloadFile(upload.permalink.Value, filePath);
+					Task<string> getFileTask = httpClient.GetStringAsync(upload.permalink.Value);
+					var html = getFileTask.Result;
 
-					var html = File.ReadAllText(filePath);
 					html = html.Replace("/cache/", "https://dps.report/cache/");
 					File.WriteAllText(filePath, html);
 
@@ -124,7 +148,7 @@ namespace raidTimelineLogic
 			}
 
 			File.Delete(filePath);
-			BuildHtmlFile(path, outputFileName, models, reverse);
+			return models;
 		}
 
 		private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb)
