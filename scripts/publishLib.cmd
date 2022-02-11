@@ -1,0 +1,1 @@
+dotnet publish ../raidTimeline.Logic/raidTimeline.Logic.csproj -o ../publish/lib -c Release /p:DebugType=None /p:DebugSymbols=false

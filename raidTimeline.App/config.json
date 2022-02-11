@@ -1,0 +1,18 @@
+﻿{
+  // Options needed to parse locally
+  "eiPath": "",
+  "configurationPath": "",
+  
+  // Options needed to interact with dps.report
+  "dpsReportToken": "",
+  "outputPath": "",
+  "logPath": "",
+  
+  // Boss encounter ids filter (same ids as the arcdps.ini uses)
+  "bossEncounterIdFilter": "0x3C4E,0x3C45,0x3C0F,0x3EFB,0x3ED8,0x3F09,0x3EFD,0x3EF3,0x3F71,0x3F6B,0x3F76,0x3F9E,0x432A,0x4314,0x4324,0x4302,0xABC6,0x5271,0x5261,0x5231,0x55CC,0x55F6,0x55F0,0x4BFA,0x4CEB,0x4C50,0x4D37,0x4D74",
+
+  // Endpoint upload 
+  "endpointUri": "",
+  "endpointKey": "",
+  "endpointIv": "",
+}

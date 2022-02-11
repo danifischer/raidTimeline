@@ -6,19 +6,35 @@ pool:
   vmImage: windows-latest
 
 steps:
-- task: DotNetCoreCLI@2
-  displayName: 'Publish'
-  inputs:
-    command: 'publish'
-    publishWebProjects: false
-    projects: '**/raidTimeline.csproj'
-    arguments: '-p:PublishProfile=FolderProfile'
-    zipAfterPublish: false
-    modifyOutputPath: false
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish app'
+    inputs:
+      command: 'publish'
+      publishWebProjects: false
+      projects: '**/raidTimeline.App.csproj'
+      arguments: '-o ../publish/app -r win-x64 -p:PublishSingleFile=true --self-contained -c Release /p:DebugType=None /p:DebugSymbols=false'
+      zipAfterPublish: false
+      modifyOutputPath: false
 
-- task: PublishPipelineArtifact@1
-  displayName: 'Upload artifact'
-  inputs:
-    targetPath: $(System.DefaultWorkingDirectory)/raidTimeline/publish/
-    artifactName: build
+  - task: PublishPipelineArtifact@1
+    displayName: 'Upload app'
+    inputs:
+      targetPath: $(System.DefaultWorkingDirectory)/publish/app
+      artifactName: build
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish lib'
+    inputs:
+      command: 'publish'
+      publishWebProjects: false
+      projects: '**/raidTimeline.Logic.csproj'
+      arguments: '-o ../publish/app -o ../publish/lib -c Release /p:DebugType=None /p:DebugSymbols=false'
+      zipAfterPublish: false
+      modifyOutputPath: false
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Upload lib'
+    inputs:
+      targetPath: $(System.DefaultWorkingDirectory)/publish/lib
+      artifactName: build
 

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>rta</AssemblyName>
+        <IsPackable>false</IsPackable>
+        <Authors>Daniel Fischer</Authors>
+        <Copyright>MIT License</Copyright>
+        <RepositoryUrl>https://github.com/danifischer/raidTimeline</RepositoryUrl>
+        <AssemblyVersion>2.0.0</AssemblyVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Cocona" Version="2.0.2" />
+      <PackageReference Include="Kurukuru" Version="1.4.2" />
+      <PackageReference Include="UnitsNet" Version="4.119.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="config.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\raidTimeline.Logic\raidTimeline.Logic.csproj" />
+    </ItemGroup>
+
+</Project>
