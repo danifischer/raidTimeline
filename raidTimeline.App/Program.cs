@@ -10,7 +10,10 @@ using raidTimeline.Logic.Interfaces;
 
 var builder = CoconaApp.CreateBuilder();
 
-builder.Configuration.AddJsonFile("config.json", false, true);
+Console.WriteLine(Directory.GetCurrentDirectory());
+
+builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"), 
+    false, true);
 builder.Services.AddSingleton<ConfigurationHelper>();
 builder.Services.AddTransient<IEliteInsightsService, EliteInsightsService>();
 builder.Services.AddTransient<ITimelineCreator, TimelineCreator>();
