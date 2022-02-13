@@ -169,7 +169,7 @@ namespace raidTimeline.Logic
 
 		private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb)
 		{
-			var html = File.ReadAllText(@"template.html");
+			var html = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"template.html"));
 			html = html.Replace("{{placeholder}}", sb.ToString());
 			File.WriteAllText(htmlFileName, html);
 			File.Move(htmlFileName, htmlFilePath);

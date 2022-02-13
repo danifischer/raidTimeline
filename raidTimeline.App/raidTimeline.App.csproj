@@ -10,9 +10,9 @@
         <Authors>Daniel Fischer</Authors>
         <Copyright>MIT License</Copyright>
         <RepositoryUrl>https://github.com/danifischer/raidTimeline</RepositoryUrl>
-        <AssemblyVersion>2.0.1</AssemblyVersion>
-        <PackageVersion>2.0.1</PackageVersion>
-        <VersionPrefix>2.0.1</VersionPrefix>
+        <AssemblyVersion>2.0.2</AssemblyVersion>
+        <PackageVersion>2.0.2</PackageVersion>
+        <VersionPrefix>2.0.2</VersionPrefix>
     </PropertyGroup>
 
     <ItemGroup>
