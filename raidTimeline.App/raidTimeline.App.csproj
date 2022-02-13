@@ -11,6 +11,8 @@
         <Copyright>MIT License</Copyright>
         <RepositoryUrl>https://github.com/danifischer/raidTimeline</RepositoryUrl>
         <AssemblyVersion>2.0.0</AssemblyVersion>
+        <PackageVersion>2.0.0</PackageVersion>
+        <VersionPrefix>2.0.0</VersionPrefix>
     </PropertyGroup>
 
     <ItemGroup>
