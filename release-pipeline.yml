@@ -6,6 +6,12 @@ pool:
   vmImage: windows-latest
 
 steps:
+  - task: UseDotNet@2
+      displayName: Use .NET 6.0
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+     
   - task: DotNetCoreCLI@2
     displayName: 'Publish app'
     inputs:
