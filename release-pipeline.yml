@@ -33,7 +33,7 @@ steps:
       command: 'publish'
       publishWebProjects: false
       projects: '**/raidTimeline.Logic.csproj'
-      arguments: '-o $(System.DefaultWorkingDirectory)/publish/app -o ../publish/lib -c Release /p:DebugType=None /p:DebugSymbols=false'
+      arguments: '-o $(System.DefaultWorkingDirectory)/publish/lib -c Release /p:DebugType=None /p:DebugSymbols=false'
       zipAfterPublish: false
       modifyOutputPath: false
 
