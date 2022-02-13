@@ -25,7 +25,7 @@ steps:
     displayName: 'Upload app'
     inputs:
       targetPath: $(System.DefaultWorkingDirectory)/publish/app
-      artifactName: build
+      artifactName: app
 
   - task: DotNetCoreCLI@2
     displayName: 'Publish lib'
@@ -41,5 +41,5 @@ steps:
     displayName: 'Upload lib'
     inputs:
       targetPath: $(System.DefaultWorkingDirectory)/publish/lib
-      artifactName: build
+      artifactName: lib
 
