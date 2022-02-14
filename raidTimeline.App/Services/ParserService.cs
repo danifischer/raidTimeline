@@ -1,5 +1,4 @@
-﻿using Cocona;
-using Kurukuru;
+﻿using Kurukuru;
 using raidTimeline.App.Helpers;
 using raidTimeline.App.Services.Interfaces;
 using raidTimeline.Logic.Interfaces;
@@ -22,7 +21,8 @@ internal class ParserService : IParserService
         _eliteInsightsService = eliteInsightsService;
     }
 
-    public void ParseLogsFromDisk(string? day, bool reverse, bool killOnly, bool filter)
+    public void ParseLogsFromDisk(string? day, bool reverse, bool killOnly, bool filter, 
+        CancellationToken cancellationToken)
     {
         Spinner.Start($"Parsing logs for {day}", spinner =>
         {
@@ -42,11 +42,22 @@ internal class ParserService : IParserService
                 _eliteInsightsService.ParseEiFile(files[i], 
                     _configurationHelper.Configuration.ConfigurationPath, 
                     _configurationHelper.Configuration.EliteInsightsPath);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    spinner.Info("Log parsing canceled.");
+                }
             }
 
             spinner.Text = $"Parsing html files";
             var models = _timelineCreator.ParseFilesFromDisk(
-                _configurationHelper.Configuration.OutputPath);
+                _configurationHelper.Configuration.OutputPath, cancellationToken);
+            
+            if (cancellationToken.IsCancellationRequested)
+            {
+                spinner.Info("Log parsing canceled.");
+            }
+            
             models = killOnly ? models.Where(model => model.Killed).ToList() : models;
             if (filter && !string.IsNullOrEmpty(_configurationHelper.Configuration.BossFilter))
             {
@@ -56,13 +67,14 @@ internal class ParserService : IParserService
             
             spinner.Text = $"Creating timeline";
             _timelineCreator.BuildTimelineFile(_configurationHelper.Configuration.OutputPath, 
-                "index.html", models, reverse);
+                "index.html", models, reverse, cancellationToken);
             
             spinner.Text = "Finished";
         });
     }
 
-    public void ParseLogsFromDiskLive(bool reverse, bool killOnly, bool filter, CoconaAppContext context)
+    public void ParseLogsFromDiskLive(bool reverse, bool killOnly, bool filter, 
+        CancellationToken cancellationToken)
     {
         Spinner.Start("Starting live parsing ...", spinner =>
         {
@@ -73,9 +85,10 @@ internal class ParserService : IParserService
             eliteInsightsSpinner.Start();
             
             var arcDpsWatcher = WatchForArcDpsFiles(new List<string>(), arcdpsSpinner);
-            var eiWatcher = WatchForEiFiles(new List<RaidModel>(), reverse, killOnly, filter, eliteInsightsSpinner);
+            var eiWatcher = WatchForEiFiles(new List<RaidModel>(), reverse, killOnly, filter, 
+                eliteInsightsSpinner);
             
-            while (!context.CancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 spinner.Text = "Live parsing ... (press CTRL+C to stop)";
             }
@@ -165,16 +178,24 @@ internal class ParserService : IParserService
     }
 
 
-    public void ParseLogsFromDpsReport(string? day, bool reverse, bool killOnly, bool filter)
+    public void ParseLogsFromDpsReport(string? day, bool reverse, bool killOnly, bool filter, 
+        CancellationToken cancellationToken)
     {
         Spinner.Start($"Parsing logs for {day}", spinner =>
         {
             day ??= $"{DateTime.Now:yyyyMMdd}";
 
             spinner.Text = $"Downloading logs from dps.report.";
+            
             var models = _timelineCreator.ParseFileFromWeb(
                 _configurationHelper.Configuration.OutputPath, 
-                _configurationHelper.Configuration.DpsReportToken, day);
+                _configurationHelper.Configuration.DpsReportToken, day, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                spinner.Info("Log parsing canceled.");
+            }
+            
             models = killOnly ? models.Where(model => model.Killed).ToList() : models;
             if (filter && !string.IsNullOrEmpty(_configurationHelper.Configuration.BossFilter))
             {
@@ -184,7 +205,7 @@ internal class ParserService : IParserService
             
             spinner.Text = $"Creating timeline";
             _timelineCreator.BuildTimelineFile(_configurationHelper.Configuration.OutputPath, 
-                "index.html", models, reverse);
+                "index.html", models, reverse, cancellationToken);
             
             spinner.Text = "Finished";
         });

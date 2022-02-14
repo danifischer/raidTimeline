@@ -17,8 +17,7 @@ internal static class FileCommands
                     .WithDescription("Deletes all html log files from the output folder.");
                 command.AddCommand("logs",
                     ([FromService] IFileHandlingService fileHandlingService,
-                        [Option('d',
-                            Description = "...")]
+                        [Option('d', Description = "Days after which the logs are deleted.")]
                         int? days,
                         [Option('a', Description = "Select all logs.")]
                         bool all,

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using raidTimeline.Logic.Interfaces;
@@ -21,17 +22,25 @@ namespace raidTimeline.Logic
 		{
 			_logger = logger;
 		}
-	
+
 		/// <summary>
 		/// Parse all elite insights html files in a defined path.
 		/// </summary>
 		/// <param name="path">Path which is used to search for html files in.</param>
+		/// <param name="cancellationToken">Cancellation token for stopping the parsing.</param>
 		/// <returns>List of parsed raid models.</returns>
-		public IList<RaidModel> ParseFilesFromDisk(string path)
+		public IList<RaidModel> ParseFilesFromDisk(string path, CancellationToken cancellationToken)
 		{
 			var models = new List<RaidModel>();
+			
+			var parallelOptions = new ParallelOptions
+			{
+				CancellationToken = cancellationToken,
+				MaxDegreeOfParallelism = 5
+			};
 
-			Parallel.ForEach(Directory.GetFiles(path, "*.html"), filePath =>
+			Parallel.ForEach(Directory.GetFiles(path, "*.html"), parallelOptions, 
+				filePath =>
 			{
 				_logger?.LogTrace($"Parsing log: {Path.GetFileName(filePath)}");
 				var model = EiHtmlParser.ParseLog(filePath);
@@ -48,13 +57,21 @@ namespace raidTimeline.Logic
 		/// <param name="path">Path which is used to search for html files in.</param>
 		/// <param name="outputFileName">File name if the summary html file.</param>
 		/// <param name="models">List of already parsed raid models.</param>
+		/// <param name="cancellationToken">Cancellation token for stopping the parsing.</param>
 		/// <returns>List of parsed raid models.</returns>
 		public IList<RaidModel> ParseFilesFromDiskWhileWatching(string path, string outputFileName, 
-			IList<RaidModel> models)
+			IList<RaidModel> models, CancellationToken cancellationToken = new())
 		{
+			var parallelOptions = new ParallelOptions
+			{
+				CancellationToken = cancellationToken,
+				MaxDegreeOfParallelism = 5
+			};
+			
 			var knownFiles = models.Select(i => i.LogPath).ToArray();
 
-			Parallel.ForEach(Directory.GetFiles(path, "*.html"), filePath =>
+			Parallel.ForEach(Directory.GetFiles(path, "*.html"), parallelOptions, 
+				filePath =>
 			{
 				if (knownFiles.Contains(filePath)) return;
 				if (filePath.EndsWith(outputFileName)) return;
@@ -79,7 +96,9 @@ namespace raidTimeline.Logic
 		/// <param name="models">List of parsed raid models.</param>
 		/// <param name="reverse">If 'true' the order is from newest to oldest, otherwise from oldest to newest.
 		/// Default value is 'false'.</param>
-		public void BuildTimelineFile(string path, string outputFileName, IEnumerable<RaidModel> models, bool reverse = false)
+		/// <param name="cancellationToken">Cancellation token for stopping the parsing.</param>
+		public void BuildTimelineFile(string path, string outputFileName, IEnumerable<RaidModel> models, 
+			bool reverse = false, CancellationToken cancellationToken = new())
 		{
 			var htmlFileName = outputFileName;
 			string htmlFilePath = Path.Combine(path, htmlFileName);
@@ -100,8 +119,11 @@ namespace raidTimeline.Logic
 				CreateHeader(sb, raidDate);
 				CreateTimeline(sb, raidDate, reverse);
 				sb.Append("</div>");
+
+				if (cancellationToken.IsCancellationRequested) return;
 			}
 			
+			if (cancellationToken.IsCancellationRequested) return;
 			WriteHtmlFile(htmlFileName, htmlFilePath, sb);
 			_logger?.LogTrace("HTML Magic >>> Done");
 		}
@@ -112,8 +134,10 @@ namespace raidTimeline.Logic
 		/// <param name="path">The path which shall be used to temporarily store logs.</param>
 		/// <param name="token">The dps.report token for the user.</param>
 		/// <param name="day">The day that shall be parsed.</param>
+		/// <param name="cancellationToken">Cancellation token for stopping the parsing.</param>
 		/// <returns>List of parsed raid models.</returns>
-		public IList<RaidModel> ParseFileFromWeb(string path, string token, string day)
+		public IList<RaidModel> ParseFileFromWeb(string path, string token, string day, 
+			CancellationToken cancellationToken = new())
 		{
 			var models = new List<RaidModel>();
 
@@ -132,6 +156,7 @@ namespace raidTimeline.Logic
 				var json = (dynamic)JsonConvert.DeserializeObject(content);
 				
 				if (json == null) break;
+				if (cancellationToken.IsCancellationRequested) return models;
 
 				maxPage = (int)json.pages.Value;
 
@@ -145,6 +170,8 @@ namespace raidTimeline.Logic
 					{
 						filteredUploads.Add(upload);
 					}
+					
+					if (cancellationToken.IsCancellationRequested) return models;
 				}
 			}
 
@@ -161,6 +188,8 @@ namespace raidTimeline.Logic
 				var model = EiHtmlParser.ParseLog(filePath);
 				model.LogUrl = upload.permalink.Value;
 				models.Add(model);
+				
+				if (cancellationToken.IsCancellationRequested) return models;
 			}
 
 			File.Delete(filePath);

@@ -1,4 +1,5 @@
 ﻿using Cocona;
+using raidTimeline.App.Helpers;
 using raidTimeline.App.Services.Interfaces;
 
 namespace raidTimeline.App.Commands;
@@ -11,7 +12,7 @@ public static class UploadCommands
             {
                 command.AddCommand("report", (
                         [FromService] IUploadService uploadService,
-                        [Option('d',
+                        [Day][Option('d',
                             Description = "The day which should be uploaded (format: yyyyMMdd). Default is today.")]
                         string? day,
                         [Option('k',
@@ -29,7 +30,7 @@ public static class UploadCommands
                 
                 command.AddCommand("api", (
                         [FromService] IUploadService uploadService,
-                        [Option('d',
+                        [Day][Option('d',
                             Description = "The day which should be uploaded (format: yyyyMMdd). Default is today.")]
                         string? day,
                         [Option('k',
