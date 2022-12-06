@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using raidTimeline.Logic.DpsReport;
 using raidTimeline.Logic.Interfaces;
 using raidTimeline.Logic.Models;
 
@@ -114,10 +115,11 @@ namespace raidTimeline.Logic
 				? models.OrderByDescending(i => i.OccurenceStart)
 				: models.OrderBy(i => i.OccurenceStart);
 
-			foreach (var raidDate in ordered.GroupBy(i => i.OccurenceStart.Date))
+			foreach (var raidData in ordered.GroupBy(i => i.OccurenceStart.Date))
 			{
-				CreateHeader(sb, raidDate);
-				CreateTimeline(sb, raidDate, reverse);
+				CreatePlayerTable(sb, raidData, reverse);
+				CreateHeader(sb, raidData);
+				CreateTimeline(sb, raidData, reverse);
 				sb.Append("</div>");
 
 				if (cancellationToken.IsCancellationRequested) return;
@@ -139,61 +141,8 @@ namespace raidTimeline.Logic
 		public IList<RaidModel> ParseFileFromWeb(string path, string token, string day, 
 			CancellationToken cancellationToken = new())
 		{
-			var models = new List<RaidModel>();
-
-			var page = 1;
-			var maxPage = 2;
-			var filePath = Path.Combine(path, "test.html");
-			var filteredUploads = new List<dynamic>();
-			
-			var httpClient = new HttpClient();
-			var client = new RestClient("https://dps.report/");
-			
-			while (page <= maxPage)
-			{
-				var request = new RestRequest($"getUploads?userToken={token}&page={page++}", DataFormat.Json);
-				var content = client.Get(request).Content;
-				var json = (dynamic)JsonConvert.DeserializeObject(content);
-				
-				if (json == null) break;
-				if (cancellationToken.IsCancellationRequested) return models;
-
-				maxPage = (int)json.pages.Value;
-
-				foreach (var upload in json.uploads)
-				{
-					DateTime date = DateTimeOffset.FromUnixTimeSeconds(upload.encounterTime.Value)
-							.LocalDateTime;
-					var dateString = $"{date:yyyyMMdd}";
-
-					if (dateString == day)
-					{
-						filteredUploads.Add(upload);
-					}
-					
-					if (cancellationToken.IsCancellationRequested) return models;
-				}
-			}
-
-			foreach (var upload in filteredUploads)
-			{
-				_logger?.LogTrace($"Loading log {upload.permalink.Value}");
-				Task<string> getFileTask = httpClient.GetStringAsync(upload.permalink.Value);
-				var html = getFileTask.Result;
-
-				html = html.Replace("/cache/", "https://dps.report/cache/");
-				File.WriteAllText(filePath, html);
-
-				_logger?.LogTrace($"Parsing log {upload.permalink.Value}");
-				var model = EiHtmlParser.ParseLog(filePath);
-				model.LogUrl = upload.permalink.Value;
-				models.Add(model);
-				
-				if (cancellationToken.IsCancellationRequested) return models;
-			}
-
-			File.Delete(filePath);
-			return models;
+			var downloader = new LogDownloader();
+			return downloader.DownloadLogsForOneDay(path, token, day, cancellationToken);
 		}
 
 		private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb)
@@ -204,11 +153,11 @@ namespace raidTimeline.Logic
 			File.Move(htmlFileName, htmlFilePath);
 		}
 
-		private static void CreateTimeline(StringBuilder sb, IGrouping<DateTime, RaidModel> raidDate, bool reverse)
+		private static void CreateTimeline(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)
 		{
 			var ordered = reverse
-				? raidDate.OrderByDescending(i => i.OccurenceEnd)
-				: raidDate.OrderBy(i => i.OccurenceEnd);
+				? raidData.OrderByDescending(i => i.OccurenceEnd)
+				: raidData.OrderBy(i => i.OccurenceEnd);
 
 			foreach (var model in ordered)
 			{
@@ -218,17 +167,38 @@ namespace raidTimeline.Logic
 			}
 		}
 
-		private static void CreateHeader(StringBuilder sb, IGrouping<DateTime, RaidModel> raidDate)
+		private static void CreatePlayerTable(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)
 		{
-			var killed = raidDate.Count(i => i.Killed);
-			var failed = raidDate.Count(i => !i.Killed);
-			var bosses = raidDate.Select(i => i.EncounterName).Distinct().Count();
+			var ordered = reverse
+				? raidData.OrderByDescending(i => i.OccurenceEnd)
+				: raidData.OrderBy(i => i.OccurenceEnd);
 
-			var tryTime = new TimeSpan(raidDate.Select(i => i.OccurenceEnd - i.OccurenceStart)
+			var players = ordered.SelectMany(i => i.Players).Where(j => !j.IsNpc)
+				.Select(j => j.AccountName)
+				.Distinct().OrderBy(name => name).ToArray();
+
+			sb.Append(HtmlCreator.CreatePlayerTableHeader(players));
+
+			foreach (var model in ordered)
+			{
+				var tableRow = new TableModel(model, players);
+				sb.Append(HtmlCreator.CreatePlayerTableEntry(tableRow));
+			}
+
+			sb.Append(HtmlCreator.CreatePlayerTableFooter());
+		}
+
+		private static void CreateHeader(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData)
+		{
+			var killed = raidData.Count(i => i.Killed);
+			var failed = raidData.Count(i => !i.Killed);
+			var bosses = raidData.Select(i => i.EncounterName).Distinct().Count();
+
+			var tryTime = new TimeSpan(raidData.Select(i => i.OccurenceEnd - i.OccurenceStart)
 				.Sum(i => i.Ticks));
-			var raidTime = raidDate.Max(i => i.OccurenceEnd) - raidDate.Min(i => i.OccurenceStart);
+			var raidTime = raidData.Max(i => i.OccurenceEnd) - raidData.Min(i => i.OccurenceStart);
 
-			sb.Append(HtmlCreator.CreateHeaderHtml(raidDate.Key, killed, failed, tryTime, raidTime, bosses));
+			sb.Append(HtmlCreator.CreateHeaderHtml(raidData.Key, killed, failed, tryTime, raidTime, bosses));
 		}
 	}
 }

@@ -42,7 +42,10 @@ namespace raidTimeline.Logic
                     var playerModel = new PlayerModel
                     {
                         Index = j,
-                        AccountName = logData.players[j].acc
+                        AccountName = logData.players[j].acc,
+                        Profession = logData.players[j].profession,
+                        ProfessionIcon = logData.players[j].icon,
+                        IsNpc = logData.players[j].notInSquad
                     };
 
                     ParseSupportStats(playerModel, logData);

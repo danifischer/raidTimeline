@@ -12,14 +12,15 @@ internal class DpsReportUploadService : IDpsReportUploadService
     private readonly ConfigurationHelper _configurationHelper;
     private readonly ILogger<DpsReportUploadService> _logger;
 
-    public DpsReportUploadService(ConfigurationHelper configurationHelper, 
+    public DpsReportUploadService(ConfigurationHelper configurationHelper,
         ILogger<DpsReportUploadService> logger)
     {
         _configurationHelper = configurationHelper;
         _logger = logger;
     }
-    
-    public void UploadFilesToDpsReport(string? day, bool killOnly, bool filter)
+
+    public void UploadFilesToDpsReport(string? day, bool killOnly, bool filter,
+        CancellationToken cancellationToken)
     {
         Spinner.Start($"Uploading logs to dps.report", spinner =>
         {
@@ -36,10 +37,13 @@ internal class DpsReportUploadService : IDpsReportUploadService
                 : $"No files to upload for {day}.";
 
             var links = new List<string>();
+            var parallelOptions = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = 3,
+                CancellationToken = cancellationToken
+            };
 
-            Parallel.ForEach(files,
-                new ParallelOptions {MaxDegreeOfParallelism = 3},
-                file =>
+            Parallel.ForEach(files, parallelOptions, file =>
                 {
                     try
                     {
@@ -69,7 +73,7 @@ internal class DpsReportUploadService : IDpsReportUploadService
             Console.WriteLine(string.Join("\n", links));
         });
     }
-    
+
     private IRestResponse UploadToDpsReport(string path)
     {
         var client = new RestClient("https://dps.report/");

@@ -1,28 +1,25 @@
-﻿using raidTimeline.Database.DataModels;
+﻿using raidTimeline.Database.Models;
 using raidTimeline.Logic.Models;
 
 namespace raidTimeline.Database.Converters;
 
 internal static class RaidModelToEncounterConverter
 {
-    internal static Encounter Convert(RaidModel raidModel)
+    internal static Encounter ConvertEncounter(RaidModel raidModel)
     {
         var encounter = new Encounter
         {
             Killed = raidModel.Killed,
             EncounterTime = raidModel.EncounterTime,
-            OccurenceStart = raidModel.OccurenceStart,
-            OccurenceEnd = raidModel.OccurenceEnd,
-            HitPointsRemaining = raidModel.HpLeft.Average(),
-            Boss = ConvertBossData(raidModel),
-            Players = raidModel.Players
-                .Select(PlayerModelToPlayerConverter.Convert).ToList()
+            OccurenceStart = raidModel.OccurenceStart.ToUniversalTime(),
+            OccurenceEnd = raidModel.OccurenceEnd.ToUniversalTime(),
+            HitPointsRemaining = raidModel.HpLeft.Average()
         };
         
         return encounter;
     }
 
-    private static Boss ConvertBossData(RaidModel raidModel)
+    internal static Boss ConvertBoss(RaidModel raidModel)
     {
         return new Boss
         {

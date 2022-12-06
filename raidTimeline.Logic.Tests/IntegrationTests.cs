@@ -1,25 +1,22 @@
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using raidTimeline.Logic;
 using RestSharp;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using Xunit;
 
 namespace raidTimeline.Logic.Tests
 {
-	[TestClass]
 	public class IntegrationTests
 	{
 		private static readonly string TestFile = Path.Combine(Directory.GetCurrentDirectory(), @"Files\test_log.zevtc");
 
-		[TestMethod]
-		[TestCategory("Offline")]
+		[Fact]
+		[Trait("Category", "Offline")]
 		public void ParseLog_LatestMain_ShouldParse()
 		{
 			// Prepare
@@ -44,7 +41,7 @@ namespace raidTimeline.Logic.Tests
 			DeleteDirectory("GW2-Elite-Insights-Parser");
 		}
 
-		[TestMethod]
+		[Fact]
 		public void ParseLog_LatestRelease_ShouldParse()
 		{
 			// Prepare

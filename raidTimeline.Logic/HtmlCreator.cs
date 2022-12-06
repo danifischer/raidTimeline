@@ -2,6 +2,7 @@
 using System.Text;
 using raidTimeline.Logic.Models;
 using raidTimeline.Logic.HtmlBuilders;
+using System.Linq;
 
 namespace raidTimeline.Logic
 {
@@ -43,6 +44,55 @@ namespace raidTimeline.Logic
 				</div>
 				<div class=""timeline"">
 			";
+		}
+
+		internal static StringBuilder CreatePlayerTableHeader(string[] players)
+        {
+			var stringBuilder = new StringBuilder();
+
+			stringBuilder.Append(@"<div class=""playerTable""><table><tr>");
+			stringBuilder.Append($@"<th class=""playerTableHeader"">Encounter</th>");
+
+			foreach (var player in players)
+            {
+				stringBuilder.Append($@"<th class=""playerTableHeader"">{player}</th>");
+			}
+
+			stringBuilder.Append("</tr>");
+
+			return stringBuilder;
+		}
+
+		internal static StringBuilder CreatePlayerTableFooter()
+		{
+			var stringBuilder = new StringBuilder();
+			stringBuilder.Append("</table></div>");
+			return stringBuilder;
+		}
+
+		internal static StringBuilder CreatePlayerTableEntry(TableModel tableRow)
+		{
+			var stringBuilder = new StringBuilder();
+			var killedString = tableRow.Killed ? "killed" : "failed";
+
+			stringBuilder.Append("<tr>");
+			stringBuilder.Append($"<td>{tableRow.Encounter} ({killedString})</td>");
+
+			foreach (var cell in tableRow.Cells.OrderBy(i => i.AccountName))
+            {
+				if (cell.ProfessionIcon != string.Empty)
+				{
+					stringBuilder.Append($@"<td><img src=""{cell.ProfessionIcon}"" alt=""{cell.Profession}"" class=""professionIcon""></td>");
+				}
+				else
+                {
+					stringBuilder.Append($@"<td>{cell.Profession}</td>");
+				}
+			}
+
+			stringBuilder.Append("</tr>");
+
+			return stringBuilder;
 		}
 
 		internal static StringBuilder CreateEncounterHtmlPass(RaidModel model)

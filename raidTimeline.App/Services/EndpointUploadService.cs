@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Kurukuru;
 using Microsoft.Extensions.Logging;
 using raidTimeline.App.Helpers;
+using raidTimeline.App.Services.Interfaces;
 
 namespace raidTimeline.App.Services;
 
@@ -18,7 +19,8 @@ internal class EndpointUploadService : IEndpointUploadService
         _logger = logger;
     }
 
-    public void UploadFilesToEndpoint(string? day, string raidGroup, bool killOnly)
+    public void UploadFilesToEndpoint(string? day, string raidGroup, bool killOnly, bool filter,
+        CancellationToken cancellationToken)
     {
         Spinner.Start("Uploading files to endpoint.", spinner =>
         {
@@ -40,31 +42,62 @@ internal class EndpointUploadService : IEndpointUploadService
             files = killOnly
                 ? files.Where(file => file.EndsWith("kill.html")).ToArray()
                 : files;
+            
+            // filter for id
+            // get all text and scan for '"fightId": xxx,'?
+            
+            var filteredFiles = new List<string>();
+            
+            foreach (var file in files)
+            {
+                const string searchString = "\"fightID\":";
+                var text = File.ReadAllText(file);
+
+                var start = text.IndexOf(searchString, StringComparison.Ordinal) + searchString.Length;
+                var end = text.IndexOf(",", start, StringComparison.Ordinal);
+
+                var id = Convert.ToInt32(text.Substring(start, end - start));
+
+                if (!filter || _configurationHelper.Configuration.BossFilter.Contains(id.ToString("X4")))
+                {
+                    filteredFiles.Add(file);
+                }
+            }
 
             var uploadOk = 0;
             var uploadFail = 0;
             
-            for (var i = 0; i < files.Length; i++)
+            var parallelOptions = new ParallelOptions
             {
-                spinner.Text = $"Uploading {i + 1}/{files.Length} files: {uploadOk} ok, {uploadFail} failed...";
-                var file = files[i];
-                if (new FileInfo(file).Length == 0) continue;
+                MaxDegreeOfParallelism = 3,
+                CancellationToken = cancellationToken
+            };
+
+            Parallel.ForEach(filteredFiles, parallelOptions, file =>
+            {
+                spinner.Text = $"Uploading {filteredFiles.Count} files: {uploadOk} ok, {uploadFail} failed...";
+                if (new FileInfo(file).Length == 0)
+                {
+                    Interlocked.Increment(ref uploadFail);
+                    _logger.LogError("Log file is 0 bytes");
+                    return;
+                }
                 var uploadResponse = UploadFileToEndpoint(file, raidGroup, date).Result;
 
                 if (uploadResponse.StatusCode != HttpStatusCode.OK)
                 {
-                    uploadFail++;
+                    Interlocked.Increment(ref uploadFail);
                     _logger.LogError(uploadResponse.ReasonPhrase);
                 }
                 else
                 {
-                    uploadOk++;
+                    Interlocked.Increment(ref uploadOk);
                 }
-            }
+            });
 
             var resultUri = TriggerTimelineCreation(raidGroup, date, spinner, files, uploadOk, uploadFail);
 
-            spinner.Text = $"Tried uploading {files.Length} files: {uploadOk} ok, {uploadFail} failed.\n" +
+            spinner.Text = $"Tried uploading {filteredFiles.Count} files: {uploadOk} ok, {uploadFail} failed.\n" +
                            $"Timeline creation successful: {resultUri}";
         });
     }

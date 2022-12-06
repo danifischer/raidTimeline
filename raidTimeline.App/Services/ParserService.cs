@@ -1,6 +1,8 @@
 ﻿using Kurukuru;
 using raidTimeline.App.Helpers;
 using raidTimeline.App.Services.Interfaces;
+using raidTimeline.Database;
+using raidTimeline.Database.Services;
 using raidTimeline.Logic.Interfaces;
 using raidTimeline.Logic.Models;
 
@@ -22,7 +24,7 @@ internal class ParserService : IParserService
     }
 
     public void ParseLogsFromDisk(string? day, bool reverse, bool killOnly, bool filter, 
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, IEncounterService encounterService)
     {
         Spinner.Start($"Parsing logs for {day}", spinner =>
         {
@@ -68,7 +70,12 @@ internal class ParserService : IParserService
             spinner.Text = $"Creating timeline";
             _timelineCreator.BuildTimelineFile(_configurationHelper.Configuration.OutputPath, 
                 "index.html", models, reverse, cancellationToken);
-            
+
+            foreach (var model in models)
+            {
+                encounterService?.AddRaidModel(model).Wait(cancellationToken);
+            }
+
             spinner.Text = "Finished";
         });
     }
@@ -76,7 +83,7 @@ internal class ParserService : IParserService
     public void ParseLogsFromDiskLive(bool reverse, bool killOnly, bool filter, 
         CancellationToken cancellationToken)
     {
-        Spinner.Start("Starting live parsing ...", spinner =>
+        Spinner.Start("Starting live parsing...", spinner =>
         {
             var arcdpsSpinner = new Spinner("arcdps watcher: starting...");
             var eliteInsightsSpinner = new Spinner("Elite Insights watcher: starting...");

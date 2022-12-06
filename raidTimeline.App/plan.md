@@ -2,7 +2,11 @@
 
 ### General
 
-* [ ] Validation for input
+* [x] Validation for input
+* [x] Cancellation for long runners
+* [ ] Limit raidGroups to defined list
+* [x] Parallel log upload to api
+* [x] Add cancellation token to uploads
 
 ### Database
 

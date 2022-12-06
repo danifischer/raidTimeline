@@ -11,6 +11,9 @@ namespace raidTimeline.Logic.Models
 		public double ResTime { get; set; }
 		public int ResAmount { get; set; }
 		public string AccountName  { get; init; }
+		public string Profession { get; set; }
+		public string ProfessionIcon { get; set; }
+		public bool IsNpc { get; set; }
 		public Dictionary<string, int> Mechanics { get; } = new();
 		public Dictionary<string, int> CombinedMechanics { get; } = new();
 		public List<BuffModel> Buffs { get; } = new();

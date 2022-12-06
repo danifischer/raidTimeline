@@ -5,12 +5,13 @@ using raidTimeline.App.Commands;
 using raidTimeline.App.Helpers;
 using raidTimeline.App.Services;
 using raidTimeline.App.Services.Interfaces;
+using raidTimeline.Database;
 using raidTimeline.Logic;
 using raidTimeline.Logic.Interfaces;
 
 var builder = CoconaApp.CreateBuilder();
 
-builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"), 
+builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"),
     false, true);
 builder.Services.AddSingleton<ConfigurationHelper>();
 builder.Services.AddTransient<IEliteInsightsService, EliteInsightsService>();
@@ -20,11 +21,13 @@ builder.Services.AddTransient<IFileHandlingService, FileHandlingService>();
 builder.Services.AddTransient<IUploadService, UploadService>();
 builder.Services.AddTransient<IEndpointUploadService, EndpointUploadService>();
 builder.Services.AddTransient<IDpsReportUploadService, DpsReportUploadService>();
+builder.Services.RegisterDatabaseServices();
 
 var app = builder.Build();
 
 app.RegisterParserCommands();
 app.RegisterFileCommands();
 app.RegisterUploadCommands();
+app.RegisterDatabaseCommands();
 
 app.Run();

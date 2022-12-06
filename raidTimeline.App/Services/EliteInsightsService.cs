@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using CliWrap;
 using Microsoft.Extensions.Logging;
 using raidTimeline.App.Services.Interfaces;
 
@@ -51,9 +52,17 @@ internal class EliteInsightsService : IEliteInsightsService
         return null;
     }
 
-    public void ParseEiFile(string logFilePath, string configurationFilePath,
+    public async void ParseEiFile(string logFilePath, string configurationFilePath,
         string eliteInsightsExePath)
     {
+        await Cli.Wrap(eliteInsightsExePath)
+            .WithArguments(args => args
+                .Add($"-c {configurationFilePath}")
+                .Add($"{logFilePath}")
+                )
+            .WithStandardErrorPipe(PipeTarget.ToDelegate(Console.WriteLine))
+            .ExecuteAsync();
+        /*
         var psi = new ProcessStartInfo
         {
             FileName = eliteInsightsExePath,
@@ -62,5 +71,6 @@ internal class EliteInsightsService : IEliteInsightsService
             RedirectStandardError = true
         };
         Process.Start(psi)?.WaitForExit();
+        */
     }
 }
