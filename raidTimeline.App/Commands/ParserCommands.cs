@@ -1,4 +1,5 @@
 ﻿using Cocona;
+using raidTimeline.App.Helpers;
 using raidTimeline.App.Services.Interfaces;
 
 namespace raidTimeline.App.Commands;
@@ -11,7 +12,8 @@ internal static class ParserCommands
             {
                 command.AddCommand("local",
                         ([FromService] IParserService parserService,
-                            [Option('d',
+                            CoconaAppContext context, 
+                            [Day][Option('d',
                                 Description = "The day which should be parsed (format: yyyyMMdd). Default is today.")]
                             string? day,
                             [Option('r', Description = "Creates the timeline in reverse date order.")]
@@ -24,7 +26,7 @@ internal static class ParserCommands
                             bool filter
                         ) =>
                         {
-                            parserService.ParseLogsFromDisk(day, reverse, killOnly, filter);
+                            parserService.ParseLogsFromDisk(day, reverse, killOnly, filter, context.CancellationToken, null!);
                         })
                     .WithDescription("Parses local log files with Elite Insights.");
                 
@@ -41,13 +43,14 @@ internal static class ParserCommands
                             bool filter
                         ) =>
                         {
-                            parserService.ParseLogsFromDiskLive(reverse, killOnly, filter, context);
+                            parserService.ParseLogsFromDiskLive(reverse, killOnly, filter, context.CancellationToken);
                         })
                     .WithDescription("Parses local log files with Elite Insights and keeps watching for new logs.");
 
                 command.AddCommand("report",
                         ([FromService] IParserService parserService,
-                            [Option('d',
+                            CoconaAppContext context, 
+                            [Day][Option('d',
                                 Description = "The day which should be parsed (format: yyyyMMdd). Default is today.")]
                             string? day,
                             [Option('r', Description = "Creates the timeline in reverse date order.")]
@@ -60,7 +63,7 @@ internal static class ParserCommands
                             bool filter
                         ) =>
                         {
-                            parserService.ParseLogsFromDpsReport(day, reverse, killOnly, filter);
+                            parserService.ParseLogsFromDpsReport(day, reverse, killOnly, filter, context.CancellationToken);
                         })
                     .WithDescription("Parses remote log files from dps.report.");
             })

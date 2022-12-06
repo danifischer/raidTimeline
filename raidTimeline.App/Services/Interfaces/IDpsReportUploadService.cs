@@ -2,5 +2,6 @@
 
 internal interface IDpsReportUploadService
 {
-    void UploadFilesToDpsReport(string? day, bool killOnly, bool filter);
+    void UploadFilesToDpsReport(string? day, bool killOnly, bool filter, 
+        CancellationToken cancellationToken);
 }

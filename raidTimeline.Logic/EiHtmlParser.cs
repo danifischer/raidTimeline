@@ -42,7 +42,11 @@ namespace raidTimeline.Logic
                     var playerModel = new PlayerModel
                     {
                         Index = j,
-                        AccountName = logData.players[j].acc
+                        AccountName = logData.players[j].acc,
+                        Profession = logData.players[j].profession,
+                        ProfessionIcon = logData.players[j].icon,
+                        IsNpc = logData.players[j].notInSquad,
+                        Group = logData.players[j].group
                     };
 
                     ParseSupportStats(playerModel, logData);
@@ -160,7 +164,10 @@ namespace raidTimeline.Logic
             raidModel.EncounterTime = logData.encounterDuration.Value;
             raidModel.EncounterIcon = logData.fightIcon.Value;
             raidModel.EncounterName = logData.fightName.Value;
-            raidModel.EncounterId = int.Parse(logData.fightID.Value.ToString());
+            if (logData.fightID != null)
+            {
+                raidModel.EncounterId = int.Parse(logData.fightID.Value.ToString());
+            }
             raidModel.Killed = logData.success.Value;
         }
 

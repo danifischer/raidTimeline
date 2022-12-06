@@ -14,13 +14,15 @@ internal class UploadService : IUploadService
         _dpsReportUploadService = dpsReportUploadService;
     }
 
-    public void UploadFilesToDpsReport(string? day, bool killOnly, bool filter)
+    public void UploadFilesToDpsReport(string? day, bool killOnly, bool filter, 
+        CancellationToken cancellationToken)
     {
-       _dpsReportUploadService.UploadFilesToDpsReport(day, killOnly, filter);
+       _dpsReportUploadService.UploadFilesToDpsReport(day, killOnly, filter, cancellationToken);
     }
 
-    public void UploadFilesToEndpoint(string? day, string raidGroup, bool killOnly)
+    public void UploadFilesToEndpoint(string? day, string raidGroup, bool killOnly, bool filter,
+        CancellationToken cancellationToken)
     {
-        _endpointUploadService.UploadFilesToEndpoint(day, raidGroup, killOnly);
+        _endpointUploadService.UploadFilesToEndpoint(day, raidGroup, killOnly, filter, cancellationToken);
     }
 }

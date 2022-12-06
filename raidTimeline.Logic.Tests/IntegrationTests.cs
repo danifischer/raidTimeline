@@ -1,50 +1,21 @@
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using raidTimeline.Logic;
 using RestSharp;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using Xunit;
 
 namespace raidTimeline.Logic.Tests
 {
-	[TestClass]
 	public class IntegrationTests
 	{
 		private static readonly string TestFile = Path.Combine(Directory.GetCurrentDirectory(), @"Files\test_log.zevtc");
 
-		[TestMethod]
-		[TestCategory("Offline")]
-		public void ParseLog_LatestMain_ShouldParse()
-		{
-			// Prepare
-			ProcessStartInfo psi1 = new ProcessStartInfo
-			{
-				FileName = @"Files\fetchAndBuildEi.cmd",
-				UseShellExecute = true
-			};
-			Process.Start(psi1).WaitForExit();
-
-			var pathToEi = Path.Combine(Directory.GetCurrentDirectory(), @"GW2-Elite-Insights-Parser\GW2EI.bin\Debug\GuildWars2EliteInsights.exe");
-			var htmlFile = CreateHtmlLog(pathToEi);
-			
-			// Test
-			var log = Logic.EiHtmlParser.ParseLog(htmlFile);
-
-			// Check
-			log.Should().NotBeNull();
-
-			// Cleanup
-			File.Delete(htmlFile);
-			DeleteDirectory("GW2-Elite-Insights-Parser");
-		}
-
-		[TestMethod]
+		[Fact]
 		public void ParseLog_LatestRelease_ShouldParse()
 		{
 			// Prepare

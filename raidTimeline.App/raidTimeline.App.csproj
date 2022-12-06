@@ -16,6 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="CliWrap" Version="3.5.0" />
       <PackageReference Include="Cocona" Version="2.0.2" />
       <PackageReference Include="Kurukuru" Version="1.4.2" />
       <PackageReference Include="UnitsNet" Version="4.119.0" />
@@ -28,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\raidTimeline.Database\raidTimeline.Database.csproj" />
       <ProjectReference Include="..\raidTimeline.Logic\raidTimeline.Logic.csproj" />
     </ItemGroup>
 

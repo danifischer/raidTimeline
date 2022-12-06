@@ -12,7 +12,7 @@ namespace raidTimeline.Logic.HtmlBuilders
         {
             var boonList = CombineBoons(raidModel.Players);
             var counter = 0;
-            var increment = boonList.Count / 2;
+            var increment = 6;
 
             while (boonList.Skip(counter).Take(increment).Any())
             {
