@@ -164,7 +164,10 @@ namespace raidTimeline.Logic
             raidModel.EncounterTime = logData.encounterDuration.Value;
             raidModel.EncounterIcon = logData.fightIcon.Value;
             raidModel.EncounterName = logData.fightName.Value;
-            raidModel.EncounterId = int.Parse(logData.fightID.Value.ToString());
+            if (logData.fightID != null)
+            {
+                raidModel.EncounterId = int.Parse(logData.fightID.Value.ToString());
+            }
             raidModel.Killed = logData.success.Value;
         }
 
