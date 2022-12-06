@@ -45,7 +45,8 @@ namespace raidTimeline.Logic
                         AccountName = logData.players[j].acc,
                         Profession = logData.players[j].profession,
                         ProfessionIcon = logData.players[j].icon,
-                        IsNpc = logData.players[j].notInSquad
+                        IsNpc = logData.players[j].notInSquad,
+                        Group = logData.players[j].group
                     };
 
                     ParseSupportStats(playerModel, logData);

@@ -5,6 +5,7 @@ namespace raidTimeline.Logic.Models
 	public class PlayerModel
 	{
 		public int Index { get; init; }
+		public int Group { get; init; }
 		public long Damage { get; set; }
 		public long Dps { get; set; }
 		public long Cc { get; set; }

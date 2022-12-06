@@ -116,17 +116,20 @@ namespace raidTimeline.Logic
 				: models.OrderBy(i => i.OccurenceStart);
 
 			foreach (var raidData in ordered.GroupBy(i => i.OccurenceStart.Date))
-			{
-				CreatePlayerTable(sb, raidData, reverse);
+			{		
 				CreateHeader(sb, raidData);
+
+				sb.CreateTimelineHeader();
 				CreateTimeline(sb, raidData, reverse);
-				sb.Append("</div>");
+				sb.CreateTimelineFooter();
 
 				if (cancellationToken.IsCancellationRequested) return;
 			}
-			
+
+            BuildStatisticsFile(path, models, reverse, cancellationToken);	
+
 			if (cancellationToken.IsCancellationRequested) return;
-			WriteHtmlFile(htmlFileName, htmlFilePath, sb);
+			WriteHtmlFile(htmlFileName, htmlFilePath, sb, @"templateTimeline.html");
 			_logger?.LogTrace("HTML Magic >>> Done");
 		}
 
@@ -145,9 +148,40 @@ namespace raidTimeline.Logic
 			return downloader.DownloadLogsForOneDay(path, token, day, cancellationToken);
 		}
 
-		private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb)
+		private static void BuildStatisticsFile(string path, IEnumerable<RaidModel> models,
+			bool reverse, CancellationToken cancellationToken)
+        {
+            const string htmlFileName = "statistics.html";
+			string htmlFilePath = Path.Combine(path, htmlFileName);
+
+			if (File.Exists(htmlFilePath))
+			{
+				File.Delete(Path.Combine(htmlFilePath));
+			}
+
+			var sb = new StringBuilder();
+
+			var ordered = reverse
+				? models.OrderByDescending(i => i.OccurenceStart)
+				: models.OrderBy(i => i.OccurenceStart);
+
+			foreach (var raidData in ordered.GroupBy(i => i.OccurenceStart.Date))
+			{
+
+				CreateHeader(sb, raidData);
+				CreateProfessionTable(sb, raidData, reverse);
+				CreateEncounterTable(sb, raidData, reverse);
+
+				if (cancellationToken.IsCancellationRequested) return;
+			}
+
+			if (cancellationToken.IsCancellationRequested) return;
+			WriteHtmlFile(htmlFileName, htmlFilePath, sb, @"templateStatistics.html");
+		}
+
+		private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb, string template)
 		{
-			var html = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"template.html"));
+			var html = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, template));
 			html = html.Replace("{{placeholder}}", sb.ToString());
 			File.WriteAllText(htmlFileName, html);
 			File.Move(htmlFileName, htmlFilePath);
@@ -167,7 +201,7 @@ namespace raidTimeline.Logic
 			}
 		}
 
-		private static void CreatePlayerTable(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)
+		private static void CreateEncounterTable(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)
 		{
 			var ordered = reverse
 				? raidData.OrderByDescending(i => i.OccurenceEnd)
@@ -177,15 +211,35 @@ namespace raidTimeline.Logic
 				.Select(j => j.AccountName)
 				.Distinct().OrderBy(name => name).ToArray();
 
-			sb.Append(HtmlCreator.CreatePlayerTableHeader(players));
+			sb.Append(HtmlCreator.CreateEncounterTableHeader(players));
 
 			foreach (var model in ordered)
 			{
-				var tableRow = new TableModel(model, players);
-				sb.Append(HtmlCreator.CreatePlayerTableEntry(tableRow));
+				var tableRow = new EncounterTableModel(model, players);
+				sb.Append(HtmlCreator.CreateEncounterTableEntry(tableRow));
 			}
 
-			sb.Append(HtmlCreator.CreatePlayerTableFooter());
+			sb.Append(HtmlCreator.CreateEncounterTableFooter());
+		}
+
+		private static void CreateProfessionTable(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)
+		{
+			var ordered = reverse
+				? raidData.OrderByDescending(i => i.OccurenceEnd)
+				: raidData.OrderBy(i => i.OccurenceEnd);
+
+			var tryTime = new TimeSpan(raidData.Select(i => i.OccurenceEnd - i.OccurenceStart)
+				.Sum(i => i.Ticks));
+
+			sb.Append(HtmlCreator.CreateOverviewTableHeader());
+
+			foreach (var group in ordered.GroupBy(i => i.EncounterName))
+			{
+				var tableRow = new OverviewTableModel(group.ToArray(), tryTime);
+				sb.Append(HtmlCreator.CreateOverviewTableEntry(tableRow));
+			}
+
+			sb.Append(HtmlCreator.CreateOverviewTableFooter());
 		}
 
 		private static void CreateHeader(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData)
