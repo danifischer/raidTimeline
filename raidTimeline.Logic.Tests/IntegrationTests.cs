@@ -16,32 +16,6 @@ namespace raidTimeline.Logic.Tests
 		private static readonly string TestFile = Path.Combine(Directory.GetCurrentDirectory(), @"Files\test_log.zevtc");
 
 		[Fact]
-		[Trait("Category", "Offline")]
-		public void ParseLog_LatestMain_ShouldParse()
-		{
-			// Prepare
-			ProcessStartInfo psi1 = new ProcessStartInfo
-			{
-				FileName = @"Files\fetchAndBuildEi.cmd",
-				UseShellExecute = true
-			};
-			Process.Start(psi1).WaitForExit();
-
-			var pathToEi = Path.Combine(Directory.GetCurrentDirectory(), @"GW2-Elite-Insights-Parser\GW2EI.bin\Debug\GuildWars2EliteInsights.exe");
-			var htmlFile = CreateHtmlLog(pathToEi);
-			
-			// Test
-			var log = Logic.EiHtmlParser.ParseLog(htmlFile);
-
-			// Check
-			log.Should().NotBeNull();
-
-			// Cleanup
-			File.Delete(htmlFile);
-			DeleteDirectory("GW2-Elite-Insights-Parser");
-		}
-
-		[Fact]
 		public void ParseLog_LatestRelease_ShouldParse()
 		{
 			// Prepare
