@@ -13,7 +13,7 @@ namespace raidTimeline.Logic.Models
 
             foreach (var player in players)
             {
-                var playerInRaid = raid.Players.SingleOrDefault(i => i.AccountName == player);
+                var playerInRaid = raid.Players.FirstOrDefault(i => i.AccountName == player);
                 if (playerInRaid != null)
                 {
                     Cells.Add(new EncounterTableCell(playerInRaid.AccountName, playerInRaid.Profession, playerInRaid.ProfessionIcon));

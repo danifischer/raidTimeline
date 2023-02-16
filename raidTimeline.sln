@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30225.117
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raidTimeline.Logic", "raidTimeline.Logic\raidTimeline.Logic.csproj", "{34112E9B-A72E-4F96-8658-1B788D82B181}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raidTimeline.Logic.Tests", "raidTimeline.Logic.Tests\raidTimeline.Logic.Tests.csproj", "{E9993407-4169-4F66-87CE-DEF211E9BAFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raidTimeline.Database", "raidTimeline.Database\raidTimeline.Database.csproj", "{D8D7FF14-FDFD-4976-BD89-6024CBCD20E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raidTimeline.Database", "raidTimeline.Database\raidTimeline.Database.csproj", "{D8D7FF14-FDFD-4976-BD89-6024CBCD20E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raidTimeline.App", "raidTimeline.App\raidTimeline.App.csproj", "{3E70BBE2-E1ED-4363-84B6-E53D944D2B32}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raidTimeline.App", "raidTimeline.App\raidTimeline.App.csproj", "{3E70BBE2-E1ED-4363-84B6-E53D944D2B32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
