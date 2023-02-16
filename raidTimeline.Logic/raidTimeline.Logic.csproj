@@ -12,6 +12,7 @@
     <AssemblyVersion>2.0.2</AssemblyVersion>
     <PackageVersion>2.0.2</PackageVersion>
     <VersionPrefix>2.0.2</VersionPrefix>
+	<PackageId>raidTimeline.Logic</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
