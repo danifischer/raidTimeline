@@ -1,6 +1,6 @@
 ﻿using Cocona;
 using raidTimeline.App.Services.Interfaces;
-using raidTimeline.Database.Services;
+using raidTimeline.Database.Interfaces;
 
 namespace raidTimeline.App.Commands;
 

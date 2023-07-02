@@ -1,5 +1,5 @@
 ﻿using raidTimeline.Logic.HtmlBuilders;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 using System;
 using System.Linq;
 using System.Text;

@@ -1,7 +1,8 @@
 ﻿using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
+using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -42,7 +43,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(dynamic logData, PlayerModel playerModel)
+		public override void Parse(JObject logData, PlayerModel playerModel)
 		{
 			PrepareParsing(logData, playerModel);
 

@@ -1,7 +1,7 @@
 ﻿using raidTimeline.Database.Converters;
 using raidTimeline.Database.Interfaces;
 using raidTimeline.Database.Models;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 
 namespace raidTimeline.Database.Services;
 

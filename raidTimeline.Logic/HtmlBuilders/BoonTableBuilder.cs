@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 
 namespace raidTimeline.Logic.HtmlBuilders
 {

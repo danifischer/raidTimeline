@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace raidTimeline.Logic.Models
+namespace raidTimeline.Models.Models
 {
-    internal record EncounterTableCell(string AccountName, string Profession, string ProfessionIcon);
+    public record EncounterTableCell(string AccountName, string Profession, string ProfessionIcon);
 
-    internal class EncounterTableModel
+    public class EncounterTableModel
     {
         public EncounterTableModel(RaidModel raid, string[] players)
         {

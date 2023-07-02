@@ -1,4 +1,5 @@
-﻿using raidTimeline.Logic.Models;
+﻿using Newtonsoft.Json.Linq;
+using raidTimeline.Models.Models;
 
 namespace raidTimeline.Logic.Interfaces
 {
@@ -6,7 +7,7 @@ namespace raidTimeline.Logic.Interfaces
 	{
 		string GetEncounterIcon();
 
-		void Parse(dynamic logData, PlayerModel playerModel);
+		void Parse(JObject logData, PlayerModel playerModel);
 
 		string CreateHtml(RaidModel model);
 	}

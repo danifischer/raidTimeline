@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using raidTimeline.Logic.DpsReport;
 using raidTimeline.Logic.Interfaces;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -177,7 +178,17 @@ namespace raidTimeline.Logic
 
         private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb, string template)
         {
-            var html = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, template));
+            var assembly = Assembly.GetExecutingAssembly();
+            string resourceName = assembly.GetManifestResourceNames()
+                .Single(str => str.EndsWith(template));
+            string html = string.Empty;
+
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var reader = new StreamReader(stream))
+            {
+                html = reader.ReadToEnd();
+            }
+
             html = html.Replace("{{placeholder}}", sb.ToString());
             File.WriteAllText(htmlFileName, html);
             File.Move(htmlFileName, htmlFilePath);
