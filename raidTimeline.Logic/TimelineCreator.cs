@@ -17,7 +17,7 @@ namespace raidTimeline.Logic
     {
         private readonly ILogger _logger;
 
-        public TimelineCreator(ILogger<TimelineCreator> logger = null)
+        public TimelineCreator(ILogger<TimelineCreator> logger)
         {
             _logger = logger;
         }

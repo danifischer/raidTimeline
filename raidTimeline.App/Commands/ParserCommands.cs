@@ -26,7 +26,7 @@ internal static class ParserCommands
                             bool filter
                         ) =>
                         {
-                            parserService.ParseLogsFromDisk(day, reverse, killOnly, filter, context.CancellationToken, null!);
+                            parserService.ParseLogsFromDisk(day, reverse, killOnly, filter, null!, context.CancellationToken);
                         })
                     .WithDescription("Parses local log files with Elite Insights.");
                 

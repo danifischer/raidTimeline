@@ -20,7 +20,7 @@ internal static class DatabaseCommands
             for (; limit < now;)
             {
                 parserService.ParseLogsFromDisk(limit.ToString("yyyyMMdd"), false, false, false, 
-                    new CancellationToken(), encounterService);
+                    encounterService, new CancellationToken());
                 fileHandlingService.DeleteHtmlAllFiles();
                 limit = limit.AddDays(1);
             }

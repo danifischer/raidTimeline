@@ -23,7 +23,7 @@ internal class ParserService : IParserService
     }
 
     public void ParseLogsFromDisk(string? day, bool reverse, bool killOnly, bool filter,
-        CancellationToken cancellationToken, IEncounterService encounterService)
+        IEncounterService encounterService, CancellationToken cancellationToken)
     {
         Spinner.Start($"Parsing logs for {day}", spinner =>
         {
