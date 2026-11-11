@@ -16,6 +16,7 @@ namespace raidTimeline.Logic.Tests
 		private static readonly string TestFile = Path.Combine(Directory.GetCurrentDirectory(), @"Files\test_log.zevtc");
 
 		[Fact]
+		[Trait("Category", "Integration")]
 		public void ParseLog_LatestRelease_ShouldParse()
 		{
 			// Prepare

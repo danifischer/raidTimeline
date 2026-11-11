@@ -2,25 +2,18 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>rta</AssemblyName>
         <IsPackable>false</IsPackable>
-        <Authors>Daniel Fischer</Authors>
-        <Copyright>MIT License</Copyright>
-        <RepositoryUrl>https://github.com/danifischer/raidTimeline</RepositoryUrl>
-        <AssemblyVersion>2.0.2</AssemblyVersion>
-        <PackageVersion>2.0.2</PackageVersion>
-        <VersionPrefix>2.0.2</VersionPrefix>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CliWrap" Version="3.5.0" />
-      <PackageReference Include="Cocona" Version="2.0.2" />
-      <PackageReference Include="Kurukuru" Version="1.4.2" />
-      <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
-      <PackageReference Include="UnitsNet" Version="4.119.0" />
+      <PackageReference Include="CliWrap" />
+      <PackageReference Include="Cocona" />
+      <PackageReference Include="Kurukuru" />
+      <PackageReference Include="Serilog.AspNetCore" />
+      <PackageReference Include="UnitsNet" />
     </ItemGroup>
 
     <ItemGroup>

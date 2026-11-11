@@ -22,6 +22,7 @@ public class TimelineCreatorTests : IDisposable
     }
     
     [Fact]
+    [Trait("Category", "Integration")]
     public void ParseFileFromWeb_ValidInput_ProvidesCorrectModelData()
     {
         var subjectUnderTest = new TimelineCreator(null);
