@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -24,28 +23,28 @@ public class EiJsonParserTests
     {
         var log = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog);
 
-        log.Should().NotBeNull();
-        log!.EncounterName.Should().Be("Vale Guardian");
-        log.EncounterId.Should().Be(15438);
-        log.EncounterTime.Should().Be("03m 59s 777ms");
-        log.EncounterIcon.Should().StartWith("https://render.guildwars2.com/");
-        log.Killed.Should().BeTrue();
-        log.OccurenceStart.Should().Be(ExpectedStart);
-        log.OccurenceEnd.Should().Be(ExpectedEnd);
-        log.LogPath.Should().Be(TestFiles.ValeGuardianLog);
+        Assert.NotNull(log);
+        Assert.Equal("Vale Guardian", log.EncounterName);
+        Assert.Equal(15438, log.EncounterId);
+        Assert.Equal("03m 59s 777ms", log.EncounterTime);
+        Assert.StartsWith("https://render.guildwars2.com/", log.EncounterIcon);
+        Assert.True(log.Killed);
+        Assert.Equal(ExpectedStart, log.OccurenceStart);
+        Assert.Equal(ExpectedEnd, log.OccurenceEnd);
+        Assert.Equal(TestFiles.ValeGuardianLog, log.LogPath);
     }
 
     [Fact]
     public void ParseFile_Default_LinksToHtmlNextToJson()
     {
-        EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.LogUrl.Should().Be("vale_guardian_kill.html");
+        Assert.Equal("vale_guardian_kill.html", EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.LogUrl);
     }
 
     [Fact]
     public void ParseFile_ExplicitLogUrl_IsUsed()
     {
-        EiJsonParser.ParseFile(TestFiles.ValeGuardianLog, logUrl: "https://dps.report/abcd")!
-            .LogUrl.Should().Be("https://dps.report/abcd");
+        Assert.Equal("https://dps.report/abcd",
+            EiJsonParser.ParseFile(TestFiles.ValeGuardianLog, logUrl: "https://dps.report/abcd")!.LogUrl);
     }
 
     [Fact]
@@ -54,7 +53,7 @@ public class EiJsonParserTests
         // The log has 7 targets, but six of them are the blocking guardians.
         var log = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!;
 
-        log.HpLeft.Should().Equal(0d);
+        Assert.Equal(new[] { 0d }, log.HpLeft);
     }
 
     [Fact]
@@ -62,11 +61,16 @@ public class EiJsonParserTests
     {
         var log = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!;
 
-        log.Players.Should().HaveCount(10);
-        log.Players.Select(p => p.Index).Should().Equal(Enumerable.Range(0, 10));
-        log.Players.Select(p => p.AccountName).Should().OnlyHaveUniqueItems();
-        log.Players.Select(p => p.Group).Should().Equal(1, 1, 1, 1, 1, 2, 2, 2, 2, 2);
-        log.Players.Should().OnlyContain(p => p.Damage > 0 && p.Dps > 0 && !p.IsNpc);
+        Assert.Equal(10, log.Players.Count);
+        Assert.Equal(Enumerable.Range(0, 10), log.Players.Select(p => p.Index));
+        Assert.Equal(10, log.Players.Select(p => p.AccountName).Distinct().Count());
+        Assert.Equal(new[] { 1, 1, 1, 1, 1, 2, 2, 2, 2, 2 }, log.Players.Select(p => p.Group));
+        Assert.All(log.Players, p =>
+        {
+            Assert.True(p.Damage > 0);
+            Assert.True(p.Dps > 0);
+            Assert.False(p.IsNpc);
+        });
     }
 
     [Theory]
@@ -78,11 +82,11 @@ public class EiJsonParserTests
     {
         var player = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.Players[index];
 
-        player.AccountName.Should().Be(account);
-        player.Profession.Should().Be(profession);
-        player.ProfessionIcon.Should().StartWith("https://render.guildwars2.com/");
-        player.Damage.Should().Be(damage);
-        player.Dps.Should().Be(dps);
+        Assert.Equal(account, player.AccountName);
+        Assert.Equal(profession, player.Profession);
+        Assert.StartsWith("https://render.guildwars2.com/", player.ProfessionIcon);
+        Assert.Equal(damage, player.Damage);
+        Assert.Equal(dps, player.Dps);
     }
 
     [Fact]
@@ -90,14 +94,14 @@ public class EiJsonParserTests
     {
         var players = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.Players;
 
-        players[7].ResAmount.Should().Be(1);
-        players[7].ResTime.Should().BeApproximately(2.564, 0.0001);
-        players[2].ResAmount.Should().Be(0);
-        players[5].TimesDowned.Should().Be(1);
-        players[8].TimesDowned.Should().Be(1);
-        players.Sum(p => p.TimesDowned).Should().Be(2);
-        players.Sum(p => p.TimesDied).Should().Be(0);
-        players.Sum(p => p.ResAmount).Should().Be(5);
+        Assert.Equal(1, players[7].ResAmount);
+        Assert.Equal(2.564, players[7].ResTime, 4);
+        Assert.Equal(0, players[2].ResAmount);
+        Assert.Equal(1, players[5].TimesDowned);
+        Assert.Equal(1, players[8].TimesDowned);
+        Assert.Equal(2, players.Sum(p => p.TimesDowned));
+        Assert.Equal(0, players.Sum(p => p.TimesDied));
+        Assert.Equal(5, players.Sum(p => p.ResAmount));
     }
 
     [Fact]
@@ -105,10 +109,13 @@ public class EiJsonParserTests
     {
         var buffs = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.Players[0].Buffs;
 
-        buffs.Select(b => b.Name).Should().Equal("Might", "Fury", "Quickness", "Alacrity", "Protection",
-            "Regeneration", "Vigor", "Aegis", "Stability", "Swiftness", "Resistance", "Retaliation");
-        buffs.Select(b => b.Index).Should().Equal(Enumerable.Range(0, 12));
-        buffs.Should().OnlyContain(b => b.Icon.StartsWith("https://render.guildwars2.com/"));
+        Assert.Equal(new[]
+        {
+            "Might", "Fury", "Quickness", "Alacrity", "Protection", "Regeneration", "Vigor", "Aegis", "Stability",
+            "Swiftness", "Resistance", "Retaliation"
+        }, buffs.Select(b => b.Name));
+        Assert.Equal(Enumerable.Range(0, 12), buffs.Select(b => b.Index));
+        Assert.All(buffs, b => Assert.StartsWith("https://render.guildwars2.com/", b.Icon));
     }
 
     [Fact]
@@ -117,14 +124,14 @@ public class EiJsonParserTests
         var buffs = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.Players[0].Buffs;
 
         var might = buffs.Single(b => b.Id == "740");
-        might.Stacking.Should().BeTrue();
-        might.Value.Should().BeApproximately(18.123, 0.0001);
-        might.Stacks.Should().BeApproximately(96.418, 0.0001);
+        Assert.True(might.Stacking);
+        Assert.Equal(18.123, might.Value, 4);
+        Assert.Equal(96.418, might.Stacks!.Value, 4);
 
         var quickness = buffs.Single(b => b.Id == "1187");
-        quickness.Stacking.Should().BeFalse();
-        quickness.Value.Should().BeApproximately(95.764, 0.0001);
-        quickness.Stacks.Should().BeNull();
+        Assert.False(quickness.Stacking);
+        Assert.Equal(95.764, quickness.Value, 4);
+        Assert.Null(quickness.Stacks);
     }
 
     [Fact]
@@ -133,7 +140,7 @@ public class EiJsonParserTests
         // Shihaya has no recorded vigor uptime
         var vigor = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.Players[0].Buffs.Single(b => b.Name == "Vigor");
 
-        vigor.Value.Should().Be(0);
+        Assert.Equal(0, vigor.Value);
     }
 
     [Fact]
@@ -141,13 +148,13 @@ public class EiJsonParserTests
     {
         var players = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.Players;
 
-        players[0].Mechanics.Should().Contain("Seeker", 3).And.Contain("Floor R", 4).And.Contain("Orbs", 3);
-        players[5].Mechanics.Should().Contain("Seeker", 5).And.Contain("Downed", 1).And.Contain("Split TP", 1);
-        players[6].Mechanics.Should().Contain("Floor R", 11).And.Contain("Floor G", 9);
+        TestFiles.AssertCounts(players[0].Mechanics, ("Seeker", 3), ("Floor R", 4), ("Orbs", 3));
+        TestFiles.AssertCounts(players[5].Mechanics, ("Seeker", 5), ("Downed", 1), ("Split TP", 1));
+        TestFiles.AssertCounts(players[6].Mechanics, ("Floor R", 11), ("Floor G", 9));
 
         // every mechanic of the log is present for every player, even with a count of 0
-        players.Select(p => p.Mechanics.Count).Distinct().Should().ContainSingle().Which.Should().Be(22);
-        players[9].Mechanics.Should().Contain("Res", 0);
+        Assert.Equal(22, Assert.Single(players.Select(p => p.Mechanics.Count).Distinct()));
+        TestFiles.AssertCounts(players[9].Mechanics, ("Res", 0));
     }
 
     [Fact]
@@ -155,9 +162,8 @@ public class EiJsonParserTests
     {
         var players = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!.Players;
 
-        players[0].CombinedMechanics.Should().Contain("vg_tp", 2).And.Contain("vg_seeker", 3)
-            .And.Contain("vg_floor", 7);
-        players[5].CombinedMechanics.Should().Contain("vg_tp", 3).And.Contain("vg_seeker", 5);
+        TestFiles.AssertCounts(players[0].CombinedMechanics, ("vg_tp", 2), ("vg_seeker", 3), ("vg_floor", 7));
+        TestFiles.AssertCounts(players[5].CombinedMechanics, ("vg_tp", 3), ("vg_seeker", 5));
     }
 
     [Fact]
@@ -165,8 +171,8 @@ public class EiJsonParserTests
     {
         var log = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!;
 
-        log.MechanicColumns.Select(c => c.Label).Should().Equal("Ports", "Seeker", "Floor");
-        log.MechanicColumns.Select(c => c.Key).Should().Equal("vg_tp", "vg_seeker", "vg_floor");
+        Assert.Equal(new[] { "Ports", "Seeker", "Floor" }, log.MechanicColumns.Select(c => c.Label));
+        Assert.Equal(new[] { "vg_tp", "vg_seeker", "vg_floor" }, log.MechanicColumns.Select(c => c.Key));
     }
 
     [Fact]
@@ -177,12 +183,12 @@ public class EiJsonParserTests
 
         var log = EiJsonParser.ParseFile(path)!;
 
-        log.Players.Should().HaveCount(10);
+        Assert.Equal(10, log.Players.Count);
         // Miss.Qck, Miss.Alac, Downed, Res, ... are ignored; Orbs 35 times, Floor R and Seeker 26 times each
-        log.MechanicColumns.Select(c => c.Label).Should().Equal("Orbs", "Floor R", "Seeker");
-        log.MechanicColumns[0].Title.Should().Be("Bullet Storm (Orbs during split)");
-        log.Players.Select(p => p.CombinedMechanics["gen_Orbs"]).Sum().Should().Be(35);
-        log.Players[0].Mechanics.Should().Contain("Seeker", 3).And.Contain("Orbs", 3);
+        Assert.Equal(new[] { "Orbs", "Floor R", "Seeker" }, log.MechanicColumns.Select(c => c.Label));
+        Assert.Equal("Bullet Storm (Orbs during split)", log.MechanicColumns[0].Title);
+        Assert.Equal(35, log.Players.Select(p => p.CombinedMechanics["gen_Orbs"]).Sum());
+        TestFiles.AssertCounts(log.Players[0].Mechanics, ("Seeker", 3), ("Orbs", 3));
     }
 
     [Fact]
@@ -194,8 +200,8 @@ public class EiJsonParserTests
 
         var player = EiJsonParser.ParseFile(path)!.Players[0];
 
-        player.Profession.Should().Be("Brand New Spec");
-        player.ProfessionIcon.Should().BeEmpty();
+        Assert.Equal("Brand New Spec", player.Profession);
+        Assert.Empty(player.ProfessionIcon);
     }
 
     [Fact]
@@ -207,8 +213,8 @@ public class EiJsonParserTests
 
         var log = EiJsonParser.ParseFile(path)!;
 
-        log.HpLeft.Should().HaveCount(1);
-        log.Players[0].Damage.Should().Be(267732);
+        Assert.Single(log.HpLeft);
+        Assert.Equal(267732, log.Players[0].Damage);
     }
 
     [Fact]
@@ -218,8 +224,8 @@ public class EiJsonParserTests
         var path = TestFiles.WriteModifiedLog(Path.Combine(temp.Path, "npc.json"),
             json => json["players"]![3]!["notInSquad"] = true);
 
-        EiJsonParser.ParseFile(path)!.Players.Select(p => p.IsNpc).Should()
-            .Equal(false, false, false, true, false, false, false, false, false, false);
+        Assert.Equal(new[] { false, false, false, true, false, false, false, false, false, false },
+            EiJsonParser.ParseFile(path)!.Players.Select(p => p.IsNpc));
     }
 
     [Fact]
@@ -232,11 +238,11 @@ public class EiJsonParserTests
 
         var players = EiJsonParser.ParseFile(path)!.Players;
 
-        players.Should().HaveCount(9);
-        players.Select(p => p.AccountName).Should().NotContain("Player4.1004");
-        players.Select(p => p.Index).Should().Equal(0, 1, 2, 4, 5, 6, 7, 8, 9);
+        Assert.Equal(9, players.Count);
+        Assert.DoesNotContain("Player4.1004", players.Select(p => p.AccountName));
+        Assert.Equal(new[] { 0, 1, 2, 4, 5, 6, 7, 8, 9 }, players.Select(p => p.Index));
         // Player5.1005 is the player behind the removed one in the log, the mechanics still have to be his
-        players.Single(p => p.AccountName == "Player5.1005").Mechanics.Should().Contain("Floor B", 7);
+        TestFiles.AssertCounts(players.Single(p => p.AccountName == "Player5.1005").Mechanics, ("Floor B", 7));
     }
 
     [Fact]
@@ -251,8 +257,8 @@ public class EiJsonParserTests
 
         var log = EiJsonParser.ParseFile(path)!;
 
-        log.Killed.Should().BeFalse();
-        log.HpLeft.Should().Equal(37.5);
+        Assert.False(log.Killed);
+        Assert.Equal(new[] { 37.5 }, log.HpLeft);
     }
 
     [Fact]
@@ -262,9 +268,10 @@ public class EiJsonParserTests
 
         var log = EiJsonParser.ParseJson(json, "dps.report", "https://dps.report/abcd");
 
-        log!.LogPath.Should().Be("dps.report");
-        log.LogUrl.Should().Be("https://dps.report/abcd");
-        log.Players.Should().HaveCount(10);
+        Assert.NotNull(log);
+        Assert.Equal("dps.report", log.LogPath);
+        Assert.Equal("https://dps.report/abcd", log.LogUrl);
+        Assert.Equal(10, log.Players.Count);
     }
 
     [Theory]
@@ -275,13 +282,13 @@ public class EiJsonParserTests
     [InlineData("<html><body>an html log</body></html>")]
     public void ParseJson_NotAnEliteInsightsLog_ReturnsNull(string content)
     {
-        EiJsonParser.ParseJson(content, "source", "link").Should().BeNull();
+        Assert.Null(EiJsonParser.ParseJson(content, "source", "link"));
     }
 
     [Fact]
     public void ParseFile_MissingFile_ReturnsNull()
     {
-        EiJsonParser.ParseFile(Path.Combine(AppContext.BaseDirectory, "does-not-exist.json")).Should().BeNull();
+        Assert.Null(EiJsonParser.ParseFile(Path.Combine(AppContext.BaseDirectory, "does-not-exist.json")));
     }
 
     [Fact]
@@ -291,6 +298,6 @@ public class EiJsonParserTests
         var path = TestFiles.WriteModifiedLog(Path.Combine(temp.Path, "date.json"),
             json => json["timeStartStd"] = "yesterday");
 
-        EiJsonParser.ParseFile(path).Should().BeNull();
+        Assert.Null(EiJsonParser.ParseFile(path));
     }
 }

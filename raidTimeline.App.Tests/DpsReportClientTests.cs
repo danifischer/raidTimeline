@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text;
-using FluentAssertions;
 using raidTimeline.App.Services;
 using Xunit;
 
@@ -61,7 +60,7 @@ public sealed class DpsReportClientTests : IDisposable
 
         var upload = await client.UploadAsync(_log, "token", CancellationToken.None);
 
-        upload.Should().Be(new DpsReportUpload("https://dps.report/abcd-20261111-201500_vg", true, 15438));
+        Assert.Equal(new DpsReportUpload("https://dps.report/abcd-20261111-201500_vg", true, 15438), upload);
     }
 
     [Fact]
@@ -73,8 +72,8 @@ public sealed class DpsReportClientTests : IDisposable
 
         var upload = await client.UploadAsync(_log, "token", CancellationToken.None);
 
-        upload.Success.Should().BeFalse();
-        upload.BossId.Should().Be(17188);
+        Assert.False(upload.Success);
+        Assert.Equal(17188, upload.BossId);
     }
 
     [Fact]
@@ -84,7 +83,7 @@ public sealed class DpsReportClientTests : IDisposable
 
         var upload = await client.UploadAsync(_log, "token", CancellationToken.None);
 
-        upload.Should().Be(new DpsReportUpload("https://dps.report/x", false, 0));
+        Assert.Equal(new DpsReportUpload("https://dps.report/x", false, 0), upload);
     }
 
     [Fact]
@@ -94,10 +93,11 @@ public sealed class DpsReportClientTests : IDisposable
 
         await client.UploadAsync(_log, "a&b=c d", CancellationToken.None);
 
-        handler.RequestUri!.AbsoluteUri.Should().Be(
-            "https://dps.report/uploadContent?userToken=a%26b%3Dc%20d&generator=ei&json=1");
-        handler.RequestBody.Should().Contain("name=file").And.Contain("filename=20261111-201500.zevtc")
-            .And.Contain("\u0001\u0002\u0003\u0004\u0005");
+        Assert.Equal("https://dps.report/uploadContent?userToken=a%26b%3Dc%20d&generator=ei&json=1",
+            handler.RequestUri!.AbsoluteUri);
+        Assert.Contains("name=file", handler.RequestBody);
+        Assert.Contains("filename=20261111-201500.zevtc", handler.RequestBody);
+        Assert.Contains("\u0001\u0002\u0003\u0004\u0005", handler.RequestBody);
     }
 
     [Fact]
@@ -107,11 +107,11 @@ public sealed class DpsReportClientTests : IDisposable
             """{ "error": "Rate limit exceeded. Try again in 60 seconds.", "rateLimited": true }""",
             HttpStatusCode.TooManyRequests));
 
-        var act = () => client.UploadAsync(_log, "token", CancellationToken.None);
+        var exception = await Assert.ThrowsAsync<DpsReportException>(
+            () => client.UploadAsync(_log, "token", CancellationToken.None));
 
-        var exception = (await act.Should().ThrowAsync<DpsReportException>()).Which;
-        exception.Message.Should().Contain("Rate limit exceeded");
-        exception.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        Assert.Contains("Rate limit exceeded", exception.Message);
+        Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
     }
 
     [Fact]
@@ -119,9 +119,10 @@ public sealed class DpsReportClientTests : IDisposable
     {
         var (client, _) = Create(_ => Json("""{ "error": "Unsupported log" }"""));
 
-        var act = () => client.UploadAsync(_log, "token", CancellationToken.None);
+        var exception = await Assert.ThrowsAsync<DpsReportException>(
+            () => client.UploadAsync(_log, "token", CancellationToken.None));
 
-        (await act.Should().ThrowAsync<DpsReportException>()).Which.Message.Should().Be("Unsupported log");
+        Assert.Equal("Unsupported log", exception.Message);
     }
 
     [Fact]
@@ -130,9 +131,10 @@ public sealed class DpsReportClientTests : IDisposable
         var (client, _) = Create(_ => new HttpResponseMessage(HttpStatusCode.BadGateway)
             { Content = new StringContent("<html>Bad gateway</html>") });
 
-        var act = () => client.UploadAsync(_log, "token", CancellationToken.None);
+        var exception = await Assert.ThrowsAsync<DpsReportException>(
+            () => client.UploadAsync(_log, "token", CancellationToken.None));
 
-        (await act.Should().ThrowAsync<DpsReportException>()).Which.Message.Should().Contain("502");
+        Assert.Contains("502", exception.Message);
     }
 
     [Theory]
@@ -143,9 +145,7 @@ public sealed class DpsReportClientTests : IDisposable
     {
         var (client, _) = Create(_ => Json(json));
 
-        var act = () => client.UploadAsync(_log, "token", CancellationToken.None);
-
-        await act.Should().ThrowAsync<DpsReportException>();
+        await Assert.ThrowsAsync<DpsReportException>(() => client.UploadAsync(_log, "token", CancellationToken.None));
     }
 
     [Fact]
@@ -153,10 +153,9 @@ public sealed class DpsReportClientTests : IDisposable
     {
         var (client, handler) = Create(_ => Json("""{ "permalink": "https://dps.report/x" }"""));
 
-        var act = () => client.UploadAsync(Path.Combine(_folder, "missing.zevtc"), "token", CancellationToken.None);
-
-        await act.Should().ThrowAsync<IOException>();
-        handler.RequestUri.Should().BeNull("nothing is sent without a file");
+        await Assert.ThrowsAnyAsync<IOException>(
+            () => client.UploadAsync(Path.Combine(_folder, "missing.zevtc"), "token", CancellationToken.None));
+        Assert.Null(handler.RequestUri); // nothing is sent without a file
     }
 
     [Fact]
@@ -164,9 +163,7 @@ public sealed class DpsReportClientTests : IDisposable
     {
         var (client, _) = Create(_ => throw new HttpRequestException("no connection"));
 
-        var act = () => client.UploadAsync(_log, "token", CancellationToken.None);
-
-        await act.Should().ThrowAsync<HttpRequestException>();
+        await Assert.ThrowsAsync<HttpRequestException>(() => client.UploadAsync(_log, "token", CancellationToken.None));
     }
 
     [Theory]
@@ -183,6 +180,6 @@ public sealed class DpsReportClientTests : IDisposable
     {
         var upload = new DpsReportUpload("https://dps.report/x", success, bossId);
 
-        DpsReportUploadService.IsWanted(upload, killOnly, filter, bossFilter).Should().Be(expected);
+        Assert.Equal(expected, DpsReportUploadService.IsWanted(upload, killOnly, filter, bossFilter));
     }
 }

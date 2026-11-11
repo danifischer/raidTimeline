@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Security.Cryptography;
-using FluentAssertions;
 using Xunit;
 
 namespace raidTimeline.Logic.Tests;
@@ -26,6 +25,6 @@ public class AesCompatibilityTests
         using var aes = Aes.Create();
         var actual = aes.CreateEncryptor(key, iv).TransformFinalBlock(data, 0, data.Length);
 
-        actual.Should().Equal(expected);
+        Assert.Equal(expected, actual);
     }
 }

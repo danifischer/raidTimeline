@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using FluentAssertions;
 using Xunit;
 
 namespace raidTimeline.Logic.Tests;
@@ -50,9 +49,9 @@ public class IntegrationTests
         var json = Directory.GetFiles(temp.Path, "*.json").Single();
         var model = EiJsonParser.ParseFile(json);
 
-        model.Should().NotBeNull();
-        model!.EncounterName.Should().Be("Vale Guardian");
-        model.Players.Should().HaveCount(10);
-        model.Players.Sum(p => p.Damage).Should().BeGreaterThan(0);
+        Assert.NotNull(model);
+        Assert.Equal("Vale Guardian", model.EncounterName);
+        Assert.Equal(10, model.Players.Count);
+        Assert.True(model.Players.Sum(p => p.Damage) > 0);
     }
 }

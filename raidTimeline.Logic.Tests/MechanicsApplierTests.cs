@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using FluentAssertions;
 using raidTimeline.Logic.EiJson;
 using raidTimeline.Logic.Mechanics;
 using raidTimeline.Models.Models;
@@ -61,10 +60,10 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.MechanicColumns.Should().Equal(new MechanicColumn("slam", "Slam", "Slam hits"),
-            new MechanicColumn("tear", "Tear", "Tears", false));
-        model.Players[0].CombinedMechanics.Should().Contain("slam", 4).And.Contain("tear", 0); // 5 + 1 - 2
-        model.Players[1].CombinedMechanics.Should().Contain("slam", 4).And.Contain("tear", 3);
+        Assert.Equal(new[] { new MechanicColumn("slam", "Slam", "Slam hits"), new MechanicColumn("tear", "Tear", "Tears", false) },
+            model.MechanicColumns);
+        TestFiles.AssertCounts(model.Players[0].CombinedMechanics, ("slam", 4), ("tear", 0)); // 5 + 1 - 2
+        TestFiles.AssertCounts(model.Players[1].CombinedMechanics, ("slam", 4), ("tear", 3));
     }
 
     [Fact]
@@ -74,8 +73,8 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.Players[0].Mechanics.Should().Contain("Slam", 2).And.Contain("Other", 0);
-        model.Players[1].Mechanics.Should().Contain("Slam", 0).And.Contain("Other", 1);
+        TestFiles.AssertCounts(model.Players[0].Mechanics, ("Slam", 2), ("Other", 0));
+        TestFiles.AssertCounts(model.Players[1].Mechanics, ("Slam", 0), ("Other", 1));
     }
 
     [Fact]
@@ -85,8 +84,8 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.MechanicColumns.Select(c => c.Key).Should().Equal("slam", "tear");
-        model.Players.Should().OnlyContain(p => p.CombinedMechanics["slam"] == 0);
+        Assert.Equal(new[] { "slam", "tear" }, model.MechanicColumns.Select(c => c.Key));
+        Assert.All(model.Players, p => Assert.Equal(0, p.CombinedMechanics["slam"]));
     }
 
     [Fact]
@@ -97,7 +96,7 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.Players[0].Mechanics["Slam"].Should().Be(2);
+        Assert.Equal(2, model.Players[0].Mechanics["Slam"]);
     }
 
     [Fact]
@@ -108,10 +107,10 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.MechanicColumns.Select(c => c.Label).Should().Equal("Floor", "Orb", "Beam");
-        model.MechanicColumns[0].Should().Be(new MechanicColumn("gen_Floor", "Floor", "Floor description"));
-        model.Players[0].CombinedMechanics.Should().Contain("gen_Floor", 4).And.Contain("gen_Orb", 5);
-        model.Players[1].CombinedMechanics.Should().Contain("gen_Floor", 3).And.Contain("gen_Beam", 2);
+        Assert.Equal(new[] { "Floor", "Orb", "Beam" }, model.MechanicColumns.Select(c => c.Label));
+        Assert.Equal(new MechanicColumn("gen_Floor", "Floor", "Floor description"), model.MechanicColumns[0]);
+        TestFiles.AssertCounts(model.Players[0].CombinedMechanics, ("gen_Floor", 4), ("gen_Orb", 5));
+        TestFiles.AssertCounts(model.Players[1].CombinedMechanics, ("gen_Floor", 3), ("gen_Beam", 2));
     }
 
     [Fact]
@@ -121,7 +120,7 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.MechanicColumns.Select(c => c.Label).Should().Equal("Floor");
+        Assert.Equal(new[] { "Floor" }, model.MechanicColumns.Select(c => c.Label));
     }
 
     [Fact]
@@ -131,7 +130,7 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.MechanicColumns.Select(c => c.Label).Should().Equal("Alpha", "Beta", "Mid");
+        Assert.Equal(new[] { "Alpha", "Beta", "Mid" }, model.MechanicColumns.Select(c => c.Label));
     }
 
     [Fact]
@@ -141,8 +140,8 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.MechanicColumns.Should().BeEmpty();
-        model.Players.Should().OnlyContain(p => p.CombinedMechanics.Count == 0);
+        Assert.Empty(model.MechanicColumns);
+        Assert.All(model.Players, p => Assert.Empty(p.CombinedMechanics));
     }
 
     [Fact]
@@ -153,6 +152,6 @@ public class MechanicsApplierTests
 
         MechanicsApplier.Apply(model, log, Catalog);
 
-        model.MechanicColumns.Single().Title.Should().Be("Floor (full)");
+        Assert.Equal("Floor (full)", model.MechanicColumns.Single().Title);
     }
 }

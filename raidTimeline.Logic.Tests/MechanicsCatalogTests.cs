@@ -1,6 +1,5 @@
 using System.IO;
 using System.Linq;
-using FluentAssertions;
 using raidTimeline.Logic.Mechanics;
 using Xunit;
 
@@ -18,10 +17,10 @@ public class MechanicsCatalogTests
     [Fact]
     public void Default_ContainsAllRaidEncounters()
     {
-        MechanicsCatalog.Default.Encounters.Should().HaveCount(24);
+        Assert.Equal(24, MechanicsCatalog.Default.Encounters.Count);
         foreach (var id in RaidIds)
         {
-            MechanicsCatalog.Default.Find(id).Should().NotBeNull("encounter {0} needs a mechanics table", id);
+            Assert.True(MechanicsCatalog.Default.Find(id) != null, $"encounter {id} needs a mechanics table");
         }
     }
 
@@ -30,18 +29,20 @@ public class MechanicsCatalogTests
     {
         foreach (var encounter in MechanicsCatalog.Default.Encounters)
         {
-            encounter.Name.Should().NotBeNullOrWhiteSpace();
-            encounter.Columns.Should().NotBeEmpty();
-            encounter.Columns.Should().OnlyContain(c =>
-                c.Label != "" && c.Title != "" && c.Mechanics.Count > 0, encounter.Name);
+            Assert.False(string.IsNullOrWhiteSpace(encounter.Name));
+            Assert.NotEmpty(encounter.Columns);
+            Assert.True(encounter.Columns.All(c => c.Label != "" && c.Title != "" && c.Mechanics.Count > 0),
+                encounter.Name);
         }
     }
 
     [Fact]
     public void Default_IgnoresTheMechanicsEveryEncounterHas()
     {
-        MechanicsCatalog.Default.IgnoredMechanics.Should()
-            .Contain(new[] { "Miss.Qck", "Miss.Alac", "Downed", "Got up", "Res", "Dead" });
+        foreach (var mechanic in new[] { "Miss.Qck", "Miss.Alac", "Downed", "Got up", "Res", "Dead" })
+        {
+            Assert.Contains(mechanic, MechanicsCatalog.Default.IgnoredMechanics);
+        }
     }
 
     [Fact]
@@ -49,18 +50,19 @@ public class MechanicsCatalogTests
     {
         var column = MechanicsCatalog.Default.Find(43974)!.Columns.Single(c => c.Key == "ca_arm");
 
-        column.Mechanics.Should().Equal("Arm Slam");
-        column.Subtract.Should().Equal("Stab.Slam");
+        Assert.Equal(new[] { "Arm Slam" }, column.Mechanics);
+        Assert.Equal(new[] { "Stab.Slam" }, column.Subtract);
     }
 
     [Fact]
     public void Default_ColumnsWhichAreNoFailsAreNotRanked()
     {
-        MechanicsCatalog.Default.Find(17154)!.Columns.Where(c => !c.Rank).Select(c => c.Key).Should().Equal("dei_tear");
-        MechanicsCatalog.Default.Find(19691)!.Columns.Where(c => c.Rank).Select(c => c.Key).Should()
-            .Equal("brokenking_cracks");
-        MechanicsCatalog.Default.Find(19844)!.Columns.Where(c => c.Rank).Select(c => c.Key).Should()
-            .Equal("eyes_beam");
+        Assert.Equal(new[] { "dei_tear" },
+            MechanicsCatalog.Default.Find(17154)!.Columns.Where(c => !c.Rank).Select(c => c.Key));
+        Assert.Equal(new[] { "brokenking_cracks" },
+            MechanicsCatalog.Default.Find(19691)!.Columns.Where(c => c.Rank).Select(c => c.Key));
+        Assert.Equal(new[] { "eyes_beam" },
+            MechanicsCatalog.Default.Find(19844)!.Columns.Where(c => c.Rank).Select(c => c.Key));
     }
 
     [Fact]
@@ -80,10 +82,10 @@ public class MechanicsCatalogTests
 
         var catalog = MechanicsCatalog.Parse(json);
 
-        catalog.Find(2)!.Name.Should().Be("Test");
-        catalog.Find(1)!.Columns.Single().Mechanics.Should().Equal("x", "y");
-        catalog.IgnoredMechanics.Should().Equal("Res");
-        catalog.Find(3).Should().BeNull();
+        Assert.Equal("Test", catalog.Find(2)!.Name);
+        Assert.Equal(new[] { "x", "y" }, catalog.Find(1)!.Columns.Single().Mechanics);
+        Assert.Equal(new[] { "Res" }, catalog.IgnoredMechanics);
+        Assert.Null(catalog.Find(3));
     }
 
     [Theory]
@@ -99,8 +101,8 @@ public class MechanicsCatalogTests
     [InlineData("""{"encounters":[{"name":"A","ids":[1],"columns":[{"key":"k","label":"L","mechanics":["m"]}]},{"name":"B","ids":[1],"columns":[{"key":"k","label":"L","mechanics":["m"]}]}]}""", "Encounter id 1 is used by 'A' and 'B'")]
     public void Parse_InvalidDefinition_ThrowsWithAReadableMessage(string json, string expectedMessage)
     {
-        var act = () => MechanicsCatalog.Parse(json);
+        var exception = Assert.Throws<InvalidDataException>(() => MechanicsCatalog.Parse(json));
 
-        act.Should().Throw<InvalidDataException>().WithMessage($"*{expectedMessage}*");
+        Assert.Contains(expectedMessage, exception.Message);
     }
 }
