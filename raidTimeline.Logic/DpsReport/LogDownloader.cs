@@ -1,92 +1,114 @@
-﻿using System;
+#nullable enable
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using raidTimeline.Models.Models;
-using RestSharp;
 
 namespace raidTimeline.Logic.DpsReport;
 
 public class LogDownloader
 {
-    private readonly ILogger _logger;
+    private const string BaseUrl = "https://dps.report/";
 
-    public LogDownloader(ILogger<LogDownloader> logger = null)
+    private readonly HttpClient _httpClient;
+    private readonly ILogger? _logger;
+
+    public LogDownloader(ILogger<LogDownloader>? logger = null) : this(new HttpClient(), logger)
     {
+    }
+
+    internal LogDownloader(HttpClient httpClient, ILogger? logger = null)
+    {
+        _httpClient = httpClient;
         _logger = logger;
     }
 
     internal List<RaidModel> DownloadLogsForOneDay(string path, string token, string day,
         CancellationToken cancellationToken)
     {
-        var httpClient = new HttpClient();
+        return DownloadLogsForOneDayAsync(path, token, day, cancellationToken).GetAwaiter().GetResult();
+    }
+
+    internal async Task<List<RaidModel>> DownloadLogsForOneDayAsync(string path, string token, string day,
+        CancellationToken cancellationToken)
+    {
         var models = new List<RaidModel>();
-        var filePath = Path.Combine(path, "test.html");
-        var filteredUploads = FetchAllLogMetaDataForOneDay(day, token, cancellationToken);
-        
-        foreach (var upload in filteredUploads)
+        var uploads = await FetchAllLogMetaDataForOneDayAsync(day, token, cancellationToken);
+
+        foreach (var upload in uploads)
         {
-            _logger?.LogTrace($"Loading log {upload.permalink.Value}");
-            Task<string> getFileTask = httpClient.GetStringAsync(upload.permalink.Value);
-            var html = getFileTask.Result;
-
-            html = html.Replace("/cache/", "https://dps.report/cache/");
-            File.WriteAllText(filePath, html);
-
-            _logger?.LogTrace($"Parsing log {upload.permalink.Value}");
-            var model = EiHtmlParser.ParseLog(filePath);
-            model.LogUrl = upload.permalink.Value;
-            models.Add(model);
-				
             if (cancellationToken.IsCancellationRequested) return models;
+
+            var permalink = upload["permalink"]!.Value<string>()!;
+            _logger?.LogTrace("Loading log {Permalink}", permalink);
+            var html = await _httpClient.GetStringAsync(permalink, cancellationToken);
+            html = html.Replace("/cache/", "https://dps.report/cache/");
+
+            // Unique file per log so parallel runs and leftovers cannot interfere with each other.
+            var filePath = Path.Combine(path, $"{Guid.NewGuid():N}.html");
+            try
+            {
+                await File.WriteAllTextAsync(filePath, html, cancellationToken);
+
+                _logger?.LogTrace("Parsing log {Permalink}", permalink);
+                var model = EiHtmlParser.ParseLog(filePath, _logger);
+                if (model == null)
+                {
+                    _logger?.LogWarning("Log {Permalink} could not be parsed", permalink);
+                    continue;
+                }
+
+                model.LogUrl = permalink;
+                models.Add(model);
+            }
+            finally
+            {
+                File.Delete(filePath);
+            }
         }
 
-        File.Delete(filePath);
         return models;
     }
 
-    private static List<dynamic> FetchAllLogMetaDataForOneDay(string day, string token, CancellationToken cancellationToken)
+    private async Task<List<JToken>> FetchAllLogMetaDataForOneDayAsync(string day, string token,
+        CancellationToken cancellationToken)
     {
-        var client = new RestClient("https://dps.report/");
         var page = 1;
-        var maxPage = 2;
-        var filteredUploads = new List<dynamic>();
-			
+        var maxPage = 1;
+        var filteredUploads = new List<JToken>();
+
         while (page <= maxPage)
         {
-            var request = new RestRequest($"getUploads?userToken={token}&page={page++}", 
-                DataFormat.Json);
-            var content = client.Get(request).Content;
-            var json = (dynamic)JsonConvert.DeserializeObject(content);
-				
-            if (json == null) break;
             if (cancellationToken.IsCancellationRequested) return filteredUploads;
 
-            maxPage = (int)json.pages.Value;
+            var url = $"{BaseUrl}getUploads?userToken={Uri.EscapeDataString(token)}&page={page++}";
+            var content = await _httpClient.GetStringAsync(url, cancellationToken);
+            var json = JObject.Parse(content);
 
-            foreach (var filteredUpload in FilterForOneDay(day, json))
+            maxPage = json["pages"]?.Value<int>() ?? 0;
+
+            foreach (var upload in FilterForOneDay(day, json))
             {
-                filteredUploads.Add(filteredUpload);
+                filteredUploads.Add(upload);
             }
-            if (cancellationToken.IsCancellationRequested) return filteredUploads;
         }
 
         return filteredUploads;
     }
 
-    private static IEnumerable<dynamic> FilterForOneDay(string day, dynamic json)
+    private static IEnumerable<JToken> FilterForOneDay(string day, JObject json)
     {
-        foreach (var upload in json.uploads)
+        foreach (var upload in json["uploads"] ?? new JArray())
         {
-            DateTime date = DateTimeOffset.FromUnixTimeSeconds(upload.encounterTime.Value)
+            var date = DateTimeOffset.FromUnixTimeSeconds(upload["encounterTime"]!.Value<long>())
                 .LocalDateTime;
-            var dateString = $"{date:yyyyMMdd}";
 
-            if (dateString == day)
+            if ($"{date:yyyyMMdd}" == day)
             {
                 yield return upload;
             }
