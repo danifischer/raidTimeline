@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;	
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public GorsevalMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/d/d1/Mini_Gorseval_the_Multifarious.png";
+			EncounterIds = new[] { 15429 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -43,13 +43,13 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var slam = playerModel.Mechanics.GetOrDefault("Slam");
 			var egg = playerModel.Mechanics.GetOrDefault("Egg");
-			var kick = playerModel.Mechanics.GetOrDefault("Kick");
+			var kick = playerModel.Mechanics.GetOrDefault("Kick.S");
 			var black = playerModel.Mechanics.GetOrDefault("Black");
 
 			playerModel.CombinedMechanics.Add("gors_slam", slam);

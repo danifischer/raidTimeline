@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+using System.Linq;
+using raidTimeline.Logic.EiJson;
 using raidTimeline.Logic.Interfaces;
 using raidTimeline.Models.Models;
 
@@ -7,32 +8,30 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 {
 	internal abstract class BaseMechanics : IMechanics
 	{
-		internal string EncounterIcon;
+		internal IReadOnlyCollection<int> EncounterIds = new List<int>();
 
 		public abstract string CreateHtml(RaidModel model);
 
-		public string GetEncounterIcon()
+		public IReadOnlyCollection<int> GetEncounterIds()
 		{
-			return EncounterIcon;
+			return EncounterIds;
 		}
 
-		public abstract void Parse(JObject logData, PlayerModel playerModel);
+		public abstract void Parse(EiLog log, PlayerModel playerModel);
 
-		internal static void PrepareParsing(JObject logData, PlayerModel playerModel)
+		/// <summary>
+		/// Counts for every mechanic of the log how often it was triggered on the player
+		/// and stores it under the short name of the mechanic (e.g. "Donut In").
+		/// </summary>
+		internal static void PrepareParsing(EiLog log, PlayerModel playerModel)
 		{
-			var mechanics = logData["phases"][0]["mechanicStats"][playerModel.Index];
-			var header = logData["mechanicMap"];
-			var mechanicsMap = new List<JToken>();
+			var characterName = log.Players[playerModel.Index].Name;
 
-			foreach (var mech in header)
+			foreach (var mechanic in log.Mechanics)
 			{
-				if (mech["playerMech"]?.Value<bool?>() == true)
-					mechanicsMap.Add(mech);
-			}
+				var count = mechanic.MechanicsData.Count(e => e.Actor == characterName);
 
-			for (int i = 0; i < mechanicsMap.Count; i++)
-			{
-				playerModel.Mechanics.Add(mechanicsMap[i]["shortName"].Value<string>(), mechanics[i][0].Value<int>());
+				playerModel.Mechanics[mechanic.Name] = playerModel.Mechanics.GetValueOrDefault(mechanic.Name) + count;
 			}
 		}
 	}

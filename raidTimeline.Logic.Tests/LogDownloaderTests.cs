@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,42 +26,38 @@ public class LogDownloaderTests
     [Fact]
     public async Task DownloadLogsForOneDay_MatchingUploads_ReturnsParsedModelsWithPermalink()
     {
-        using var temp = TestFiles.CreateTempDirectory();
         var handler = new StubHandler()
             .WithUploads(Token, 1, 1, ("one", LogTime), ("two", LogTime))
             .WithLog("one").WithLog("two");
 
-        var models = await Create(handler).DownloadLogsForOneDayAsync(temp.Path, Token, Day(LogTime), default);
+        var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
         models.Select(m => m.LogUrl).Should().Equal(BaseUrl + "one", BaseUrl + "two");
-        models.Should().OnlyContain(m => m.EncounterName == "Soulless Horror" && m.Players.Count == 10);
-        Directory.GetFiles(temp.Path).Should().BeEmpty("temporary html files must be cleaned up");
+        models.Should().OnlyContain(m => m.EncounterName == "Vale Guardian" && m.Players.Count == 10);
     }
 
     [Fact]
     public async Task DownloadLogsForOneDay_FiltersUploadsOfOtherDays()
     {
-        using var temp = TestFiles.CreateTempDirectory();
         var handler = new StubHandler()
             .WithUploads(Token, 1, 1, ("today", LogTime), ("other", LogTime.AddDays(-3)))
             .WithLog("today");
 
-        var models = await Create(handler).DownloadLogsForOneDayAsync(temp.Path, Token, Day(LogTime), default);
+        var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
         models.Select(m => m.LogUrl).Should().Equal(BaseUrl + "today");
-        handler.Requests.Should().NotContain(BaseUrl + "other");
+        handler.Requests.Should().NotContain(r => r.Contains("other"));
     }
 
     [Fact]
     public async Task DownloadLogsForOneDay_MultiplePages_RequestsAllPages()
     {
-        using var temp = TestFiles.CreateTempDirectory();
         var handler = new StubHandler()
             .WithUploads(Token, 1, 2, ("p1", LogTime))
             .WithUploads(Token, 2, 2, ("p2", LogTime))
             .WithLog("p1").WithLog("p2");
 
-        var models = await Create(handler).DownloadLogsForOneDayAsync(temp.Path, Token, Day(LogTime), default);
+        var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
         models.Should().HaveCount(2);
         handler.Requests.Count(r => r.Contains("getUploads")).Should().Be(2);
@@ -70,24 +66,21 @@ public class LogDownloaderTests
     [Fact]
     public async Task DownloadLogsForOneDay_UnparsableLog_IsSkipped()
     {
-        using var temp = TestFiles.CreateTempDirectory();
         var handler = new StubHandler()
             .WithUploads(Token, 1, 1, ("bad", LogTime), ("good", LogTime))
-            .WithHtml("bad", "<html>no log data</html>").WithLog("good");
+            .WithJson("bad", "{}").WithLog("good");
 
-        var models = await Create(handler).DownloadLogsForOneDayAsync(temp.Path, Token, Day(LogTime), default);
+        var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
         models.Select(m => m.LogUrl).Should().Equal(BaseUrl + "good");
-        Directory.GetFiles(temp.Path).Should().BeEmpty();
     }
 
     [Fact]
     public async Task DownloadLogsForOneDay_UserTokenIsUrlEncoded()
     {
-        using var temp = TestFiles.CreateTempDirectory();
         var handler = new StubHandler().WithUploads("a&b=c", 1, 1);
 
-        await Create(handler).DownloadLogsForOneDayAsync(temp.Path, "a&b=c", Day(LogTime), default);
+        await Create(handler).DownloadLogsForOneDayAsync("a&b=c", Day(LogTime), default);
 
         handler.Requests.Single().Should().Contain("userToken=a%26b%3Dc");
     }
@@ -95,12 +88,11 @@ public class LogDownloaderTests
     [Fact]
     public async Task DownloadLogsForOneDay_AlreadyCancelled_ReturnsNothingWithoutRequests()
     {
-        using var temp = TestFiles.CreateTempDirectory();
         var handler = new StubHandler().WithUploads(Token, 1, 1, ("one", LogTime)).WithLog("one");
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        var models = await Create(handler).DownloadLogsForOneDayAsync(temp.Path, Token, Day(LogTime), cts.Token);
+        var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), cts.Token);
 
         models.Should().BeEmpty();
         handler.Requests.Should().BeEmpty();
@@ -109,10 +101,9 @@ public class LogDownloaderTests
     [Fact]
     public async Task DownloadLogsForOneDay_ServerError_Throws()
     {
-        using var temp = TestFiles.CreateTempDirectory();
         var handler = new StubHandler();
 
-        var act = () => Create(handler).DownloadLogsForOneDayAsync(temp.Path, Token, Day(LogTime), default);
+        var act = () => Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
         await act.Should().ThrowAsync<HttpRequestException>();
     }
@@ -142,11 +133,11 @@ public class LogDownloaderTests
             return this;
         }
 
-        internal StubHandler WithLog(string id) => WithHtml(id, File.ReadAllText(TestFiles.ParsedLog));
+        internal StubHandler WithLog(string id) => WithJson(id, File.ReadAllText(TestFiles.ValeGuardianLog));
 
-        internal StubHandler WithHtml(string id, string html)
+        internal StubHandler WithJson(string id, string json)
         {
-            _responses[BaseUrl + id] = html;
+            _responses[$"{BaseUrl}getJson?permalink={Uri.EscapeDataString(BaseUrl + id)}"] = json;
             return this;
         }
 

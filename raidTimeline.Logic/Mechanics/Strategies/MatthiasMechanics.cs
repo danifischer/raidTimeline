@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public MatthiasMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/5/5d/Mini_Matthias_Abomination.png";
+			EncounterIds = new[] { 16115 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -43,12 +43,12 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var jump = playerModel.Mechanics.GetOrDefault("Jump Shards");
-			var enviroment = playerModel.Mechanics.GetOrDefault("Tornado") + playerModel.Mechanics.GetOrDefault("Storm");
+			var enviroment = playerModel.Mechanics.GetOrDefault("Tornado.M") + playerModel.Mechanics.GetOrDefault("Storm");
 			var spirit = playerModel.Mechanics.GetOrDefault("Spirit");
 			var kd = playerModel.Mechanics.GetOrDefault("KD");
 

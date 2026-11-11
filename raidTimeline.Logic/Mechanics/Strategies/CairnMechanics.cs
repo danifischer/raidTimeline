@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public CairnMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/b/b8/Mini_Cairn_the_Indomitable.png";
+			EncounterIds = new[] { 17194 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -43,12 +43,12 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var port = playerModel.Mechanics.GetOrDefault("Port");
-			var green = playerModel.Mechanics.GetOrDefault("Green") - playerModel.Mechanics.GetOrDefault("Stab.Green");
+			var green = playerModel.Mechanics.GetOrDefault("Green") - playerModel.Mechanics.GetOrDefault("Stab.Green.C");
 			var kb = playerModel.Mechanics.GetOrDefault("KB");
 			var blackStuff = playerModel.Mechanics.GetOrDefault("Leap") + playerModel.Mechanics.GetOrDefault("Sweep") + playerModel.Mechanics.GetOrDefault("Donut");
 

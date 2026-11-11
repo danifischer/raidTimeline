@@ -23,9 +23,9 @@ namespace raidTimeline.Logic
         }
 
         /// <summary>
-        /// Parse all elite insights html files in a defined path.
+        /// Parse all Elite Insights json files in a defined path.
         /// </summary>
-        /// <param name="path">Path which is used to search for html files in.</param>
+        /// <param name="path">Path which is used to search for json files in.</param>
         /// <param name="cancellationToken">Cancellation token for stopping the parsing.</param>
         /// <returns>List of parsed raid models.</returns>
         public IList<RaidModel> ParseFilesFromDisk(string path, CancellationToken cancellationToken)
@@ -38,22 +38,25 @@ namespace raidTimeline.Logic
                 MaxDegreeOfParallelism = 5
             };
 
-            Parallel.ForEach(Directory.GetFiles(path, "*.html"), parallelOptions,
+            Parallel.ForEach(Directory.GetFiles(path, "*.json"), parallelOptions,
                 filePath =>
             {
                 _logger?.LogTrace($"Parsing log: {Path.GetFileName(filePath)}");
-                var model = EiHtmlParser.ParseLog(filePath);
+                var model = EiJsonParser.ParseFile(filePath, _logger);
                 if (model != null)
-                    models.Add(model);
+                {
+                    // Parallel.ForEach: List<T> is not thread-safe
+                    lock (models) models.Add(model);
+                }
             });
 
             return models;
         }
 
         /// <summary>
-        /// Parse all elite insights html files in a defined path, but ignores already parsed ones.
+        /// Parse all Elite Insights json files in a defined path, but ignores already parsed ones.
         /// </summary>
-        /// <param name="path">Path which is used to search for html files in.</param>
+        /// <param name="path">Path which is used to search for json files in.</param>
         /// <param name="outputFileName">File name if the summary html file.</param>
         /// <param name="models">List of already parsed raid models.</param>
         /// <param name="cancellationToken">Cancellation token for stopping the parsing.</param>
@@ -69,18 +72,17 @@ namespace raidTimeline.Logic
 
             var knownFiles = models.Select(i => i.LogPath).ToArray();
 
-            Parallel.ForEach(Directory.GetFiles(path, "*.html"), parallelOptions,
+            Parallel.ForEach(Directory.GetFiles(path, "*.json"), parallelOptions,
                 filePath =>
             {
                 if (knownFiles.Contains(filePath)) return;
-                if (filePath.EndsWith(outputFileName)) return;
-
+                
                 _logger?.LogTrace($"Parsing log: {Path.GetFileName(filePath)} ");
-                var model = EiHtmlParser.ParseLog(filePath, _logger);
+                var model = EiJsonParser.ParseFile(filePath, _logger);
                 if (model != null)
                 {
                     _logger?.LogTrace($"Finished: {Path.GetFileName(filePath)}");
-                    models.Add(model);
+                    lock (models) models.Add(model);
                 }
             });
 
@@ -134,18 +136,17 @@ namespace raidTimeline.Logic
         }
 
         /// <summary>
-        /// Parse elite insights html files from dps.report.
+        /// Parse Elite Insights logs of one day from dps.report.
         /// </summary>
-        /// <param name="path">The path which shall be used to temporarily store logs.</param>
         /// <param name="token">The dps.report token for the user.</param>
         /// <param name="day">The day that shall be parsed.</param>
         /// <param name="cancellationToken">Cancellation token for stopping the parsing.</param>
         /// <returns>List of parsed raid models.</returns>
-        public IList<RaidModel> ParseFileFromWeb(string path, string token, string day,
+        public IList<RaidModel> ParseFileFromWeb(string token, string day,
             CancellationToken cancellationToken = new())
         {
             var downloader = new LogDownloader();
-            return downloader.DownloadLogsForOneDay(path, token, day, cancellationToken);
+            return downloader.DownloadLogsForOneDay(token, day, cancellationToken);
         }
 
         private static void BuildStatisticsFile(string path, IEnumerable<RaidModel> models,

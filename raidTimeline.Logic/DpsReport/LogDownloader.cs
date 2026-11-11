@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +10,10 @@ using raidTimeline.Models.Models;
 
 namespace raidTimeline.Logic.DpsReport;
 
+/// <summary>
+/// Loads the logs of a user from dps.report. The Elite Insights json of every log is fetched from the
+/// getJson endpoint, the permalink of the log is used as link in the timeline.
+/// </summary>
 public class LogDownloader
 {
     private const string BaseUrl = "https://dps.report/";
@@ -28,63 +31,48 @@ public class LogDownloader
         _logger = logger;
     }
 
-    internal List<RaidModel> DownloadLogsForOneDay(string path, string token, string day,
-        CancellationToken cancellationToken)
+    internal List<RaidModel> DownloadLogsForOneDay(string token, string day, CancellationToken cancellationToken)
     {
-        return DownloadLogsForOneDayAsync(path, token, day, cancellationToken).GetAwaiter().GetResult();
+        return DownloadLogsForOneDayAsync(token, day, cancellationToken).GetAwaiter().GetResult();
     }
 
-    internal async Task<List<RaidModel>> DownloadLogsForOneDayAsync(string path, string token, string day,
+    internal async Task<List<RaidModel>> DownloadLogsForOneDayAsync(string token, string day,
         CancellationToken cancellationToken)
     {
         var models = new List<RaidModel>();
-        var uploads = await FetchAllLogMetaDataForOneDayAsync(day, token, cancellationToken);
+        var permalinks = await FetchPermalinksForOneDayAsync(day, token, cancellationToken);
 
-        foreach (var upload in uploads)
+        foreach (var permalink in permalinks)
         {
             if (cancellationToken.IsCancellationRequested) return models;
 
-            var permalink = upload["permalink"]!.Value<string>()!;
             _logger?.LogTrace("Loading log {Permalink}", permalink);
-            var html = await _httpClient.GetStringAsync(permalink, cancellationToken);
-            html = html.Replace("/cache/", "https://dps.report/cache/");
+            var url = $"{BaseUrl}getJson?permalink={Uri.EscapeDataString(permalink)}";
+            var json = await _httpClient.GetStringAsync(url, cancellationToken);
 
-            // Unique file per log so parallel runs and leftovers cannot interfere with each other.
-            var filePath = Path.Combine(path, $"{Guid.NewGuid():N}.html");
-            try
+            var model = EiJsonParser.ParseJson(json, permalink, permalink, _logger);
+            if (model == null)
             {
-                await File.WriteAllTextAsync(filePath, html, cancellationToken);
-
-                _logger?.LogTrace("Parsing log {Permalink}", permalink);
-                var model = EiHtmlParser.ParseLog(filePath, _logger);
-                if (model == null)
-                {
-                    _logger?.LogWarning("Log {Permalink} could not be parsed", permalink);
-                    continue;
-                }
-
-                model.LogUrl = permalink;
-                models.Add(model);
+                _logger?.LogWarning("Log {Permalink} could not be parsed", permalink);
+                continue;
             }
-            finally
-            {
-                File.Delete(filePath);
-            }
+
+            models.Add(model);
         }
 
         return models;
     }
 
-    private async Task<List<JToken>> FetchAllLogMetaDataForOneDayAsync(string day, string token,
+    private async Task<List<string>> FetchPermalinksForOneDayAsync(string day, string token,
         CancellationToken cancellationToken)
     {
         var page = 1;
         var maxPage = 1;
-        var filteredUploads = new List<JToken>();
+        var permalinks = new List<string>();
 
         while (page <= maxPage)
         {
-            if (cancellationToken.IsCancellationRequested) return filteredUploads;
+            if (cancellationToken.IsCancellationRequested) return permalinks;
 
             var url = $"{BaseUrl}getUploads?userToken={Uri.EscapeDataString(token)}&page={page++}";
             var content = await _httpClient.GetStringAsync(url, cancellationToken);
@@ -92,26 +80,18 @@ public class LogDownloader
 
             maxPage = json["pages"]?.Value<int>() ?? 0;
 
-            foreach (var upload in FilterForOneDay(day, json))
+            foreach (var upload in json["uploads"] ?? new JArray())
             {
-                filteredUploads.Add(upload);
+                var date = DateTimeOffset.FromUnixTimeSeconds(upload["encounterTime"]!.Value<long>())
+                    .LocalDateTime;
+
+                if ($"{date:yyyyMMdd}" == day)
+                {
+                    permalinks.Add(upload["permalink"]!.Value<string>()!);
+                }
             }
         }
 
-        return filteredUploads;
-    }
-
-    private static IEnumerable<JToken> FilterForOneDay(string day, JObject json)
-    {
-        foreach (var upload in json["uploads"] ?? new JArray())
-        {
-            var date = DateTimeOffset.FromUnixTimeSeconds(upload["encounterTime"]!.Value<long>())
-                .LocalDateTime;
-
-            if ($"{date:yyyyMMdd}" == day)
-            {
-                yield return upload;
-            }
-        }
+        return permalinks;
     }
 }

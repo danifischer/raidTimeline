@@ -74,7 +74,12 @@ Commands:
 * `configurationPath`: the path to the configuration file Elite Insights uses to store your settings
 
 By using the local parsing the folder which is used by arcdps to save the logs and the folder that Elite 
-Insights uses to store the html files is taken from the Elite Insights configuration.
+Insights uses to store its output is taken from the Elite Insights configuration.
+
+**Elite Insights has to write json files** (the timeline is built from them). Enable `SaveOutJSON` in the 
+Elite Insights settings (`SaveOutJSON=true` in the configuration file). Keep `SaveOutHTML` enabled as well if the 
+timeline should link to the html logs: the link points to the html file Elite Insights writes next to the json.
+Elite Insights 3.x is required, logs in the old html-only format are not supported anymore.
 
 #### dps.report settings
 
@@ -96,15 +101,19 @@ Insights uses to store the html files is taken from the Elite Insights configura
 
 #### How is the timeline created
 
-The timeline takes the created Elite Insight HTML files and creates an overview page where you can:
+The timeline takes the json files created by Elite Insights (or the json provided by dps.report) and creates an overview page where you can:
 
 * See how long your raids (ordered by days) took and how long you where in and out of combat
 * See how many bosses you tried / killed / failed
 * See the order of your tries and their status
 * See the top dps, rez, mechanic fails and the boon uptime
-* Click on the try to go to the log
+* Click on the try to go to the log (the html log of Elite Insights, or the dps.report page)
 
-This is done by parsing the HTML files and combining the information from the log files.
+This is done by parsing the Elite Insights json files and combining the information from the log files.
+The format is documented at https://baaron4.github.io/GW2-Elite-Insights-Parser/Json/index.html.
+
+Boss specific mechanics are looked up by the encounter (trigger) id of the log, see `raidTimeline.Logic/Mechanics`.
+Mechanic names come from Elite Insights and can change between versions; a mechanic that was renamed shows up as 0.
 
 #### dps.report upload
 

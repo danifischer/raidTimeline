@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public SlothasorMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/e/ed/Mini_Slubling.png";
+			EncounterIds = new[] { 16123 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -43,9 +43,9 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var tantrum = playerModel.Mechanics.GetOrDefault("Tantrum");
 			var breath = playerModel.Mechanics.GetOrDefault("Breath");

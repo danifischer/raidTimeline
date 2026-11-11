@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public ConjuredAmalgamateMechanics()
 		{
-			EncounterIcon = "https://i.imgur.com/eLyIWd2.png";
+			EncounterIds = new[] { 43974, 44885 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -43,9 +43,9 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var arm = playerModel.Mechanics.GetOrDefault("Arm Slam") - playerModel.Mechanics.GetOrDefault("Stab.Slam");
 			var balls = playerModel.Mechanics.GetOrDefault("Balls");

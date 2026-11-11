@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public DhuumMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/e/e4/Mini_Dhuum.png";
+			EncounterIds = new[] { 19450 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -45,9 +45,9 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var cone = playerModel.Mechanics.GetOrDefault("Cone");
 			var crack = playerModel.Mechanics.GetOrDefault("Crack");

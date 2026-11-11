@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public SoullessHorrorMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/d/d4/Mini_Desmina.png";
+			EncounterIds = new[] { 19767 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -43,14 +43,14 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var donutIn = playerModel.Mechanics.GetOrDefault("Donut In");
 			var donutOut = playerModel.Mechanics.GetOrDefault("Donut Out");
 			var scythe = playerModel.Mechanics.GetOrDefault("Scythe");
-			var slices = playerModel.Mechanics.GetOrDefault("Slice1") + playerModel.Mechanics.GetOrDefault("Slice2") + playerModel.Mechanics.GetOrDefault("8Slice");
+			var slices = playerModel.Mechanics.GetOrDefault("4Slice") + playerModel.Mechanics.GetOrDefault("8Slice");
 
 			playerModel.CombinedMechanics.Add("sh_donutIn", donutIn);
 			playerModel.CombinedMechanics.Add("sh_donutOut", donutOut);

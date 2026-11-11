@@ -56,9 +56,9 @@ namespace raidTimeline.Logic.Mechanics
 			_strategies.Add(new QadimThePeerlessMechanics());
 		}
 
-		internal IMechanics FindStrategy(string iconUrl)
+		internal IMechanics FindStrategy(int encounterId)
 		{
-			return _strategies.SingleOrDefault(i => i.GetEncounterIcon() == iconUrl);
+			return _strategies.SingleOrDefault(i => i.GetEncounterIds().Contains(encounterId));
 		}
 	}
 }
