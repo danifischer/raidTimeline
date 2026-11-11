@@ -182,6 +182,14 @@ The columns of the mechanics table are data, not code: `raidTimeline.Logic/Mecha
 * `rank: false` shows a column without using it to choose the players with the most fails
 * `ignoredMechanics` are the mechanics every encounter has; they are not shown for encounters without a definition
 
+#### Your own bosses
+
+You do not have to change the program for a new encounter or a renamed mechanic: `rta config mechanics` opens
+`mechanics.json` in your settings folder (next to your `config.json`, `rta config path` shows where). It has the same
+format as the shipped file. An encounter in it replaces the shipped encounter with the same id, new ids are added and
+`ignoredMechanics` are added to the shipped ones. If the file is invalid, rta prints the reason and uses the shipped
+definitions.
+
 Elite Insights renames mechanics from time to time and a missing name counts as 0. Look at `mechanics` in a json
 log for the current names (Elite Insights only lists the mechanics which happened in that log). Every encounter has a
 small anonymized real log in `raidTimeline.Logic.Tests/Files` (`BossMechanicsTests` checks all columns of all of them):

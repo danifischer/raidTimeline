@@ -42,8 +42,13 @@ namespace raidTimeline.Logic.Mechanics
             }
         }
 
+        /// <summary>The shipped catalog, merged with the personal one if <see cref="CustomMechanics.Load"/> was used.</summary>
+        internal static MechanicsCatalog Default => Custom ?? Shipped;
+
         /// <summary>The catalog shipped with the library.</summary>
-        internal static MechanicsCatalog Default => DefaultCatalog.Value;
+        internal static MechanicsCatalog Shipped => DefaultCatalog.Value;
+
+        internal static MechanicsCatalog? Custom { get; set; }
 
         internal IReadOnlyList<EncounterDefinition> Encounters { get; }
 
@@ -72,6 +77,36 @@ namespace raidTimeline.Logic.Mechanics
 
             Validate(document);
             return new MechanicsCatalog(document);
+        }
+
+        /// <summary>
+        /// This catalog with the definitions of <paramref name="custom"/> on top: an encounter of <paramref name="custom"/>
+        /// replaces the encounter of this catalog which has the same id, the ignored mechanics are added up.
+        /// </summary>
+        internal MechanicsCatalog WithOverrides(MechanicsCatalog custom)
+        {
+            var customIds = custom.Encounters.SelectMany(e => e.Ids).ToHashSet();
+            var encounters = new List<EncounterDefinition>();
+
+            foreach (var encounter in Encounters)
+            {
+                var ids = encounter.Ids.Where(id => !customIds.Contains(id)).ToList();
+                if (ids.Count == 0)
+                {
+                    continue; // fully replaced
+                }
+
+                encounters.Add(ids.Count == encounter.Ids.Count
+                    ? encounter
+                    : new EncounterDefinition { Name = encounter.Name, Ids = ids, Columns = encounter.Columns });
+            }
+
+            encounters.AddRange(custom.Encounters);
+            return new MechanicsCatalog(new Document
+            {
+                IgnoredMechanics = IgnoredMechanics.Union(custom.IgnoredMechanics).ToList(),
+                Encounters = encounters
+            });
         }
 
         private static MechanicsCatalog LoadEmbedded()
