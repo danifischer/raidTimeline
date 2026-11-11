@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>rta</AssemblyName>
@@ -19,12 +19,16 @@
       <PackageReference Include="CliWrap" Version="3.5.0" />
       <PackageReference Include="Cocona" Version="2.0.2" />
       <PackageReference Include="Kurukuru" Version="1.4.2" />
+      <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
       <PackageReference Include="UnitsNet" Version="4.119.0" />
     </ItemGroup>
 
     <ItemGroup>
       <None Update="config.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="config.local.json" Condition="Exists('config.local.json')">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 

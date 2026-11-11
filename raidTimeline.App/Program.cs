@@ -8,11 +8,26 @@ using raidTimeline.App.Services.Interfaces;
 using raidTimeline.Database;
 using raidTimeline.Logic;
 using raidTimeline.Logic.Interfaces;
+using Serilog;
+
 
 var builder = CoconaApp.CreateBuilder();
 
 builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"),
     false, true);
+// Optional local overrides (secrets, local paths); not committed to git.
+builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.local.json"),
+    true, true);
+
+var serilog = new LoggerConfiguration()
+    .MinimumLevel.Verbose()
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.File("rta_log.txt")
+    .CreateLogger();
+
+builder.Logging.AddSerilog(serilog);
+
 builder.Services.AddSingleton<ConfigurationHelper>();
 builder.Services.AddTransient<IEliteInsightsService, EliteInsightsService>();
 builder.Services.AddTransient<ITimelineCreator, TimelineCreator>();

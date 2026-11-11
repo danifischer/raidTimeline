@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 using System;
 using System.Globalization;
 using System.Linq;

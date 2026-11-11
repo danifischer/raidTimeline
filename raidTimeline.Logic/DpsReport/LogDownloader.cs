@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 using RestSharp;
 
 namespace raidTimeline.Logic.DpsReport;

@@ -24,7 +24,7 @@ public class TimelineCreatorTests : IDisposable
     [Fact]
     public void ParseFileFromWeb_ValidInput_ProvidesCorrectModelData()
     {
-        var subjectUnderTest = new TimelineCreator();
+        var subjectUnderTest = new TimelineCreator(null);
 
         var models = subjectUnderTest.ParseFileFromWeb(_path, 
             "qla4m7fb2qc1dm2askitfmjimvtoltjb", 

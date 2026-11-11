@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 
 namespace raidTimeline.Logic.Interfaces
 {

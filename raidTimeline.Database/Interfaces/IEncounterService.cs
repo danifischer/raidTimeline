@@ -1,6 +1,6 @@
-﻿using raidTimeline.Logic.Models;
+﻿using raidTimeline.Models.Models;
 
-namespace raidTimeline.Database.Services;
+namespace raidTimeline.Database.Interfaces;
 
 public interface IEncounterService
 {
