@@ -37,10 +37,14 @@ Commands:
 
 ### Installation
 
-1. Download the latest version from releases
+1. Download `rta-v<version>-win-x64.zip` from the [latest release](https://github.com/danifischer/raidTimeline/releases/latest)
+   (no .NET installation needed; `SHA256SUMS.txt` lets you verify the download)
 2. Unpack the zip file
 3. Open the config.json and enter the options you need (see Configuration)
 4. Run `rta.exe` via command line (you can put it in you `PATH` variable for easy access)
+
+To update, download the new zip and keep your settings: copy your `config.json` (or better: put your values in a
+`config.local.json`, see Configuration) into the new folder.
 
 ### Configuration
 
@@ -133,6 +137,7 @@ Some information around that:
 
 ### raidTimeline.Logic.dll
 
+The `raidTimeline.Logic.<version>.nupkg` is attached to every release.
 Feel free to use the `raidTimeline.Logic.dll`, it provides an interface `ITimelineCreator` and the `TimelineCreator`.  
 With these you can build your own tools if you want.
 

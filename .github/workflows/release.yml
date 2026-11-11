@@ -1,0 +1,92 @@
+name: Release
+
+# Push a tag like v3.0.0 to publish a GitHub release with
+#  - rta-<tag>-win-x64.zip   the app as a single file (no .NET installation needed) plus config.json
+#  - raidTimeline.Logic.<version>.nupkg   the library
+#  - SHA256SUMS.txt
+# Pull requests that change this file and manual runs only build the files (dry run, nothing is published).
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    paths: ['.github/workflows/release.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write # create the release
+    env:
+      IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          if [[ "$IS_RELEASE" == "true" ]]; then
+            if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+              echo "Tag '$GITHUB_REF_NAME' is not a version like v3.0.0 or v3.1.0-beta.1" >&2
+              exit 1
+            fi
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="0.0.0-dryrun.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build raidTimeline.sln -c Release -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Test
+        run: dotnet test raidTimeline.sln -c Release --no-build --filter "Category!=Integration"
+
+      # Pack before publishing the app: that publish builds without symbols, which the package expects.
+      - name: Pack library
+        run: dotnet pack raidTimeline.Logic/raidTimeline.Logic.csproj -c Release -p:Version=${{ steps.version.outputs.version }} -o publish/lib
+
+      - name: Publish app
+        run: >
+          dotnet publish raidTimeline.App/raidTimeline.App.csproj -c Release -r win-x64 --self-contained
+          -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
+          -p:Version=${{ steps.version.outputs.version }} -o publish/app
+
+      - name: Smoke test app
+        run: ./publish/app/rta.exe --help
+
+      - name: Create release files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release | Out-Null
+          Compress-Archive -Path publish/app/* -DestinationPath "release/rta-v${{ steps.version.outputs.version }}-win-x64.zip"
+          Copy-Item publish/lib/*.nupkg release/
+          $files = Get-ChildItem release -File
+          $files | Get-FileHash -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content release/SHA256SUMS.txt
+          Get-Content release/SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.version.outputs.version }}
+          path: release/*
+
+      - name: Create GitHub release
+        if: env.IS_RELEASE == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=""
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then flags="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" release/* --title "rta ${{ steps.version.outputs.version }}" --generate-notes $flags
