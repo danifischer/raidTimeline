@@ -1,0 +1,225 @@
+{
+  "ignoredMechanics": ["Miss.Qck", "Miss.Alac", "Downed", "Got up", "Res", "Dead", "Lckt", "Knck.Pll", "Knck.Dwn", "Lnch", "Flt"],
+  "encounters": [
+    {
+      "name": "Vale Guardian",
+      "ids": [15438],
+      "columns": [
+        { "key": "vg_tp", "label": "Ports", "title": "Unstable Magic Spike (Green Guard or Boss Teleport)", "mechanics": ["Split TP", "Boss TP"] },
+        { "key": "vg_seeker", "label": "Seeker", "title": "Magic Pulse (Hit by Seeker)", "mechanics": ["Seeker"] },
+        { "key": "vg_floor", "label": "Floor", "title": "Unstable Pylon (Floor dmg)", "mechanics": ["Floor R", "Floor B", "Floor G"] }
+      ]
+    },
+    {
+      "name": "Gorseval",
+      "ids": [15429],
+      "columns": [
+        { "key": "gors_slam", "label": "Slam", "title": "Spectral Impact (KB Slam)", "mechanics": ["Slam"] },
+        { "key": "gors_egg", "label": "Egg", "title": "Ghastly Prison (Egged)", "mechanics": ["Egg"] },
+        { "key": "gors_kick", "label": "Kick", "title": "Kicked by small add", "mechanics": ["Kick.S"] },
+        { "key": "gors_black", "label": "Black", "title": "Hit by Black Goo", "mechanics": ["Black"] }
+      ]
+    },
+    {
+      "name": "Sabetha",
+      "ids": [15375],
+      "columns": [
+        { "key": "sab_flak", "label": "Flak", "title": "Flak Shot (Fire Patches)", "mechanics": ["Flak"] },
+        { "key": "sab_cannon", "label": "Cannon", "title": "Cannon Barrage (stood in AoE)", "mechanics": ["Cannon"] },
+        { "key": "sab_flamethrower", "label": "Flamethrower", "title": "Flame Blast (Karde's Flamethrower)", "mechanics": ["Karde Flame"] }
+      ]
+    },
+    {
+      "name": "Slothasor",
+      "ids": [16123],
+      "columns": [
+        { "key": "sloth_tantrum", "label": "Tantrum", "title": "Tantrum (Triple Circles after Ground slamming)", "mechanics": ["Tantrum"] },
+        { "key": "sloth_breath", "label": "Flame Breath", "title": "Halitosis (Flame Breath)", "mechanics": ["Breath"] },
+        { "key": "sloth_poisonDmg", "label": "Poison dmg", "title": "Stood in Volatile Poison", "mechanics": ["Poison dmg"] },
+        { "key": "sloth_floor", "label": "Floor Poison", "title": "Toxic Cloud (stood in green floor poison)", "mechanics": ["Floor"] }
+      ]
+    },
+    {
+      "name": "Bandit Trio",
+      "ids": [16088, 16137, 16125],
+      "columns": [
+        { "key": "trio_cone", "label": "Zane Cone", "title": "Hail of Bullets (Zane Cone Shot)", "mechanics": ["Zane Cone"] },
+        { "key": "trio_tornado", "label": "Tornado", "title": "Fiery Vortex (Tornado)", "mechanics": ["Tornado.N"] }
+      ]
+    },
+    {
+      "name": "Matthias",
+      "ids": [16115],
+      "columns": [
+        { "key": "matt_jump", "label": "Jump", "title": "Shards of Rage (Jump)", "mechanics": ["Jump Shards"] },
+        { "key": "matt_enviroment", "label": "Enviroment", "title": "Tornado & Storm", "mechanics": ["Tornado.M", "Storm"] },
+        { "key": "matt_kd", "label": "KD", "title": "Unbalanced (triggered Storm phase Debuff)", "mechanics": ["KD"] },
+        { "key": "matt_spirit", "label": "Spirit", "title": "Surrender (hit by walking Spirit)", "mechanics": ["Spirit"] }
+      ]
+    },
+    {
+      "name": "Keep Construct",
+      "ids": [16235],
+      "columns": [
+        { "key": "kc_debris", "label": "Debris", "title": "Hail of Fury (Falling Debris)", "mechanics": ["Debris"] },
+        { "key": "kc_pizza", "label": "Pizza", "title": "Phantasmal Blades (rotating Attack)", "mechanics": ["Pizza"] },
+        { "key": "kc_jump", "label": "Jump", "title": "Tower Drop (KC Jump)", "mechanics": ["Jump"] }
+      ]
+    },
+    {
+      "name": "Xera",
+      "ids": [16246],
+      "columns": [
+        { "key": "xera_orb", "label": "Orb", "title": "Temporal Shred (Hit by Red Orb)", "mechanics": ["Orb"] },
+        { "key": "xera_orbAoe", "label": "Orb Aoe", "title": "Temporal Shred (Stood in Orb Aoe)", "mechanics": ["Orb Aoe"] },
+        { "key": "xera_stacks", "label": "Stacks", "title": "Derangement (Stacking Debuff)", "mechanics": ["Stacks"] }
+      ]
+    },
+    {
+      "name": "Cairn",
+      "ids": [17194],
+      "columns": [
+        { "key": "cairn_port", "label": "Port", "title": "Orange Teleport Field", "mechanics": ["Port"] },
+        { "key": "cairn_green", "label": "Green", "title": "Green Spatial Manipulation Field (lift)", "mechanics": ["Green.C"] },
+        { "key": "cairn_kb", "label": "KB", "title": "Knockback Crystals (tornado like)", "mechanics": ["KB"] },
+        { "key": "cairn_blackStuff", "label": "Boss attacks", "title": "Leap, Sweep & Donut", "mechanics": ["Leap", "Sweep", "Donut"] }
+      ]
+    },
+    {
+      "name": "Mursaat Overseer",
+      "ids": [17172],
+      "columns": [
+        { "key": "mo_jade", "label": "Jade", "title": "Jade Soldier's Aura hit", "mechanics": ["Jade"] },
+        { "key": "mo_explo", "label": "Expl", "title": "Jade Soldier's Death Explosion", "mechanics": ["Jade Expl"] }
+      ]
+    },
+    {
+      "name": "Samarog",
+      "ids": [17188],
+      "columns": [
+        { "key": "sam_attacks", "label": "Attacks", "title": "Samarog Attacks (Wave, Slam, Rush & Sweep)", "mechanics": ["Schk.Wv", "Swp", "Trpl", "Slam"] },
+        { "key": "sam_friendFail", "label": "F. Fail", "title": "Inevitable Betrayal (failed Green)", "mechanics": ["Gr.Fl"] },
+        { "key": "sam_spear", "label": "Spear", "title": "Spear spawn and attacks", "mechanics": ["S.Pls", "S.Spwn", "Shck.Wv Ctr"] }
+      ]
+    },
+    {
+      "name": "Deimos",
+      "ids": [17154],
+      "columns": [
+        { "key": "dei_oil", "label": "Oil T.", "title": "Rapid Decay Trigger (Black expanding oil)", "mechanics": ["Oil T."] },
+        { "key": "dei_pizza", "label": "Annihilate", "title": "Annihilate (Cascading Pizza attack)", "mechanics": ["Pizza"] },
+        { "key": "dei_tear", "label": "Tear", "title": "Collected a Demonic Tear", "mechanics": ["Tear"], "rank": false }
+      ]
+    },
+    {
+      "name": "Soulless Horror",
+      "ids": [19767],
+      "columns": [
+        { "key": "sh_donutIn", "label": "Donut I.", "title": "Vortex Slash (Inner Donut hit)", "mechanics": ["Donut In"] },
+        { "key": "sh_donutOut", "label": "Donut O.", "title": "Vortex Slash (Outer Donut hit)", "mechanics": ["Donut Out"] },
+        { "key": "sh_scythe", "label": "Scythe", "title": "Spinning Slash (hit by Scythe)", "mechanics": ["Scythe"] },
+        { "key": "sh_slices", "label": "Slices", "title": "Quad Slash (4 Slices) & Death Bloom (8 Slices)", "mechanics": ["4Slice", "8Slice"] }
+      ]
+    },
+    {
+      "name": "River Of Souls",
+      "ids": [19828, -1],
+      "columns": [
+        { "key": "river_stun", "label": "Stun Bomb", "title": "Stunned by Mini Bomb", "mechanics": ["Stun Bomb"] }
+      ]
+    },
+    {
+      "name": "Statue Of Ice",
+      "ids": [19691],
+      "columns": [
+        { "key": "brokenking_cone", "label": "Cone", "title": "King's Wrath (Auto Attack Cone Part)", "mechanics": ["Cone AoE", "Cone Shards"], "rank": false },
+        { "key": "brokenking_cracks", "label": "Cracks", "title": "Numbing Breach (Ice Cracks in the Ground)", "mechanics": ["Cracks"] },
+        { "key": "brokenking_green", "label": "Green", "title": "Frozen Wind (Stood in Green)", "mechanics": ["Green"], "rank": false }
+      ]
+    },
+    {
+      "name": "Statue Of Death",
+      "ids": [19536],
+      "columns": [
+        { "key": "souleater_vomit", "label": "Vomit", "title": "Hungering Miasma (Vomit Goo)", "mechanics": ["Vomit"] }
+      ]
+    },
+    {
+      "name": "Statue Of Darkness",
+      "ids": [19844, 19651],
+      "columns": [
+        { "key": "eyes_orb", "label": "Light Orb", "title": "Light Carrier (picked up a light orb)", "mechanics": ["Light Orb"], "rank": false },
+        { "key": "eyes_detonate", "label": "Detonate", "title": "Flare (detonate light orb to incapacitate eye)", "mechanics": ["Detonate"], "rank": false },
+        { "key": "eyes_beam", "label": "Beam", "title": "Deep Abyss (ticking eye beam)", "mechanics": ["Beam"] }
+      ]
+    },
+    {
+      "name": "Dhuum",
+      "ids": [19450],
+      "columns": [
+        { "key": "dhuum_cone", "label": "Cone", "title": "Boon ripping Cone Attack", "mechanics": ["Cone"] },
+        { "key": "dhuum_crack", "label": "Crack", "title": "Cull (Fearing Fissures)", "mechanics": ["Crack"] },
+        { "key": "dhuum_mark", "label": "Mark", "title": "Necro Marks during Scythe attack", "mechanics": ["Mark"] },
+        { "key": "dhuum_dip", "label": "Dip", "title": "Lesser Death Mark hit (Dip into ground)", "mechanics": ["Dip"] },
+        { "key": "dhuum_echo", "label": "Echo", "title": "Picked up by Ender's Echo", "mechanics": ["Echo PU"] }
+      ]
+    },
+    {
+      "name": "Conjured Amalgamate",
+      "ids": [43974, 44885],
+      "columns": [
+        { "key": "ca_arm", "label": "Slam", "title": "Pulverize (Arm Slam)", "mechanics": ["Arm Slam"], "subtract": ["Stab.Slam"] },
+        { "key": "ca_balls", "label": "Balls", "title": "Junk Absorption (Purple Balls during collect)", "mechanics": ["Balls"] },
+        { "key": "ca_junk", "label": "Junk", "title": "Junk Fall (Falling Debris)", "mechanics": ["Junk"] },
+        { "key": "ca_tremor", "label": "Tremor", "title": "Tremor (Field adjacent to Arm Slam)", "mechanics": ["Tremor"] }
+      ]
+    },
+    {
+      "name": "Twin Largos",
+      "ids": [21105, 21089],
+      "columns": [
+        { "key": "twinlargos_debuff", "label": "Debuff", "title": "Waterlogged (stacking water debuff)", "mechanics": ["Debuff"] },
+        { "key": "twinlargos_kenut", "label": "Kenut", "title": "Kenut mechanics (Wave, Tornado & Y Field)", "mechanics": ["Wave", "Tornado", "Y Field"] },
+        { "key": "twinlargos_nikare", "label": "Nikare", "title": "Nikare mechanics (Charge, Pool, Bubbles & Lauch Fields)", "mechanics": ["Charge", "Pool", "KB/Launch", "Float"] }
+      ]
+    },
+    {
+      "name": "Qadim",
+      "ids": [20934],
+      "columns": [
+        { "key": "qadim_wvyern", "label": "Wyv", "title": "Wyvern attacks (Slash, Tail & Fire Breath)", "mechanics": ["Slash", "W.Pizza", "W.Breath"] },
+        { "key": "qadim_destroyer", "label": "Dest", "title": "Destroyer attacks (Wave, Slam & Claw)", "mechanics": ["D.Wave", "D.Slam", "Claw"] },
+        { "key": "qadim_qadim", "label": "Qad", "title": "Qadim attacks (Flame Dance, Flame Wave, Fire Wave, Inferno & Sea of Flames)", "mechanics": ["F.Dance", "KB", "Q.Wave", "Inf.", "Q.Hitbox"] },
+        { "key": "qadim_port", "label": "Port", "title": "Swap (Ported from below Legendary Creature to Qadim)", "mechanics": ["Port"] }
+      ]
+    },
+    {
+      "name": "Cardinal Sabir",
+      "ids": [21964],
+      "columns": [
+        { "key": "sabir_shockwave", "label": "Shockwave", "title": "Hit by Shockwave", "mechanics": ["Shockwave"] }
+      ]
+    },
+    {
+      "name": "Cardinal Adina",
+      "ids": [22006],
+      "columns": [
+        { "key": "adina_blind", "label": "Blind", "title": "Unremovable blindness", "mechanics": ["R.Blind"] },
+        { "key": "adina_curse", "label": "Curse", "title": "Stacking damage debuff from Hand of Erosion", "mechanics": ["Curse"] },
+        { "key": "adina_pulse", "label": "Pulse", "title": "Perilous Pulse", "mechanics": ["Perilous Pulse"] },
+        { "key": "adina_mines", "label": "Mines", "title": "Hit by mines", "mechanics": ["Mines"] },
+        { "key": "adina_eye", "label": "Eye", "title": "Looked at Eye", "mechanics": ["Eye"] }
+      ]
+    },
+    {
+      "name": "Qadim The Peerless",
+      "ids": [22000],
+      "columns": [
+        { "key": "prlqadim_push", "label": "Push", "title": "Pushed by shockwave or dome", "mechanics": ["Shck.KB", "Dome.KB"] },
+        { "key": "prlqadim_lightning", "label": "Lightning", "title": "Hit by small or expanding lightning field", "mechanics": ["Lght.H", "S.Lght.H"] },
+        { "key": "prlqadim_fire", "label": "Fire", "title": "Hit by fire field", "mechanics": ["Magma.F"] },
+        { "key": "prlqadim_ball", "label": "Ball", "title": "Hit by aimed ball or ball explosion", "mechanics": ["A.Prj.H", "A.Prj.E"] }
+      ]
+    }
+  ]
+}

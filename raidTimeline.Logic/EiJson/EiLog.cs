@@ -116,6 +116,9 @@ namespace raidTimeline.Logic.EiJson
         /// <summary>Short name, e.g. "Donut In".</summary>
         public string Name { get; set; } = string.Empty;
 
+        public string FullName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+
         public List<EiMechanicEvent> MechanicsData { get; set; } = new();
     }
 

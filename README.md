@@ -116,8 +116,8 @@ The timeline takes the json files created by Elite Insights (or the json provide
 This is done by parsing the Elite Insights json files and combining the information from the log files.
 The format is documented at https://baaron4.github.io/GW2-Elite-Insights-Parser/Json/index.html.
 
-Boss specific mechanics are looked up by the encounter (trigger) id of the log, see `raidTimeline.Logic/Mechanics`.
-Mechanic names come from Elite Insights and can change between versions; a mechanic that was renamed shows up as 0.
+The table with the players who failed the most mechanics comes from the encounter (trigger) id of the log.
+Encounters without a definition (strikes, fractals, new content) show the three mechanics the players triggered most.
 
 #### dps.report upload
 
@@ -140,6 +140,25 @@ Some information around that:
 The `raidTimeline.Logic.<version>.nupkg` is attached to every release.
 Feel free to use the `raidTimeline.Logic.dll`, it provides an interface `ITimelineCreator` and the `TimelineCreator`.  
 With these you can build your own tools if you want.
+
+### Boss mechanics
+
+The columns of the mechanics table are data, not code: `raidTimeline.Logic/Mechanics/mechanics.json`.
+
+```json
+{ "name": "Gorseval", "ids": [15429], "columns": [
+    { "key": "gors_kick", "label": "Kick", "title": "Kicked by small add", "mechanics": ["Kick.S"] }
+] }
+```
+
+* `ids`: the `triggerID` of the Elite Insights json (the folder numbers of arcdps, e.g. `Gorseval the Multifarious (15429)`)
+* `mechanics`: short names of the Elite Insights mechanics which are added up; `subtract` removes mechanics which are a part of another one (e.g. hits that were stabilized)
+* `rank: false` shows a column without using it to choose the players with the most fails
+* `ignoredMechanics` are the mechanics every encounter has; they are not shown for encounters without a definition
+
+Elite Insights renames mechanics from time to time and a missing name counts as 0. Look at `mechanics` in a json
+log for the current names (Elite Insights only lists the mechanics which happened in that log). The tests in
+`BossMechanicsTests` use small anonymized real logs for this; `Files/trim_ei_json.py` creates them.
 
 ## Special thanks / Mentions
 
