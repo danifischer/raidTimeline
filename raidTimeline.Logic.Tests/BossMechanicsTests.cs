@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -31,15 +30,17 @@ public class BossMechanicsTests
 
         var log = EiJsonParser.ParseFile(Path.Combine(FilesFolder, fixture + ".json"))!;
 
-        log.EncounterId.Should().Be(expected["encounterId"]!.Value<int>());
-        log.Killed.Should().BeTrue();
-        log.Players.Should().HaveCount(expected["players"]!.Value<int>());
+        Assert.Equal(expected["encounterId"]!.Value<int>(), log.EncounterId);
+        Assert.True(log.Killed);
+        Assert.Equal(expected["players"]!.Value<int>(), log.Players.Count);
         var columns = (JObject)expected["columns"]!;
-        log.MechanicColumns.Select(c => c.Key).Should().Equal(columns.Properties().Select(p => p.Name));
+        Assert.Equal(columns.Properties().Select(p => p.Name), log.MechanicColumns.Select(c => c.Key));
         foreach (var column in columns.Properties())
         {
-            log.Players.Select(p => p.CombinedMechanics[column.Name]).Should()
-                .Equal(column.Value.Values<int>(), "column {0} of {1}", column.Name, fixture);
+            // the message names the failing column, Assert.Equal on sequences does not take one
+            var actual = log.Players.Select(p => p.CombinedMechanics[column.Name]).ToList();
+            Assert.True(column.Value.Values<int>().SequenceEqual(actual),
+                $"column {column.Name} of {fixture}: expected [{string.Join(",", column.Value.Values<int>())}] but was [{string.Join(",", actual)}]");
         }
     }
 
@@ -49,8 +50,10 @@ public class BossMechanicsTests
         var fixtureIds = Expected.Properties().Select(p => p.Value["encounterId"]!.Value<int>()).ToHashSet();
 
         // one fixture per encounter, the other ids (trio members, second eye, ...) share the definition
-        Mechanics.MechanicsCatalog.Default.Encounters.Where(e => !e.Ids.Any(fixtureIds.Contains))
-            .Select(e => e.Name).Should().BeEmpty("every encounter needs a fixture to notice renamed mechanics");
+        var withoutFixture = Mechanics.MechanicsCatalog.Default.Encounters.Where(e => !e.Ids.Any(fixtureIds.Contains))
+            .Select(e => e.Name).ToList();
+        Assert.True(withoutFixture.Count == 0,
+            "every encounter needs a fixture to notice renamed mechanics: " + string.Join(", ", withoutFixture));
     }
 
     // Mechanics whose name had to be updated; a fixture that does not show them would not catch a regression.
@@ -68,7 +71,7 @@ public class BossMechanicsTests
     {
         var log = EiJsonParser.ParseFile(Path.Combine(FilesFolder, fixture + ".json"))!;
 
-        log.Players.Sum(p => p.CombinedMechanics[key]).Should().BeGreaterThan(0);
+        Assert.True(log.Players.Sum(p => p.CombinedMechanics[key]) > 0);
     }
 
     [Fact]
@@ -76,11 +79,11 @@ public class BossMechanicsTests
     {
         var files = Directory.GetFiles(FilesFolder, "*.json").Where(f => !f.EndsWith("expected_columns.json")).ToList();
 
-        files.Should().NotBeEmpty();
+        Assert.NotEmpty(files);
         foreach (var file in files)
         {
-            EiJsonParser.ParseFile(file)!.Players.Select(p => p.AccountName)
-                .Should().OnlyContain(name => name.StartsWith("Player"), "{0} must be anonymized", file);
+            Assert.True(EiJsonParser.ParseFile(file)!.Players.All(p => p.AccountName.StartsWith("Player")),
+                $"{file} must be anonymized");
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
-using FluentAssertions;
 using Xunit;
 
 namespace raidTimeline.Logic.Tests;
@@ -24,8 +24,8 @@ public class TimelineCreatorTests
 
         var models = _subjectUnderTest.ParseFilesFromDisk(temp.Path, CancellationToken.None);
 
-        models.Should().HaveCount(2);
-        models.Select(m => m.EncounterName).Should().OnlyContain(n => n == "Vale Guardian");
+        Assert.Equal(2, models.Count);
+        Assert.All(models, m => Assert.Equal("Vale Guardian", m.EncounterName));
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public class TimelineCreatorTests
 
         var models = _subjectUnderTest.ParseFilesFromDisk(temp.Path, CancellationToken.None);
 
-        models.Should().HaveCount(40);
-        models.Select(m => m.LogPath).Should().OnlyHaveUniqueItems();
+        Assert.Equal(40, models.Count);
+        Assert.Equal(40, models.Select(m => m.LogPath).Distinct().Count());
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class TimelineCreatorTests
 
         var models = _subjectUnderTest.ParseFilesFromDiskWhileWatching(temp.Path, "timeline.html", known);
 
-        models.Select(m => m.LogUrl).Should().BeEquivalentTo("known.html", "new.html");
+        Assert.Equal(new[] { "known.html", "new.html" }, models.Select(m => m.LogUrl).Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -68,9 +68,11 @@ public class TimelineCreatorTests
         _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", models);
 
         var timeline = File.ReadAllText(Path.Combine(temp.Path, "timeline.html"));
-        timeline.Should().Contain("Vale Guardian").And.NotContain("{{placeholder}}");
-        File.ReadAllText(Path.Combine(temp.Path, "statistics.html")).Should().Contain("Player1.1001")
-            .And.NotContain("{{placeholder}}");
+        Assert.Contains("Vale Guardian", timeline);
+        Assert.DoesNotContain("{{placeholder}}", timeline);
+        var statistics = File.ReadAllText(Path.Combine(temp.Path, "statistics.html"));
+        Assert.Contains("Player1.1001", statistics);
+        Assert.DoesNotContain("{{placeholder}}", statistics);
     }
 
     [Fact]
@@ -82,8 +84,8 @@ public class TimelineCreatorTests
 
         _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", models);
 
-        Directory.GetFiles(temp.Path).Select(Path.GetFileName).Should()
-            .BeEquivalentTo("log.json", "timeline.html", "statistics.html");
+        Assert.Equal(new[] { "log.json", "statistics.html", "timeline.html" },
+            Directory.GetFiles(temp.Path).Select(Path.GetFileName).Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -96,14 +98,13 @@ public class TimelineCreatorTests
             foreach (var directory in directories) CopyFixture(directory.Path);
             var models = _subjectUnderTest.ParseFilesFromDisk(directories[0].Path, CancellationToken.None);
 
-            var act = () => Parallel.ForEach(directories,
+            Parallel.ForEach(directories,
                 directory => _subjectUnderTest.BuildTimelineFile(directory.Path, "timeline.html", models));
 
-            act.Should().NotThrow();
             foreach (var directory in directories)
             {
-                File.ReadAllText(Path.Combine(directory.Path, "timeline.html")).Should().Contain("Vale Guardian");
-                File.ReadAllText(Path.Combine(directory.Path, "statistics.html")).Should().Contain("Player1.1001");
+                Assert.Contains("Vale Guardian", File.ReadAllText(Path.Combine(directory.Path, "timeline.html")));
+                Assert.Contains("Player1.1001", File.ReadAllText(Path.Combine(directory.Path, "statistics.html")));
             }
         }
         finally
@@ -122,6 +123,6 @@ public class TimelineCreatorTests
 
         _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", models);
 
-        File.ReadAllText(Path.Combine(temp.Path, "timeline.html")).Should().NotContain("OLD CONTENT");
+        Assert.DoesNotContain("OLD CONTENT", File.ReadAllText(Path.Combine(temp.Path, "timeline.html")));
     }
 }
