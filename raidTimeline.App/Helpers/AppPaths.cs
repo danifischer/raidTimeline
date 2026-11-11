@@ -20,6 +20,9 @@ internal sealed record AppPaths(string BaseDirectory, string ConfigDirectory, st
     /// <summary>The personal settings, <c>%APPDATA%\rta\config.json</c> on Windows.</summary>
     internal string UserConfigFile => Path.Combine(ConfigDirectory, "config.json");
 
+    /// <summary>Your own boss definitions, <c>%APPDATA%\rta\mechanics.json</c> on Windows.</summary>
+    internal string UserMechanicsFile => Path.Combine(ConfigDirectory, "mechanics.json");
+
     /// <param name="baseDirectory">The folder of the program.</param>
     /// <param name="home">
     /// Content of <see cref="HomeVariable"/>. If set, settings and logs live in that folder
