@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Authors>Daniel Fischer</Authors>
     <Copyright>MIT License</Copyright>
     <RepositoryUrl>https://github.com/danifischer/raidTimeline</RepositoryUrl>
