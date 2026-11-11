@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Mechanics\mechanics.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="templateStatistics.html" Pack="true">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>

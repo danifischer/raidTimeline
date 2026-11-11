@@ -161,7 +161,16 @@ public class EiJsonParserTests
     }
 
     [Fact]
-    public void ParseFile_UnknownEncounter_ParsesWithoutBossMechanics()
+    public void ParseFile_ValeGuardianKill_UsesTheColumnsOfTheEncounter()
+    {
+        var log = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!;
+
+        log.MechanicColumns.Select(c => c.Label).Should().Equal("Ports", "Seeker", "Floor");
+        log.MechanicColumns.Select(c => c.Key).Should().Equal("vg_tp", "vg_seeker", "vg_floor");
+    }
+
+    [Fact]
+    public void ParseFile_UnknownEncounter_ShowsTheMechanicsPlayersTriggeredMost()
     {
         using var temp = TestFiles.CreateTempDirectory();
         var path = TestFiles.WriteModifiedLog(Path.Combine(temp.Path, "unknown.json"), json => json["triggerID"] = 123456);
@@ -169,7 +178,11 @@ public class EiJsonParserTests
         var log = EiJsonParser.ParseFile(path)!;
 
         log.Players.Should().HaveCount(10);
-        log.Players.Should().OnlyContain(p => p.Mechanics.Count == 0 && p.CombinedMechanics.Count == 0);
+        // Miss.Qck, Miss.Alac, Downed, Res, ... are ignored; Orbs 35 times, Floor R and Seeker 26 times each
+        log.MechanicColumns.Select(c => c.Label).Should().Equal("Orbs", "Floor R", "Seeker");
+        log.MechanicColumns[0].Title.Should().Be("Bullet Storm (Orbs during split)");
+        log.Players.Select(p => p.CombinedMechanics["gen_Orbs"]).Sum().Should().Be(35);
+        log.Players[0].Mechanics.Should().Contain("Seeker", 3).And.Contain("Orbs", 3);
     }
 
     [Fact]

@@ -43,8 +43,6 @@ namespace raidTimeline.Logic
             873 // Retaliation
         };
 
-        private static readonly MechanicsFactory MechanicsFactory = MechanicsFactory.GetMechanicsFactory();
-
         /// <summary>
         /// Parses an Elite Insights json file.
         /// </summary>
@@ -116,7 +114,6 @@ namespace raidTimeline.Logic
                 model.HpLeft.Add(Math.Round(100 - log.Targets[target].HealthPercentBurned, 2));
             }
 
-            var strategy = MechanicsFactory.FindStrategy(log.TriggerID);
             var boons = GetBoons(log);
 
             for (var index = 0; index < log.Players.Count; index++)
@@ -139,10 +136,11 @@ namespace raidTimeline.Logic
                 ParseSupport(playerModel, player);
                 ParseDefenses(playerModel, player);
                 ParseBoons(playerModel, player, boons);
-                ParseMechanics(playerModel, strategy, log, logger, source);
 
                 model.Players.Add(playerModel);
             }
+
+            MechanicsApplier.Apply(model, log, MechanicsCatalog.Default);
 
             return model;
         }
@@ -229,21 +227,6 @@ namespace raidTimeline.Logic
                     Value = data?.Uptime ?? 0,
                     Stacks = description.Stacking && data != null ? data.Presence : null
                 });
-            }
-        }
-
-        private static void ParseMechanics(PlayerModel playerModel, IMechanics? strategy, EiLog log,
-            ILogger? logger, string source)
-        {
-            if (strategy == null) return;
-
-            try
-            {
-                strategy.Parse(log, playerModel);
-            }
-            catch (Exception e)
-            {
-                logger?.LogDebug(e, "Mechanics not parsable: {Source}", source);
             }
         }
     }
