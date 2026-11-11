@@ -57,7 +57,8 @@ internal class EliteInsightsService : IEliteInsightsService
     {
         await Cli.Wrap(eliteInsightsExePath)
             .WithArguments(args => args
-                .Add($"-c {configurationFilePath}")
+                .Add("-c")
+                .Add($"{configurationFilePath}")
                 .Add($"{logFilePath}")
                 )
             .WithStandardErrorPipe(PipeTarget.ToDelegate(Console.WriteLine))

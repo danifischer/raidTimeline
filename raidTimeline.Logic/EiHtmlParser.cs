@@ -104,7 +104,9 @@ namespace raidTimeline.Logic
                 }
             }
 
-            var buffs = logData["phases"][0]["boonStats"];
+            var phase = logData["phases"][0];
+            // Newer EI versions moved boonStats into buffsStatContainer
+            var buffs = phase["buffsStatContainer"]?["boonStats"] ?? phase["boonStats"];
             maps = maps.OrderBy(i => i.Index).ToList();
 
             for (var i = 0; i < maps.Count; i++)
