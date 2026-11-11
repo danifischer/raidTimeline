@@ -106,10 +106,6 @@ namespace raidTimeline.Logic
             var htmlFileName = outputFileName;
             string htmlFilePath = Path.Combine(path, htmlFileName);
 
-            if (File.Exists(htmlFilePath))
-            {
-                File.Delete(Path.Combine(htmlFilePath));
-            }
 
             var sb = new StringBuilder();
 
@@ -131,7 +127,7 @@ namespace raidTimeline.Logic
             BuildStatisticsFile(path, models, reverse, cancellationToken);
 
             if (cancellationToken.IsCancellationRequested) return;
-            WriteHtmlFile(htmlFileName, htmlFilePath, sb, @"templateTimeline.html");
+            WriteHtmlFile(htmlFilePath, sb, @"templateTimeline.html");
             _logger?.LogTrace("HTML Magic >>> Done");
         }
 
@@ -155,10 +151,6 @@ namespace raidTimeline.Logic
             const string htmlFileName = "statistics.html";
             string htmlFilePath = Path.Combine(path, htmlFileName);
 
-            if (File.Exists(htmlFilePath))
-            {
-                File.Delete(Path.Combine(htmlFilePath));
-            }
 
             var sb = new StringBuilder();
 
@@ -177,15 +169,15 @@ namespace raidTimeline.Logic
             }
 
             if (cancellationToken.IsCancellationRequested) return;
-            WriteHtmlFile(htmlFileName, htmlFilePath, sb, @"templateStatistics.html");
+            WriteHtmlFile(htmlFilePath, sb, @"templateStatistics.html");
         }
 
-        private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb, string template)
+        private static void WriteHtmlFile(string htmlFilePath, StringBuilder sb, string template)
         {
             var assembly = Assembly.GetExecutingAssembly();
             string resourceName = assembly.GetManifestResourceNames()
                 .Single(str => str.EndsWith(template));
-            string html = string.Empty;
+            string html;
 
             using (var stream = assembly.GetManifestResourceStream(resourceName))
             using (var reader = new StreamReader(stream))
@@ -194,8 +186,19 @@ namespace raidTimeline.Logic
             }
 
             html = html.Replace("{{placeholder}}", sb.ToString());
-            File.WriteAllText(htmlFileName, html);
-            File.Move(htmlFileName, htmlFilePath);
+
+            // Write next to the target and move it over, so a timeline that cannot be written completely
+            // never replaces a good one (and nothing is written to the current directory).
+            var temporaryPath = $"{htmlFilePath}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                File.WriteAllText(temporaryPath, html);
+                File.Move(temporaryPath, htmlFilePath, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+            }
         }
 
         private static void CreateTimeline(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)
