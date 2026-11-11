@@ -33,6 +33,10 @@ internal class ParserService : IParserService
             {
                 spinner.Fail("Elite Insights configuration could not be read.");
             }
+            else if (!HasJsonOutput(spinner))
+            {
+                return;
+            }
 
             var files = Directory.GetFiles(_configurationHelper.Configuration.LogPath,
                 $"{day}*.zevtc", SearchOption.AllDirectories);
@@ -50,7 +54,7 @@ internal class ParserService : IParserService
                 }
             }
 
-            spinner.Text = $"Parsing html files";
+            spinner.Text = $"Parsing json files";
             var models = _timelineCreator.ParseFilesFromDisk(
                 _configurationHelper.Configuration.OutputPath, cancellationToken);
 
@@ -84,6 +88,11 @@ internal class ParserService : IParserService
     {
         Spinner.Start("Starting live parsing...", spinner =>
         {
+            if (_configurationHelper.Configuration.EliteInsightsOptionsReadable && !HasJsonOutput(spinner))
+            {
+                return;
+            }
+
             var arcdpsSpinner = new Spinner("arcdps watcher: starting...");
             var eliteInsightsSpinner = new Spinner("Elite Insights watcher: starting...");
 
@@ -109,6 +118,25 @@ internal class ParserService : IParserService
             eliteInsightsSpinner.Info("Elite Insights watcher: stopped");
             spinner.Info("Live parsing stopped.");
         });
+    }
+
+    /// <summary>The timeline is built from the Elite Insights json files, so Elite Insights has to write them.</summary>
+    private bool HasJsonOutput(Spinner spinner)
+    {
+        if (!_configurationHelper.Configuration.EliteInsightsWritesJson)
+        {
+            spinner.Fail("Elite Insights does not write json files. Set SaveOutJSON=true in your Elite Insights " +
+                         "settings (and keep SaveOutHTML=true if the timeline should link to the html logs).");
+            return false;
+        }
+
+        if (!_configurationHelper.Configuration.EliteInsightsWritesHtml)
+        {
+            spinner.Warn("Elite Insights does not write html files (SaveOutHTML=false), " +
+                         "the timeline will contain links to logs that do not exist.");
+        }
+
+        return true;
     }
 
     private FileSystemWatcher WatchForArcDpsFiles(ICollection<string> seenFiles, Spinner spinner)
@@ -144,7 +172,7 @@ internal class ParserService : IParserService
 
         var watcher = new FileSystemWatcher();
         watcher.Path = _configurationHelper.Configuration.OutputPath;
-        watcher.Filter = "*.html";
+        watcher.Filter = "*.json";
         watcher.NotifyFilter = NotifyFilters.LastWrite;
         watcher.Changed += (_, _) =>
         {
@@ -193,7 +221,6 @@ internal class ParserService : IParserService
             spinner.Text = $"Downloading logs from dps.report.";
 
             var models = _timelineCreator.ParseFileFromWeb(
-                _configurationHelper.Configuration.OutputPath,
                 _configurationHelper.Configuration.DpsReportToken, day, cancellationToken);
 
             if (cancellationToken.IsCancellationRequested)

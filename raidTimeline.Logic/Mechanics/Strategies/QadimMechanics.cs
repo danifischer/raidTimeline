@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public QadimMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/f/f2/Mini_Qadim.png";
+			EncounterIds = new[] { 20934 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -43,14 +43,14 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var wyvern = playerModel.Mechanics.GetOrDefault("Slash") + playerModel.Mechanics.GetOrDefault("W.Pizza") + playerModel.Mechanics.GetOrDefault("W.Breath");
 			var destroyer = playerModel.Mechanics.GetOrDefault("D.Wave") + playerModel.Mechanics.GetOrDefault("D.Slam") + playerModel.Mechanics.GetOrDefault("Claw");
 			var qadim = playerModel.Mechanics.GetOrDefault("F.Dance") + playerModel.Mechanics.GetOrDefault("KB") + playerModel.Mechanics.GetOrDefault("Q.Wave") 
-				+ playerModel.Mechanics.GetOrDefault("Inf") + playerModel.Mechanics.GetOrDefault("Q.Hitbox");
+				+ playerModel.Mechanics.GetOrDefault("Inf.") + playerModel.Mechanics.GetOrDefault("Q.Hitbox");
 			var port = playerModel.Mechanics.GetOrDefault("Port");
 
 			playerModel.CombinedMechanics.Add("qadim_wvyern", wyvern);

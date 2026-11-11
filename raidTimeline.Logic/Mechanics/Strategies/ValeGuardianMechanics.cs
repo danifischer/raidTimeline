@@ -1,8 +1,8 @@
-﻿using System.Linq;
+﻿using raidTimeline.Logic.EiJson;
+using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
 using raidTimeline.Logic.Helper;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public ValeGuardianMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/f/fb/Mini_Vale_Guardian.png";
+			EncounterIds = new[] { 15438 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -41,9 +41,9 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var tp = playerModel.Mechanics.GetOrDefault("Split TP") + playerModel.Mechanics.GetOrDefault("Boss TP");
 			var seeker = playerModel.Mechanics.GetOrDefault("Seeker");

@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public DeimosMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/e/e0/Mini_Ragged_White_Mantle_Figurehead.png";
+			EncounterIds = new[] { 17154 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -41,9 +41,9 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var oil = playerModel.Mechanics.GetOrDefault("Oil T.");
 			var pizza = playerModel.Mechanics.GetOrDefault("Pizza");

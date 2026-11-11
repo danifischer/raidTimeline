@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public StatueOfIceMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/3/37/Mini_Broken_King.png";
+			EncounterIds = new[] { 19691 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -41,11 +41,11 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
-			var cone = playerModel.Mechanics.GetOrDefault("Cone Hit");
+			var cone = playerModel.Mechanics.GetOrDefault("Cone AoE") + playerModel.Mechanics.GetOrDefault("Cone Shards");
 			var cracks = playerModel.Mechanics.GetOrDefault("Cracks");
 			var green = playerModel.Mechanics.GetOrDefault("Green");
 

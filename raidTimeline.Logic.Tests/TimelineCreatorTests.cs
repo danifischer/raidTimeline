@@ -10,30 +10,45 @@ public class TimelineCreatorTests
 {
     private readonly TimelineCreator _subjectUnderTest = new(null);
 
-    private static void CopyFixture(string directory, string name = "log.html") =>
-        File.Copy(TestFiles.ParsedLog, Path.Combine(directory, name));
+    private static void CopyFixture(string directory, string name = "log.json") =>
+        File.Copy(TestFiles.ValeGuardianLog, Path.Combine(directory, name));
 
     [Fact]
     public void ParseFilesFromDisk_FolderWithLogs_ReturnsOneModelPerParsableFile()
     {
         using var temp = TestFiles.CreateTempDirectory();
-        CopyFixture(temp.Path, "a.html");
-        CopyFixture(temp.Path, "b.html");
-        File.WriteAllText(Path.Combine(temp.Path, "not_a_log.html"), "<html></html>");
+        CopyFixture(temp.Path, "a.json");
+        CopyFixture(temp.Path, "b.json");
+        File.WriteAllText(Path.Combine(temp.Path, "not_a_log.json"), "{}");
 
         var models = _subjectUnderTest.ParseFilesFromDisk(temp.Path, CancellationToken.None);
 
         models.Should().HaveCount(2);
-        models.Select(m => m.EncounterName).Should().OnlyContain(n => n == "Soulless Horror");
+        models.Select(m => m.EncounterName).Should().OnlyContain(n => n == "Vale Guardian");
     }
 
     [Fact]
-    public void ParseFilesFromDiskWhileWatching_SkipsKnownFilesAndOutputFile()
+    public void ParseFilesFromDisk_ManyFiles_KeepsEveryModel()
+    {
+        // Files are parsed in parallel; a non thread-safe result list loses models or throws.
+        using var temp = TestFiles.CreateTempDirectory();
+        for (var i = 0; i < 40; i++)
+        {
+            CopyFixture(temp.Path, $"log{i}.json");
+        }
+
+        var models = _subjectUnderTest.ParseFilesFromDisk(temp.Path, CancellationToken.None);
+
+        models.Should().HaveCount(40);
+        models.Select(m => m.LogPath).Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public void ParseFilesFromDiskWhileWatching_SkipsKnownFiles()
     {
         using var temp = TestFiles.CreateTempDirectory();
-        CopyFixture(temp.Path, "known.html");
-        CopyFixture(temp.Path, "timeline.html");
-        CopyFixture(temp.Path, "new.html");
+        CopyFixture(temp.Path, "known.json");
+        CopyFixture(temp.Path, "new.json");
         var known = _subjectUnderTest.ParseFilesFromDisk(temp.Path, CancellationToken.None)
             .Where(m => m.LogUrl == "known.html").ToList();
 
@@ -52,8 +67,8 @@ public class TimelineCreatorTests
         _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", models);
 
         var timeline = File.ReadAllText(Path.Combine(temp.Path, "timeline.html"));
-        timeline.Should().Contain("Soulless Horror").And.NotContain("{{placeholder}}");
-        File.ReadAllText(Path.Combine(temp.Path, "statistics.html")).Should().Contain("Max Zero.2167")
+        timeline.Should().Contain("Vale Guardian").And.NotContain("{{placeholder}}");
+        File.ReadAllText(Path.Combine(temp.Path, "statistics.html")).Should().Contain("Player1.1001")
             .And.NotContain("{{placeholder}}");
     }
 

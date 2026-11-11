@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public RiverOfSoulsMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/thumb/7/7b/Gold_River_of_Souls_Trophy.jpg/220px-Gold_River_of_Souls_Trophy.jpg";
+			EncounterIds = new[] { 19828, -1 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -37,9 +37,9 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var stun = playerModel.Mechanics.GetOrDefault("Stun Bomb");
 

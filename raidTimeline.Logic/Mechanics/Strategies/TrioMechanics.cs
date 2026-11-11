@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public TrioMechanics()
 		{
-			EncounterIcon = "https://i.imgur.com/UZZQUdf.png";
+			EncounterIds = new[] { 16088, 16137, 16125 };
 		}
 		
 		public override string CreateHtml(RaidModel model)
@@ -39,12 +39,12 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var cone = playerModel.Mechanics.GetOrDefault("Zane Cone");
-			var tornado = playerModel.Mechanics.GetOrDefault("Tornado");
+			var tornado = playerModel.Mechanics.GetOrDefault("Tornado.N");
 
 			playerModel.CombinedMechanics.Add("trio_cone", cone);
 			playerModel.CombinedMechanics.Add("trio_tornado", tornado);

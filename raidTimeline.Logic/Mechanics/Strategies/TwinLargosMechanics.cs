@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public TwinLargosMechanics()
 		{
-			EncounterIcon = "https://i.imgur.com/6O5MT7v.png";
+			EncounterIds = new[] { 21105, 21089 };
 		}
 		
 		public override string CreateHtml(RaidModel model)
@@ -41,9 +41,9 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
 			var debuff = playerModel.Mechanics.GetOrDefault("Debuff");
 			var kenut = playerModel.Mechanics.GetOrDefault("Wave") + playerModel.Mechanics.GetOrDefault("Tornado") 

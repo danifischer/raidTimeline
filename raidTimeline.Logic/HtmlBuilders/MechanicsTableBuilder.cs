@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.HtmlBuilders
         {
             var strategy = MechanicsFactory
                 .GetMechanicsFactory()
-                .FindStrategy(raidModel.EncounterIcon);
+                .FindStrategy(raidModel.EncounterId);
 
             if (strategy != null)
             {

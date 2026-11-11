@@ -1,8 +1,8 @@
-﻿using raidTimeline.Logic.Helper;
+﻿using raidTimeline.Logic.EiJson;
+using raidTimeline.Logic.Helper;
 using System.Linq;
 using System.Web;
 using raidTimeline.Models.Models;
-using Newtonsoft.Json.Linq;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public QadimThePeerlessMechanics()
 		{
-			EncounterIcon = "https://wiki.guildwars2.com/images/8/8b/Mini_Qadim_the_Peerless.png";
+			EncounterIds = new[] { 22000 };
 		}
 
 		public override string CreateHtml(RaidModel model)
@@ -43,11 +43,11 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return top;
 		}
 
-		public override void Parse(JObject logData, PlayerModel playerModel)
+		public override void Parse(EiLog log, PlayerModel playerModel)
 		{
-			PrepareParsing(logData, playerModel);
+			PrepareParsing(log, playerModel);
 
-			var push = playerModel.Mechanics.GetOrDefault("Pushed") + playerModel.Mechanics.GetOrDefault("Dome.KB");
+			var push = playerModel.Mechanics.GetOrDefault("Shck.KB") + playerModel.Mechanics.GetOrDefault("Dome.KB");
 			var lightning = playerModel.Mechanics.GetOrDefault("Lght.H") + playerModel.Mechanics.GetOrDefault("S.Lght.H");
 			var fire = playerModel.Mechanics.GetOrDefault("Magma.F");
 			var ball = playerModel.Mechanics.GetOrDefault("A.Prj.H") + playerModel.Mechanics.GetOrDefault("A.Prj.E");

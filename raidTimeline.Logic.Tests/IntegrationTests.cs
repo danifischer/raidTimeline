@@ -1,112 +1,58 @@
-using FluentAssertions;
-using Newtonsoft.Json;
-using RestSharp;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
+using FluentAssertions;
 using Xunit;
 
-namespace raidTimeline.Logic.Tests
+namespace raidTimeline.Logic.Tests;
+
+/// <summary>
+/// Runs a real Elite Insights command line parser on the test log and parses its output.
+/// Opt-in: set the environment variable <c>EI_CLI_PATH</c> to <c>GuildWars2EliteInsights-CLI.exe</c>
+/// (from GW2EICLI.zip of https://github.com/baaron4/GW2-Elite-Insights-Parser/releases) and run
+/// <c>dotnet test --filter Category=Integration</c>. Catches changes in the Elite Insights json format.
+/// </summary>
+public class IntegrationTests
 {
-	public class IntegrationTests
-	{
-		private static readonly string TestFile = Path.Combine(Directory.GetCurrentDirectory(), @"Files\test_log.zevtc");
+    private static readonly string TestLog = Path.Combine(AppContext.BaseDirectory, "Files", "test_log.zevtc");
 
-		[Fact]
-		[Trait("Category", "Integration")]
-		public void ParseLog_LatestRelease_ShouldParse()
-		{
-			// Prepare
-			if(Directory.Exists("temp"))
-			{
-				DeleteDirectory("temp");
-			}
-			Directory.CreateDirectory("temp");
-			string x = GetDownloadPathForLatestVersion();
-			DownloadLatestVersion(x);
+    [Fact]
+    [Trait("Category", "Integration")]
+    public void ParseLog_RealEliteInsightsOutput_ShouldParse()
+    {
+        var cli = Environment.GetEnvironmentVariable("EI_CLI_PATH");
+        if (string.IsNullOrEmpty(cli) || !File.Exists(cli))
+        {
+            // Not a failure: the test needs a local Elite Insights installation.
+            return;
+        }
 
-			var pathToEi = Path.Combine(Directory.GetCurrentDirectory(), @"temp\GuildWars2EliteInsights.exe");
-			var htmlFile = CreateHtmlLog(pathToEi);
-			
-			// Test
-			var log = Logic.EiHtmlParser.ParseLog(htmlFile);
+        // Elite Insights writes its output next to the log, so work on a copy.
+        using var temp = TestFiles.CreateTempDirectory();
+        var log = Path.Combine(temp.Path, "test_log.zevtc");
+        File.Copy(TestLog, log);
+        var config = Path.Combine(temp.Path, "ei.conf");
+        File.WriteAllLines(config, new[]
+        {
+            "SaveOutJSON=true", "SaveOutHTML=false", "SaveOutTrace=false", "UploadToDPSReports=false",
+            "UploadToWingman=false"
+        });
 
-			// Check
-			log.Should().NotBeNull();
+        var startInfo = new ProcessStartInfo(cli) { UseShellExecute = false, RedirectStandardOutput = true };
+        startInfo.ArgumentList.Add("-c");
+        startInfo.ArgumentList.Add(config);
+        startInfo.ArgumentList.Add(log);
+        using var process = Process.Start(startInfo)!;
+        process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
 
-			// Cleanup
-			File.Delete(htmlFile);
-			DeleteDirectory("temp");
-		}
+        var json = Directory.GetFiles(temp.Path, "*.json").Single();
+        var model = EiJsonParser.ParseFile(json);
 
-		private static string CreateHtmlLog(string pathToEi)
-		{
-			string htmlFile;
-			ProcessStartInfo psi = new ProcessStartInfo
-			{
-				FileName = pathToEi,
-				Arguments = $"-p {TestFile}",
-				UseShellExecute = true
-			};
-			Process.Start(psi).WaitForExit();
-
-			htmlFile = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Files"), "test_log*.html").Single();
-			return htmlFile;
-		}
-
-		private static void DownloadLatestVersion(string x)
-		{
-			var client = new HttpClient();
-			var response = client.GetAsync(x).Result;
-			using (var fileStream = new FileStream(@"temp\version.zip", FileMode.Create))
-			{
-				response.Content.CopyToAsync(fileStream).Wait();
-			}
-			ZipFile.ExtractToDirectory(@"temp\version.zip", "temp");
-		}
-
-		private static string GetDownloadPathForLatestVersion()
-		{
-			var client = new RestClient("https://api.github.com/");
-			var request = new RestRequest("repos/baaron4/GW2-Elite-Insights-Parser/releases/latest", DataFormat.Json);
-			var response = client.Get(request);
-			var content = response.Content;
-			var json = (dynamic)JsonConvert.DeserializeObject(content);
-
-			foreach (var assert in json.assets)
-			{
-				if (assert.name == "GW2EI.zip")
-				{
-					return assert.browser_download_url;
-				}
-			}
-
-			throw new Exception("Latest version could not be found.");
-		}
-
-		// This is needed as Directory.Delete is stupid ...
-		private void DeleteDirectory(string targetDir)
-		{
-			File.SetAttributes(targetDir, FileAttributes.Normal);
-
-			string[] files = Directory.GetFiles(targetDir);
-			string[] dirs = Directory.GetDirectories(targetDir);
-
-			foreach (string file in files)
-			{
-				File.SetAttributes(file, FileAttributes.Normal);
-				File.Delete(file);
-			}
-
-			foreach (string dir in dirs)
-			{
-				DeleteDirectory(dir);
-			}
-
-			Directory.Delete(targetDir, false);
-		}
-	}
+        model.Should().NotBeNull();
+        model!.EncounterName.Should().Be("Vale Guardian");
+        model.Players.Should().HaveCount(10);
+        model.Players.Sum(p => p.Damage).Should().BeGreaterThan(0);
+    }
 }

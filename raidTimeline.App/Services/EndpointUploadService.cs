@@ -43,22 +43,15 @@ internal class EndpointUploadService : IEndpointUploadService
                 ? files.Where(file => file.EndsWith("kill.html")).ToArray()
                 : files;
             
-            // filter for id
-            // get all text and scan for '"fightId": xxx,'?
-            
+            // The encounter id is read from the json file Elite Insights writes next to every html log.
             var filteredFiles = new List<string>();
-            
+
             foreach (var file in files)
             {
-                const string searchString = "\"fightID\":";
-                var text = File.ReadAllText(file);
+                var id = EliteInsightsJson.TryReadTriggerId(Path.ChangeExtension(file, ".json"));
 
-                var start = text.IndexOf(searchString, StringComparison.Ordinal) + searchString.Length;
-                var end = text.IndexOf(",", start, StringComparison.Ordinal);
-
-                var id = Convert.ToInt32(text.Substring(start, end - start));
-
-                if (!filter || _configurationHelper.Configuration.BossFilter.Contains(id.ToString("X4")))
+                if (!filter || (id != null
+                                && _configurationHelper.Configuration.BossFilter.Contains(id.Value.ToString("X4"))))
                 {
                     filteredFiles.Add(file);
                 }
