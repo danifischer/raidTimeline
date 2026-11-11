@@ -68,7 +68,7 @@ public class TimelineCreatorTests
 
         var timeline = File.ReadAllText(Path.Combine(temp.Path, "timeline.html"));
         timeline.Should().Contain("Vale Guardian").And.NotContain("{{placeholder}}");
-        File.ReadAllText(Path.Combine(temp.Path, "statistics.html")).Should().Contain("Shihaya.6258")
+        File.ReadAllText(Path.Combine(temp.Path, "statistics.html")).Should().Contain("Player1.1001")
             .And.NotContain("{{placeholder}}");
     }
 

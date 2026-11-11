@@ -70,9 +70,9 @@ public class EiJsonParserTests
     }
 
     [Theory]
-    [InlineData(0, "Shihaya.6258", "Scourge", 267732, 1116)]
-    [InlineData(2, "johnwalker.1897", "Holosmith", 4253160, 17737)]
-    [InlineData(8, "Max Zero.2167", "Druid", 476294, 1986)]
+    [InlineData(0, "Player1.1001", "Scourge", 267732, 1116)]
+    [InlineData(2, "Player3.1003", "Holosmith", 4253160, 17737)]
+    [InlineData(8, "Player9.1009", "Druid", 476294, 1986)]
     public void ParseFile_ValeGuardianKill_ParsesPlayerDamage(int index, string account, string profession,
         long damage, long dps)
     {
@@ -207,6 +207,23 @@ public class EiJsonParserTests
 
         EiJsonParser.ParseFile(path)!.Players.Select(p => p.IsNpc).Should()
             .Equal(false, false, false, true, false, false, false, false, false, false);
+    }
+
+    [Fact]
+    public void ParseFile_FriendlyNpc_IsLeftOutButOtherPlayersKeepTheirMechanics()
+    {
+        // Elite Insights lists friendly npcs and gadgets (e.g. a Conjured Sword) next to the players.
+        using var temp = TestFiles.CreateTempDirectory();
+        var path = TestFiles.WriteModifiedLog(Path.Combine(temp.Path, "npc.json"),
+            json => json["players"]![3]!["friendlyNPC"] = true);
+
+        var players = EiJsonParser.ParseFile(path)!.Players;
+
+        players.Should().HaveCount(9);
+        players.Select(p => p.AccountName).Should().NotContain("Player4.1004");
+        players.Select(p => p.Index).Should().Equal(0, 1, 2, 4, 5, 6, 7, 8, 9);
+        // Player5.1005 is the player behind the removed one in the log, the mechanics still have to be his
+        players.Single(p => p.AccountName == "Player5.1005").Mechanics.Should().Contain("Floor B", 7);
     }
 
     [Fact]

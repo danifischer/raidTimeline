@@ -28,28 +28,31 @@ public class IntegrationTests
             return;
         }
 
+        // Elite Insights writes its output next to the log, so work on a copy.
         using var temp = TestFiles.CreateTempDirectory();
+        var log = Path.Combine(temp.Path, "test_log.zevtc");
+        File.Copy(TestLog, log);
         var config = Path.Combine(temp.Path, "ei.conf");
         File.WriteAllLines(config, new[]
         {
             "SaveOutJSON=true", "SaveOutHTML=false", "SaveOutTrace=false", "UploadToDPSReports=false",
-            "UploadToWingman=false", $"OutLocation={temp.Path}"
+            "UploadToWingman=false"
         });
 
         var startInfo = new ProcessStartInfo(cli) { UseShellExecute = false, RedirectStandardOutput = true };
         startInfo.ArgumentList.Add("-c");
         startInfo.ArgumentList.Add(config);
-        startInfo.ArgumentList.Add(TestLog);
+        startInfo.ArgumentList.Add(log);
         using var process = Process.Start(startInfo)!;
         process.StandardOutput.ReadToEnd();
         process.WaitForExit();
 
         var json = Directory.GetFiles(temp.Path, "*.json").Single();
-        var log = EiJsonParser.ParseFile(json);
+        var model = EiJsonParser.ParseFile(json);
 
-        log.Should().NotBeNull();
-        log!.EncounterName.Should().Be("Vale Guardian");
-        log.Players.Should().HaveCount(10);
-        log.Players.Sum(p => p.Damage).Should().BeGreaterThan(0);
+        model.Should().NotBeNull();
+        model!.EncounterName.Should().Be("Vale Guardian");
+        model.Players.Should().HaveCount(10);
+        model.Players.Sum(p => p.Damage).Should().BeGreaterThan(0);
     }
 }
