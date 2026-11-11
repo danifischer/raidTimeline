@@ -183,8 +183,11 @@ The columns of the mechanics table are data, not code: `raidTimeline.Logic/Mecha
 * `ignoredMechanics` are the mechanics every encounter has; they are not shown for encounters without a definition
 
 Elite Insights renames mechanics from time to time and a missing name counts as 0. Look at `mechanics` in a json
-log for the current names (Elite Insights only lists the mechanics which happened in that log). The tests in
-`BossMechanicsTests` use small anonymized real logs for this; `Files/trim_ei_json.py` creates them.
+log for the current names (Elite Insights only lists the mechanics which happened in that log). Every encounter has a
+small anonymized real log in `raidTimeline.Logic.Tests/Files` (`BossMechanicsTests` checks all columns of all of them):
+
+1. Parse a log with Elite Insights (`SaveOutJSON=true`) and shrink it: `python trim_ei_json.py log.json new_kill.json --players 4 --anonymize --minimal --rank <mechanics>`
+2. Run `python make_expected_columns.py` to calculate the expected values from the json (a second implementation of the counting) and review the diff
 
 ## Special thanks / Mentions
 
