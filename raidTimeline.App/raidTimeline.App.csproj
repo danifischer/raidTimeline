@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>rta</AssemblyName>
@@ -12,7 +13,8 @@
       <PackageReference Include="CliWrap" />
       <PackageReference Include="Cocona" />
       <PackageReference Include="Kurukuru" />
-      <PackageReference Include="Serilog.AspNetCore" />
+      <PackageReference Include="Serilog.Extensions.Logging" />
+      <PackageReference Include="Serilog.Sinks.File" />
       <PackageReference Include="UnitsNet" />
     </ItemGroup>
 

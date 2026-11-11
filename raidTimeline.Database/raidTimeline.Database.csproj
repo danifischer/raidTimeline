@@ -7,7 +7,8 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <!-- Only needed for "dotnet ef" (Debug). Keeps Roslyn out of the published app. -->
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Condition="'$(Configuration)' == 'Debug'">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>

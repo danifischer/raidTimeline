@@ -10,7 +10,8 @@
     <PackageVersion Include="CliWrap" Version="3.10.5" />
     <PackageVersion Include="Cocona" Version="2.2.0" />
     <PackageVersion Include="Kurukuru" Version="1.5.0" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="UnitsNet" Version="5.75.1" />
     <!-- Logic -->
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
