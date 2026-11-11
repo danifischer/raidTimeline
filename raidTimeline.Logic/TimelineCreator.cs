@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using raidTimeline.Logic.DpsReport;
 using raidTimeline.Logic.Interfaces;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace raidTimeline.Logic
     {
         private readonly ILogger _logger;
 
-        public TimelineCreator(ILogger<TimelineCreator> logger = null)
+        public TimelineCreator(ILogger<TimelineCreator> logger)
         {
             _logger = logger;
         }
@@ -98,6 +99,8 @@ namespace raidTimeline.Logic
         public void BuildTimelineFile(string path, string outputFileName, IEnumerable<RaidModel> models,
             bool reverse = false, CancellationToken cancellationToken = new())
         {
+            _logger?.LogTrace("{ModelCount} logs to build into timeline", models.Count());
+            
             var htmlFileName = outputFileName;
             string htmlFilePath = Path.Combine(path, htmlFileName);
 
@@ -167,6 +170,7 @@ namespace raidTimeline.Logic
                 CreateHeader(sb, raidData);
                 CreateProfessionTable(sb, raidData, reverse);
                 CreateEncounterTable(sb, raidData, reverse);
+                CreateGeneralStatsTable(sb, raidData, reverse);
 
                 if (cancellationToken.IsCancellationRequested) return;
             }
@@ -177,7 +181,17 @@ namespace raidTimeline.Logic
 
         private static void WriteHtmlFile(string htmlFileName, string htmlFilePath, StringBuilder sb, string template)
         {
-            var html = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, template));
+            var assembly = Assembly.GetExecutingAssembly();
+            string resourceName = assembly.GetManifestResourceNames()
+                .Single(str => str.EndsWith(template));
+            string html = string.Empty;
+
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var reader = new StreamReader(stream))
+            {
+                html = reader.ReadToEnd();
+            }
+
             html = html.Replace("{{placeholder}}", sb.ToString());
             File.WriteAllText(htmlFileName, html);
             File.Move(htmlFileName, htmlFilePath);
@@ -216,6 +230,31 @@ namespace raidTimeline.Logic
             }
 
             sb.Append(HtmlCreator.CreateEncounterTableFooter());
+        }
+        
+        private static void CreateGeneralStatsTable(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)
+        {
+            var ordered = reverse
+                ? raidData.OrderByDescending(i => i.OccurenceEnd)
+                : raidData.OrderBy(i => i.OccurenceEnd);
+
+            var players = ordered.SelectMany(i => i.Players).Where(j => !j.IsNpc)
+                .Select(j => j.AccountName)
+                .Distinct().OrderBy(name => name).ToArray();
+
+            var tableRows = new List<GeneralStatsTableModel>();
+
+            sb.Append(HtmlCreator.CreateGeneralStatsTableHeader(players));
+
+            foreach (var model in ordered)
+            {
+                var tableRow = new GeneralStatsTableModel(model, players);
+                tableRows.Add(tableRow);
+                sb.Append(HtmlCreator.CreateGeneralStatsTableEntry(tableRow));
+            }
+
+            sb.Append(HtmlCreator.CreateGeneralStatsTableFooter(tableRows, players));
+
         }
 
         private static void CreateProfessionTable(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)

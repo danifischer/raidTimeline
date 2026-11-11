@@ -259,6 +259,16 @@
             height: 18px;
         }
 
+        .tableIcon {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+        }
+
+        .diedIcon {
+            margin-left: 4px;
+        }
+
         .statisticsTable table {
             border-style: solid;
             border-width: 2px;
@@ -266,7 +276,7 @@
             border-radius: 6px;
         }
 
-        .encounterTableHeader {
+        .encounterTableHeader, .generalStatsTableHeader {
             text-align: center;
             white-space: nowrap;
             transform-origin: 50% 50%;
@@ -277,12 +287,12 @@
             transform: rotate(45deg);
         }
 
-            .encounterTableHeader:before {
-                content: '';
-                padding-top: 100%; /* takes width as reference, + 10% for faking some extra padding */
-                display: inline-block;
-                vertical-align: middle;
-            }
+        .encounterTableHeader:before, .generalStatsTableHeader::before {
+            content: '';
+            padding-top: 100%; /* takes width as reference, + 10% for faking some extra padding */
+            display: inline-block;
+            vertical-align: middle;
+        }
 
         .overviewIconRow {
             display: flex;
@@ -364,6 +374,11 @@
                     <img src="https://wiki.guildwars2.com/images/e/e2/Event_wrench_%28map_icon%29.png">Encounters
                 </a>
             </li>
+            <li>
+                <a href="#" class="" id="generalStatsButton" onclick="showGeneralStats(); return false;">
+                    <img src="https://wiki.guildwars2.com/images/e/e2/Event_wrench_%28map_icon%29.png">General Stats
+                </a>
+            </li>
             <li style="float: right; margin-right: 10px;">
                 <a href="index.html">
                     <img src="https://wiki.guildwars2.com/images/thumb/3/3d/Time_Catches_Up.png/40px-Time_Catches_Up.png">Timeline
@@ -390,6 +405,9 @@
 
                 setTableVisibility("encounterTable", "")
                 toggleButton("encounterButton", true);
+
+                setTableVisibility("generalStatsTable", "none")
+                toggleButton("generalStatsButton", false);
             }
         }
 
@@ -406,6 +424,28 @@
 
                 setTableVisibility("overviewTable", "")
                 toggleButton("overviewButton", true);
+
+                setTableVisibility("generalStatsTable", "none")
+                toggleButton("generalStatsButton", false);
+            }
+        }
+
+        function showGeneralStats() {
+            var generalStatsButton = document.getElementById("generalStatsButton")
+
+            if (generalStatsButton.classList.contains("active")) {
+                setTableVisibility("generalStatsTable", "none")
+                toggleButton("generalStatsButton", false);
+            }
+            else {
+                setTableVisibility("encounterTable", "none")
+                toggleButton("encounterButton", false);
+
+                setTableVisibility("overviewTable", "none")
+                toggleButton("overviewButton", false);
+
+                setTableVisibility("generalStatsTable", "")
+                toggleButton("generalStatsButton", true);
             }
         }
 

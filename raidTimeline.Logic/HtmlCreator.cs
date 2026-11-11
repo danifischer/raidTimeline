@@ -1,6 +1,7 @@
 ﻿using raidTimeline.Logic.HtmlBuilders;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -123,6 +124,67 @@ namespace raidTimeline.Logic
         internal static StringBuilder CreateEncounterTableFooter()
         {
             var stringBuilder = new StringBuilder();
+            stringBuilder.Append("</table></div>");
+            return stringBuilder;
+        }
+
+        internal static StringBuilder CreateGeneralStatsTableHeader(string[] players)
+        {
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.Append(@"<div class=""generalStatsTable statisticsTable"" style=""display: none;""><table><tr>");
+            stringBuilder.Append($@"<th class=""generalStatsTableHeader statisticsTableHeader"">Encounter</th>");
+
+            foreach (var player in players)
+            {
+                stringBuilder.Append($@"<th class=""generalStatsTableHeader statisticsTableHeader"">{player}</th>");
+            }
+
+            stringBuilder.Append("</tr>");
+
+            return stringBuilder;
+        }
+
+        internal static StringBuilder CreateGeneralStatsTableEntry(GeneralStatsTableModel tableRow)
+        {
+            var stringBuilder = new StringBuilder();
+            var killedString = tableRow.Killed ? "killed" : "failed";
+
+            //if (!tableRow.Killed) return stringBuilder;
+
+            stringBuilder.Append("<tr>");
+            stringBuilder.Append($@"<td><a href=""{tableRow.Url}"" target=""_blank"" style=""color: #aaa; text-decoration: none;"">{tableRow.Encounter} ({killedString})</a></td>");
+
+            foreach (var cell in tableRow.Cells.OrderBy(i => i.AccountName))
+            {
+                stringBuilder.Append($@"<td>{cell.TimesDownedString} <img src=""https://wiki.guildwars2.com/images/c/c6/Downed_enemy.png"" title=""times downed"" class=""downedIcon tableIcon""><br />");
+                stringBuilder.Append($@"{cell.TimesDiedString}<img src=""https://wiki.guildwars2.com/images/4/4a/Ally_death_%28interface%29.png"" title=""timed died"" class=""diedIcon tableIcon""></td>");
+            }
+
+            stringBuilder.Append("</tr>");
+
+            return stringBuilder;
+        }
+
+        internal static StringBuilder CreateGeneralStatsTableFooter(ICollection<GeneralStatsTableModel> tableRows, string[] players)
+        {
+            var stringBuilder = new StringBuilder();
+            
+            stringBuilder.Append("<tr>");
+            stringBuilder.Append($@"<td>Sum (killed)</td>");
+
+            foreach (var player in players)
+            {
+                var occurences = tableRows.Where(e => e.Killed).SelectMany(i => i.Cells.Where(c => c.AccountName == player));
+                var timesDowned = occurences.Sum(i => i.TimesDowned);
+                var timesDied = occurences.Sum(i => i.TimesDied);
+
+                stringBuilder.Append($@"<td>{timesDowned} <img src=""https://wiki.guildwars2.com/images/c/c6/Downed_enemy.png"" title=""times downed"" class=""downedIcon tableIcon""><br />");
+                stringBuilder.Append($@"{timesDied}<img src=""https://wiki.guildwars2.com/images/4/4a/Ally_death_%28interface%29.png"" title=""timed died"" class=""diedIcon tableIcon""></td>");
+            }
+
+            stringBuilder.Append("</tr>");
+            
             stringBuilder.Append("</table></div>");
             return stringBuilder;
         }

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using raidTimeline.Logic.Mechanics;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 
 namespace raidTimeline.Logic.HtmlBuilders
 {

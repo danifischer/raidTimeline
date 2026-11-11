@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using raidTimeline.Logic.Interfaces;
-using raidTimeline.Logic.Models;
+using raidTimeline.Models.Models;
 
 namespace raidTimeline.Logic.Mechanics.Strategies
 {
@@ -15,23 +16,23 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			return EncounterIcon;
 		}
 
-		public abstract void Parse(dynamic logData, PlayerModel playerModel);
+		public abstract void Parse(JObject logData, PlayerModel playerModel);
 
-		internal void PrepareParsing(dynamic logData, PlayerModel playerModel)
+		internal static void PrepareParsing(JObject logData, PlayerModel playerModel)
 		{
-			var mechanics = logData.phases[0].mechanicStats[playerModel.Index];
-			var header = logData.mechanicMap;
-			List<dynamic> mechanicsMap = new List<dynamic>();
+			var mechanics = logData["phases"][0]["mechanicStats"][playerModel.Index];
+			var header = logData["mechanicMap"];
+			var mechanicsMap = new List<JToken>();
 
 			foreach (var mech in header)
 			{
-				if (mech.playerMech == true)
+				if (mech["playerMech"]?.Value<bool?>() == true)
 					mechanicsMap.Add(mech);
 			}
 
 			for (int i = 0; i < mechanicsMap.Count; i++)
 			{
-				playerModel.Mechanics.Add((string)mechanicsMap[i].shortName, (int)mechanics[i][0]);
+				playerModel.Mechanics.Add(mechanicsMap[i]["shortName"].Value<string>(), mechanics[i][0].Value<int>());
 			}
 		}
 	}

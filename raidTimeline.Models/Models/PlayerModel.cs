@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace raidTimeline.Logic.Models
+namespace raidTimeline.Models.Models
 {
 	public class PlayerModel
 	{
@@ -11,10 +11,14 @@ namespace raidTimeline.Logic.Models
 		public long Cc { get; set; }
 		public double ResTime { get; set; }
 		public int ResAmount { get; set; }
-		public string AccountName  { get; init; }
-		public string Profession { get; set; }
-		public string ProfessionIcon { get; set; }
-		public bool IsNpc { get; set; }
+		public string AccountName  { get; init; } = default!;
+        public string Profession { get; set; } = default!;
+        public string ProfessionIcon { get; set; } = default!;
+        public bool IsNpc { get; set; }
+		public int TimesDowned { get; set; }
+		public string DownedText { get; set; } = default!;
+		public int TimesDied { get; set; }
+		public string DiedText { get; set; } = default!;
 		public Dictionary<string, int> Mechanics { get; } = new();
 		public Dictionary<string, int> CombinedMechanics { get; } = new();
 		public List<BuffModel> Buffs { get; } = new();

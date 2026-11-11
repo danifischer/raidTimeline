@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace raidTimeline.Logic.Models
+namespace raidTimeline.Models.Models
 {
-    internal class OverviewTableModel
+    public class OverviewTableModel
     {
         public OverviewTableModel(RaidModel[] raids, TimeSpan totalTime)
         {
