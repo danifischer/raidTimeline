@@ -35,17 +35,17 @@ internal class ConfigurationHelper
     
     private AppConfiguration LoadConfigurationValues()
     {
-        var endpointUri = _configuration["endpointUri"];
-        var endpointKey = _configuration["endpointKey"];
-        var endpointIv = _configuration["endpointIv"];
-        var configurationPath = _configuration["configurationPath"];
-        var eiPath = _configuration["eiPath"];
-        var bossFilter = _configuration["bossEncounterIdFilter"];
-        var dpsReportToken = _configuration["dpsReportToken"];
-        var outputPath = _configuration["outputPath"];
-        var logPath = _configuration["logPath"];
+        var endpointUri = _configuration["endpointUri"] ?? string.Empty;
+        var endpointKey = _configuration["endpointKey"] ?? string.Empty;
+        var endpointIv = _configuration["endpointIv"] ?? string.Empty;
+        var configurationPath = _configuration["configurationPath"] ?? string.Empty;
+        var eiPath = _configuration["eiPath"] ?? string.Empty;
+        var bossFilter = _configuration["bossEncounterIdFilter"] ?? string.Empty;
+        var dpsReportToken = _configuration["dpsReportToken"] ?? string.Empty;
+        var outputPath = _configuration["outputPath"] ?? string.Empty;
+        var logPath = _configuration["logPath"] ?? string.Empty;
         var eliteInsightsOptions = _eliteInsightsService
-            .ReadConfigurationFile(_configuration["configurationPath"]);
+            .ReadConfigurationFile(configurationPath);
 
         return new AppConfiguration
         {

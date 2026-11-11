@@ -137,7 +137,7 @@ internal class EndpointUploadService : IEndpointUploadService
 
     private Stream EncryptStream(Stream stream)
     {
-        using var rmCrypto = new RijndaelManaged();
+        using var rmCrypto = Aes.Create();
         var encryptor = rmCrypto.CreateEncryptor(_configurationHelper.Configuration.EndpointKey,
             _configurationHelper.Configuration.EndpointIv);
 

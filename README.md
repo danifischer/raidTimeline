@@ -65,6 +65,9 @@ Commands:
 }
 ```
 
+> **Keep secrets out of git:** put your personal values (`dpsReportToken`, `endpointKey`, `endpointIv`, paths) in a
+> `config.local.json` next to `config.json`. It uses the same format, overrides `config.json` and is not committed.
+
 #### Local parsing with Elite Insights
 
 * `eiPath`: the path to the Elite Insights `.exe` file
