@@ -29,7 +29,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="OneOf" />
-    <PackageReference Include="RestSharp" />
   </ItemGroup>
 
   <ItemGroup>

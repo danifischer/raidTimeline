@@ -1,21 +1,21 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
 using Kurukuru;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using raidTimeline.App.Helpers;
-using RestSharp;
 
 namespace raidTimeline.App.Services;
 
 internal class DpsReportUploadService : IDpsReportUploadService
 {
     private readonly ConfigurationHelper _configurationHelper;
+    private readonly DpsReportClient _client;
     private readonly ILogger<DpsReportUploadService> _logger;
 
-    public DpsReportUploadService(ConfigurationHelper configurationHelper,
+    public DpsReportUploadService(ConfigurationHelper configurationHelper, DpsReportClient client,
         ILogger<DpsReportUploadService> logger)
     {
         _configurationHelper = configurationHelper;
+        _client = client;
         _logger = logger;
     }
 
@@ -30,60 +30,73 @@ internal class DpsReportUploadService : IDpsReportUploadService
             var files = Directory.GetFiles(_configurationHelper.Configuration.LogPath,
                 $"{day}*.zevtc", SearchOption.AllDirectories);
 
-            var count = 0;
+            var done = 0;
+            var failed = 0;
 
             spinner.Text = files.Length != 0
-                ? $"Uploading logs to dps.report for {day} ({count}/{files.Length})"
+                ? $"Uploading logs to dps.report for {day} ({done}/{files.Length})"
                 : $"No files to upload for {day}.";
 
-            var links = new List<string>();
+            var links = new ConcurrentBag<(string File, string Link)>();
             var parallelOptions = new ParallelOptions
             {
                 MaxDegreeOfParallelism = 3,
                 CancellationToken = cancellationToken
             };
 
-            Parallel.ForEach(files, parallelOptions, file =>
+            try
+            {
+                Parallel.ForEachAsync(files, parallelOptions, async (file, token) =>
                 {
                     try
                     {
-                        var response = UploadToDpsReport(file);
-                        if (response.StatusCode != HttpStatusCode.OK)
-                        {
-                            _logger.LogError($"Upload Failed for {file}");
-                        }
+                        var upload = await _client.UploadAsync(file, _configurationHelper.Configuration.DpsReportToken,
+                            token);
 
-                        dynamic json = JsonConvert.DeserializeObject(response.Content)!;
-                        if ((!killOnly || json.encounter.success.Value == true)
-                            && (!filter ||
-                                (!string.IsNullOrEmpty(_configurationHelper.Configuration.BossFilter)
-                                 && _configurationHelper.Configuration.BossFilter.Contains(
-                                     json.evtc.bossId.ToString("X4")))))
+                        if (IsWanted(upload, killOnly, filter, _configurationHelper.Configuration.BossFilter))
                         {
-                            links.Add(json.permalink.Value.ToString());
+                            links.Add((file, upload.Permalink));
                         }
+                    }
+                    catch (Exception e) when (e is DpsReportException or HttpRequestException or IOException)
+                    {
+                        Interlocked.Increment(ref failed);
+                        _logger.LogError("Upload failed for {File}: {Message}", file, e.Message);
                     }
                     finally
                     {
-                        Interlocked.Increment(ref count);
-                        spinner.Text = $"Uploading logs to dps.report for {day} ({count}/{files.Length})";
+                        Interlocked.Increment(ref done);
+                        spinner.Text = $"Uploading logs to dps.report for {day} ({done}/{files.Length})";
                     }
-                });
+                }).GetAwaiter().GetResult();
+            }
+            catch (OperationCanceledException)
+            {
+                spinner.Info("Upload canceled.");
+            }
 
-            Console.WriteLine(string.Join("\n", links));
+            Console.WriteLine(string.Join('\n', links.OrderBy(l => l.File, StringComparer.Ordinal).Select(l => l.Link)));
+            if (failed > 0)
+            {
+                spinner.Warn($"{failed} of {files.Length} logs could not be uploaded (see the log file).");
+            }
         });
     }
 
-    private IRestResponse UploadToDpsReport(string path)
+    /// <summary>Whether the link of an uploaded log is printed.</summary>
+    /// <param name="bossFilter">Hexadecimal boss ids as in the config, e.g. "0x3C4E,0x3C45".</param>
+    internal static bool IsWanted(DpsReportUpload upload, bool killOnly, bool filter, string? bossFilter)
     {
-        var client = new RestClient("https://dps.report/");
+        if (killOnly && !upload.Success)
+        {
+            return false;
+        }
 
-        var request = new RestRequest(
-            $"uploadContent?userToken={_configurationHelper.Configuration.DpsReportToken}&generator=ei&json=1",
-            DataFormat.Json);
-        request.AddHeader("Content-Type", "multipart/form-data");
-        request.AddFile("file", path);
+        if (!filter)
+        {
+            return true;
+        }
 
-        return client.Post(request);
+        return !string.IsNullOrEmpty(bossFilter) && bossFilter.Contains(upload.BossId.ToString("X4"), StringComparison.OrdinalIgnoreCase);
     }
 }

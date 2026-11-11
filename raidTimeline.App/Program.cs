@@ -36,6 +36,8 @@ builder.Services.AddTransient<IParserService, ParserService>();
 builder.Services.AddTransient<IFileHandlingService, FileHandlingService>();
 builder.Services.AddTransient<IUploadService, UploadService>();
 builder.Services.AddTransient<IEndpointUploadService, EndpointUploadService>();
+// dps.report builds the report before it answers, which can take minutes
+builder.Services.AddSingleton(_ => new DpsReportClient(new HttpClient { Timeout = TimeSpan.FromMinutes(10) }));
 builder.Services.AddTransient<IDpsReportUploadService, DpsReportUploadService>();
 builder.Services.RegisterDatabaseServices();
 
