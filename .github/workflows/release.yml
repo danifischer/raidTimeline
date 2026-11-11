@@ -62,7 +62,13 @@ jobs:
           -p:Version=${{ steps.version.outputs.version }} -o publish/app
 
       - name: Smoke test app
-        run: ./publish/app/rta.exe --help
+        shell: pwsh
+        run: |
+          # --help exits with 129, --version with 0; it also proves the version of the tag is in the file
+          $output = (./publish/app/rta.exe --version) -join "`n"
+          Write-Host $output
+          if ($LASTEXITCODE -ne 0) { throw "rta --version exited with $LASTEXITCODE" }
+          if (-not $output.StartsWith("rta ${{ steps.version.outputs.version }}")) { throw "Unexpected version: $output" }
 
       - name: Create release files
         shell: pwsh
