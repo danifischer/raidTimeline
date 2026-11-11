@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build raidTimeline.sln -c Release
+      # Integration tests need network access and a local Elite Insights install.
+      - run: dotnet test raidTimeline.sln -c Release --no-build --filter "Category!=Integration"
