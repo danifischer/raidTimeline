@@ -442,3 +442,7 @@ fabric.properties
 
 # Raider
 .idea
+# Local secrets / settings
+token.txt
+raidTimeline.App/config.local.json
+rta_log.txt

@@ -16,16 +16,16 @@ internal static class DatabaseCommands
         {
             var now = DateTime.Now;
             var limit = DateTime.Now.AddMonths(-2);
-            
+
             for (; limit < now;)
             {
-                parserService.ParseLogsFromDisk(limit.ToString("yyyyMMdd"), false, false, false, 
+                parserService.ParseLogsFromDisk(limit.ToString("yyyyMMdd"), false, false, false,
                     encounterService, new CancellationToken());
                 fileHandlingService.DeleteHtmlAllFiles();
                 limit = limit.AddDays(1);
             }
         });
-        
+
         return app;
     }
 }

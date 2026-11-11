@@ -59,6 +59,7 @@ namespace raidTimeline.Logic
                     ParseDamageStats(playerModel, fightDuration, logData);
                     ParseMechanics(playerModel, model, logData, logger);
                     ParseBoons(playerModel, logData);
+                    ParseDefStats(playerModel, logData);
 
                     model.Players.Add(playerModel);
                 }
@@ -166,6 +167,17 @@ namespace raidTimeline.Logic
             playerModel.ResAmount = supportStats[6].Value<int>();
             playerModel.ResTime = supportStats[7].Value<double>();
             playerModel.Cc = logData["players"][playerModel.Index]["details"]["dmgDistributions"][0]["totalBreakbarDamage"].Value<long>();
+        }
+
+        private static void ParseDefStats(this PlayerModel playerModel, JObject logData)
+        {
+            var defStats = logData["phases"][0]["defStats"][playerModel.Index];
+            var length = defStats.Count();
+
+            playerModel.TimesDowned = defStats[length - 4].Value<int>();
+            playerModel.DownedText = defStats[length - 3].Value<string>();
+            playerModel.TimesDied = defStats[length - 2].Value<int>();
+            playerModel.DiedText = defStats[length - 1].Value<string>();
         }
 
         private static void SetGeneralInformation(this RaidModel raidModel, JObject logData)

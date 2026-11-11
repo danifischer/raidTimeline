@@ -15,6 +15,10 @@ namespace raidTimeline.Models.Models
         public string Profession { get; set; } = default!;
         public string ProfessionIcon { get; set; } = default!;
         public bool IsNpc { get; set; }
+		public int TimesDowned { get; set; }
+		public string DownedText { get; set; } = default!;
+		public int TimesDied { get; set; }
+		public string DiedText { get; set; } = default!;
 		public Dictionary<string, int> Mechanics { get; } = new();
 		public Dictionary<string, int> CombinedMechanics { get; } = new();
 		public List<BuffModel> Buffs { get; } = new();

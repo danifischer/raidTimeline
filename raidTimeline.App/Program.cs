@@ -15,6 +15,9 @@ var builder = CoconaApp.CreateBuilder();
 
 builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"),
     false, true);
+// Optional local overrides (secrets, local paths); not committed to git.
+builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.local.json"),
+    true, true);
 
 var serilog = new LoggerConfiguration()
     .MinimumLevel.Verbose()

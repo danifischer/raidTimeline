@@ -99,6 +99,8 @@ namespace raidTimeline.Logic
         public void BuildTimelineFile(string path, string outputFileName, IEnumerable<RaidModel> models,
             bool reverse = false, CancellationToken cancellationToken = new())
         {
+            _logger?.LogTrace("{ModelCount} logs to build into timeline", models.Count());
+            
             var htmlFileName = outputFileName;
             string htmlFilePath = Path.Combine(path, htmlFileName);
 
@@ -168,6 +170,7 @@ namespace raidTimeline.Logic
                 CreateHeader(sb, raidData);
                 CreateProfessionTable(sb, raidData, reverse);
                 CreateEncounterTable(sb, raidData, reverse);
+                CreateGeneralStatsTable(sb, raidData, reverse);
 
                 if (cancellationToken.IsCancellationRequested) return;
             }
@@ -227,6 +230,31 @@ namespace raidTimeline.Logic
             }
 
             sb.Append(HtmlCreator.CreateEncounterTableFooter());
+        }
+        
+        private static void CreateGeneralStatsTable(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)
+        {
+            var ordered = reverse
+                ? raidData.OrderByDescending(i => i.OccurenceEnd)
+                : raidData.OrderBy(i => i.OccurenceEnd);
+
+            var players = ordered.SelectMany(i => i.Players).Where(j => !j.IsNpc)
+                .Select(j => j.AccountName)
+                .Distinct().OrderBy(name => name).ToArray();
+
+            var tableRows = new List<GeneralStatsTableModel>();
+
+            sb.Append(HtmlCreator.CreateGeneralStatsTableHeader(players));
+
+            foreach (var model in ordered)
+            {
+                var tableRow = new GeneralStatsTableModel(model, players);
+                tableRows.Add(tableRow);
+                sb.Append(HtmlCreator.CreateGeneralStatsTableEntry(tableRow));
+            }
+
+            sb.Append(HtmlCreator.CreateGeneralStatsTableFooter(tableRows, players));
+
         }
 
         private static void CreateProfessionTable(StringBuilder sb, IGrouping<DateTime, RaidModel> raidData, bool reverse)

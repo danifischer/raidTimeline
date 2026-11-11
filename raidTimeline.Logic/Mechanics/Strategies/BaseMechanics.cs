@@ -26,7 +26,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 
 			foreach (var mech in header)
 			{
-				if (mech["playerMech"].Value<bool>())
+				if (mech["playerMech"]?.Value<bool?>() == true)
 					mechanicsMap.Add(mech);
 			}
 
