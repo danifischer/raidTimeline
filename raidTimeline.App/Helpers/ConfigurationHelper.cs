@@ -15,6 +15,8 @@ internal record AppConfiguration
     internal byte[] EndpointKey { get; init; } = null!;
     internal byte[] EndpointIv { get; init; } = null!;
     internal bool EliteInsightsOptionsReadable { get; init; }
+    internal bool EliteInsightsWritesJson { get; init; }
+    internal bool EliteInsightsWritesHtml { get; init; }
 }
 
 internal class ConfigurationHelper
@@ -56,6 +58,8 @@ internal class ConfigurationHelper
             OutputPath = eliteInsightsOptions != null ? eliteInsightsOptions.OutputPath : outputPath,
             LogPath = eliteInsightsOptions != null ? eliteInsightsOptions.LogPath : logPath,
             EliteInsightsOptionsReadable = eliteInsightsOptions != null,
+            EliteInsightsWritesJson = eliteInsightsOptions?.SaveOutJson ?? false,
+            EliteInsightsWritesHtml = eliteInsightsOptions?.SaveOutHtml ?? false,
             EndpointIv = Convert.FromBase64String(endpointIv),
             EndpointKey = Convert.FromBase64String(endpointKey),
             EndpointUri = endpointUri

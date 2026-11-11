@@ -7,14 +7,23 @@ namespace raidTimeline.App.Services;
 
 internal record EliteInsightsOptions
 {
-    internal EliteInsightsOptions(string outputPath, string logPath)
+    internal EliteInsightsOptions(string outputPath, string logPath, bool saveOutJson = false,
+        bool saveOutHtml = true)
     {
         OutputPath = outputPath;
         LogPath = logPath;
+        SaveOutJson = saveOutJson;
+        SaveOutHtml = saveOutHtml;
     }
 
     internal string OutputPath { get; }
     internal string LogPath { get; }
+
+    /// <summary>Elite Insights writes the json files raidTimeline parses (<c>SaveOutJSON=true</c>).</summary>
+    internal bool SaveOutJson { get; }
+
+    /// <summary>Elite Insights writes the html logs the timeline links to (<c>SaveOutHTML=true</c>, the default).</summary>
+    internal bool SaveOutHtml { get; }
 }
 
 internal class EliteInsightsService : IEliteInsightsService
@@ -42,7 +51,9 @@ internal class EliteInsightsService : IEliteInsightsService
             var outPath = text[(outPathOptionIndex + outPathOption.Length)..text.IndexOf("\n",
                 outPathOptionIndex, StringComparison.Ordinal)];
 
-            return new EliteInsightsOptions(outPath, logPath);
+            return new EliteInsightsOptions(outPath, logPath,
+                ReadBooleanOption(text, "SaveOutJSON=", false),
+                ReadBooleanOption(text, "SaveOutHTML=", true));
         }
         catch (Exception)
         {
@@ -50,6 +61,15 @@ internal class EliteInsightsService : IEliteInsightsService
         }
         
         return null;
+    }
+
+    private static bool ReadBooleanOption(string configuration, string option, bool defaultValue)
+    {
+        var line = configuration.Split('\n')
+            .Select(l => l.Trim())
+            .FirstOrDefault(l => l.StartsWith(option, StringComparison.Ordinal));
+
+        return line != null && bool.TryParse(line[option.Length..], out var value) ? value : defaultValue;
     }
 
     public async void ParseEiFile(string logFilePath, string configurationFilePath,
