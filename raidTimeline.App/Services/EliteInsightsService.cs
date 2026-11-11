@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using CliWrap;
+﻿using CliWrap;
 using Microsoft.Extensions.Logging;
 using raidTimeline.App.Services.Interfaces;
 
@@ -72,26 +71,31 @@ internal class EliteInsightsService : IEliteInsightsService
         return line != null && bool.TryParse(line[option.Length..], out var value) ? value : defaultValue;
     }
 
-    public async void ParseEiFile(string logFilePath, string configurationFilePath,
-        string eliteInsightsExePath)
+    public bool ParseEiFile(string logFilePath, string configurationFilePath, string eliteInsightsExePath,
+        CancellationToken cancellationToken = default)
     {
-        await Cli.Wrap(eliteInsightsExePath)
-            .WithArguments(args => args
-                .Add("-c")
-                .Add($"{configurationFilePath}")
-                .Add($"{logFilePath}")
-                )
-            .WithStandardErrorPipe(PipeTarget.ToDelegate(Console.WriteLine))
-            .ExecuteAsync();
-        /*
-        var psi = new ProcessStartInfo
+        try
         {
-            FileName = eliteInsightsExePath,
-            Arguments = $"-c \"{configurationFilePath}\" \"{logFilePath}\"",
-            UseShellExecute = false,
-            RedirectStandardError = true
-        };
-        Process.Start(psi)?.WaitForExit();
-        */
+            // The timeline is built from the files Elite Insights writes, so this has to wait for it.
+            Cli.Wrap(eliteInsightsExePath)
+                .WithArguments(args => args
+                    .Add("-c")
+                    .Add(configurationFilePath)
+                    .Add(logFilePath))
+                .WithStandardOutputPipe(PipeTarget.Null)
+                .WithStandardErrorPipe(PipeTarget.ToDelegate(line => _logger.LogWarning("Elite Insights: {Line}", line)))
+                .ExecuteAsync(cancellationToken)
+                .GetAwaiter().GetResult();
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+        catch (Exception e) when (e is CliWrap.Exceptions.CommandExecutionException or System.ComponentModel.Win32Exception)
+        {
+            _logger.LogError("Elite Insights failed for {File}: {Message}", logFilePath, e.Message);
+            return false;
+        }
     }
 }
