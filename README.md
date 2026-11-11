@@ -19,6 +19,7 @@ rta
 
 Commands:
   open      Opens the current timeline file.
+  config    Commands for your settings.
   parse     Commands for parsing log files.
   clean     Commands to clean log file folders and free up space.
   size      Commands to show the disk space taken by logs.
@@ -37,16 +38,41 @@ Commands:
 
 ### Installation
 
-1. Download `rta-v<version>-win-x64.zip` from the [latest release](https://github.com/danifischer/raidTimeline/releases/latest)
-   (no .NET installation needed; `SHA256SUMS.txt` lets you verify the download)
-2. Unpack the zip file
-3. Open the config.json and enter the options you need (see Configuration)
-4. Run `rta.exe` via command line (you can put it in you `PATH` variable for easy access)
+**As a .NET tool** (needs the [.NET 10 SDK](https://dotnet.microsoft.com/download), works on Windows, Linux and macOS):
 
-To update, download the new zip and keep your settings: copy your `config.json` (or better: put your values in a
-`config.local.json`, see Configuration) into the new folder.
+```bash
+dotnet tool install -g rta
+```
+
+Update with `dotnet tool update -g rta`. The tool is also attached to every
+[release](https://github.com/danifischer/raidTimeline/releases/latest) as `rta.<version>.nupkg`; install that file with
+`dotnet tool install -g rta --add-source <folder with the nupkg> --version <version>`.
+
+**Or as a single file** (Windows, no .NET installation needed):
+
+1. Download `rta-v<version>-win-x64.zip` from the [latest release](https://github.com/danifischer/raidTimeline/releases/latest)
+   (`SHA256SUMS.txt` lets you verify the download)
+2. Unpack the zip file and run `rta.exe` via command line (you can put the folder in your `PATH` variable for easy access)
+3. To update, replace the files with the ones of the new zip; your settings stay (see Configuration)
+
+Then run `rta config edit` and enter the options you need (see Configuration).
 
 ### Configuration
+
+Your settings live in **your own file** in your user folder, so updates never touch them:
+
+| | |
+|---|---|
+| Windows | `%APPDATA%\rta\config.json` |
+| Linux / macOS | `~/.config/rta/config.json` |
+
+* `rta config edit` creates the file (with the settings you currently have) and opens it
+* `rta config path` prints where it is, `rta config log` prints the folder of the log files (`rta_log.txt`, kept for 7 days)
+* Set the environment variable `RTA_HOME` to a folder to keep settings and logs there instead (e.g. a portable installation)
+
+Settings are read in this order, a later file overrides an earlier one: the `config.json` that comes with rta (defaults,
+do not edit it, an update replaces it), a `config.local.json` next to it (older versions asked to use it), and finally your file.
+If you put values into the `config.json` next to rta before, they still work; `rta config edit` copies them into your file.
 
 ```json
 {
@@ -59,8 +85,8 @@ To update, download the new zip and keep your settings: copy your `config.json` 
   "outputPath": "",
   "logPath": "",
   
-  // Boss encounter ids filter (same ids as the arcdps.ini uses)
-  "bossEncounterIdFilter": "0x3C4E,0x3C45,0x3C0F,0x3EFB,0x3ED8,0x3F09,0x3EFD,0x3EF3,0x3F71,0x3F6B,0x3F76,0x3F9E,0x432A,0x4314,0x4324,0x4302,0xABC6,0x5271,0x5261,0x5231,0x55CC,0x55F6,0x55F0,0x4BFA,0x4CEB,0x4C50,0x4D37,0x4D74",
+  // Boss encounter ids filter (same ids as the arcdps.ini uses), the default is all raid bosses
+  // "bossEncounterIdFilter": "0x3C4E,0x3C45,...",
 
   // Endpoint upload 
   "endpointUri": "",
@@ -69,8 +95,8 @@ To update, download the new zip and keep your settings: copy your `config.json` 
 }
 ```
 
-> **Keep secrets out of git:** put your personal values (`dpsReportToken`, `endpointKey`, `endpointIv`, paths) in a
-> `config.local.json` next to `config.json`. It uses the same format, overrides `config.json` and is not committed.
+> **Keep secrets out of git:** your settings file is outside of any repository. Never put the token or the keys into
+> the `config.json` that ships with rta.
 
 #### Local parsing with Elite Insights
 

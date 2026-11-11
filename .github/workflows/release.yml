@@ -1,9 +1,11 @@
 name: Release
 
 # Push a tag like v3.0.0 to publish a GitHub release with
-#  - rta-<tag>-win-x64.zip   the app as a single file (no .NET installation needed) plus config.json
+#  - rta-v<version>-win-x64.zip   the app as a single file (no .NET installation needed) plus config.json
+#  - rta.<version>.nupkg   the same app as a .NET tool (dotnet tool install -g rta)
 #  - raidTimeline.Logic.<version>.nupkg   the library
 #  - SHA256SUMS.txt
+# If the repository secret NUGET_API_KEY is set, the tool is also pushed to nuget.org.
 # Pull requests that change this file and manual runs only build the files (dry run, nothing is published).
 
 on:
@@ -55,6 +57,9 @@ jobs:
       - name: Pack library
         run: dotnet pack raidTimeline.Logic/raidTimeline.Logic.csproj -c Release -p:Version=${{ steps.version.outputs.version }} -o publish/lib
 
+      - name: Pack tool
+        run: dotnet pack raidTimeline.App/raidTimeline.App.csproj -c Release -p:Version=${{ steps.version.outputs.version }} -o publish/tool
+
       - name: Publish app
         run: >
           dotnet publish raidTimeline.App/raidTimeline.App.csproj -c Release -r win-x64 --self-contained
@@ -70,12 +75,23 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "rta --version exited with $LASTEXITCODE" }
           if (-not $output.StartsWith("rta ${{ steps.version.outputs.version }}")) { throw "Unexpected version: $output" }
 
+      - name: Smoke test tool
+        shell: pwsh
+        run: |
+          dotnet tool install rta --tool-path "$env:RUNNER_TEMP/rta-tool" --add-source publish/tool --version ${{ steps.version.outputs.version }}
+          $output = (& "$env:RUNNER_TEMP/rta-tool/rta.exe" --version) -join "`n"
+          Write-Host $output
+          if ($LASTEXITCODE -ne 0) { throw "rta --version exited with $LASTEXITCODE" }
+          if (-not $output.StartsWith("rta ${{ steps.version.outputs.version }}")) { throw "Unexpected version: $output" }
+
       - name: Create release files
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force release | Out-Null
           Compress-Archive -Path publish/app/* -DestinationPath "release/rta-v${{ steps.version.outputs.version }}-win-x64.zip"
           Copy-Item publish/lib/*.nupkg release/
+          # packing the tool also writes the library package into its folder, take the tool only
+          Copy-Item publish/tool/rta.*.nupkg release/
           $files = Get-ChildItem release -File
           $files | Get-FileHash -Algorithm SHA256 |
             ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
@@ -86,6 +102,18 @@ jobs:
         with:
           name: release-${{ steps.version.outputs.version }}
           path: release/*
+
+      - name: Push tool to nuget.org
+        if: env.IS_RELEASE == 'true'
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [[ -z "$NUGET_API_KEY" ]]; then
+            echo "NUGET_API_KEY is not set, the tool is not pushed to nuget.org."
+            exit 0
+          fi
+          dotnet nuget push "release/rta.${{ steps.version.outputs.version }}.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Create GitHub release
         if: env.IS_RELEASE == 'true'

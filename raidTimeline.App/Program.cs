@@ -13,17 +13,18 @@ using Serilog;
 
 var builder = CoconaApp.CreateBuilder();
 
-builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"),
-    false, true);
-// Optional local overrides (secrets, local paths); not committed to git.
-builder.Configuration.AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.local.json"),
-    true, true);
+// config.json next to the program (defaults) < config.local.json next to the program < your settings file in the
+// user folder (survives updates, see "rta config edit").
+var paths = AppPaths.Create();
+builder.Configuration.AddAppConfigFiles(paths);
+builder.Services.AddSingleton(paths);
 
 var serilog = new LoggerConfiguration()
     .MinimumLevel.Verbose()
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
     .Enrich.FromLogContext()
-    .WriteTo.File("rta_log.txt")
+    .WriteTo.File(Path.Combine(paths.LogDirectory, "rta_log.txt"), rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 7)
     .CreateLogger();
 
 builder.Logging.AddSerilog(serilog);
@@ -40,6 +41,7 @@ builder.Services.RegisterDatabaseServices();
 
 var app = builder.Build();
 
+app.RegisterConfigCommands();
 app.RegisterParserCommands();
 app.RegisterFileCommands();
 app.RegisterUploadCommands();

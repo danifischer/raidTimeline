@@ -6,8 +6,29 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>rta</AssemblyName>
-        <IsPackable>false</IsPackable>
     </PropertyGroup>
+
+    <!-- dotnet tool install -g rta -->
+    <PropertyGroup>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>rta</ToolCommandName>
+        <PackageId>rta</PackageId>
+        <Description>Builds a timeline of your Guild Wars 2 raid from Elite Insights logs, parses and uploads arcdps logs (dps.report).</Description>
+        <PackageTags>guildwars2;gw2;arcdps;elite-insights;raid;timeline;dps-report</PackageTags>
+        <PackageProjectUrl>https://github.com/danifischer/raidTimeline</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <!-- run on newer .NET runtimes too -->
+        <RollForward>Major</RollForward>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="raidTimeline.App.Tests" />
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="CliWrap" />
