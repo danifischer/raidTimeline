@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
 using FluentAssertions;
@@ -70,6 +71,45 @@ public class TimelineCreatorTests
         timeline.Should().Contain("Vale Guardian").And.NotContain("{{placeholder}}");
         File.ReadAllText(Path.Combine(temp.Path, "statistics.html")).Should().Contain("Player1.1001")
             .And.NotContain("{{placeholder}}");
+    }
+
+    [Fact]
+    public void BuildTimelineFile_LeavesOnlyTheTimelineAndTheStatistics()
+    {
+        using var temp = TestFiles.CreateTempDirectory();
+        CopyFixture(temp.Path);
+        var models = _subjectUnderTest.ParseFilesFromDisk(temp.Path, CancellationToken.None);
+
+        _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", models);
+
+        Directory.GetFiles(temp.Path).Select(Path.GetFileName).Should()
+            .BeEquivalentTo("log.json", "timeline.html", "statistics.html");
+    }
+
+    [Fact]
+    public void BuildTimelineFile_SeveralTimelinesWithTheSameNameAtOnce_DoNotInterfere()
+    {
+        // The files used to be written to the current directory first, where parallel runs overwrote each other.
+        var directories = Enumerable.Range(0, 8).Select(_ => TestFiles.CreateTempDirectory()).ToList();
+        try
+        {
+            foreach (var directory in directories) CopyFixture(directory.Path);
+            var models = _subjectUnderTest.ParseFilesFromDisk(directories[0].Path, CancellationToken.None);
+
+            var act = () => Parallel.ForEach(directories,
+                directory => _subjectUnderTest.BuildTimelineFile(directory.Path, "timeline.html", models));
+
+            act.Should().NotThrow();
+            foreach (var directory in directories)
+            {
+                File.ReadAllText(Path.Combine(directory.Path, "timeline.html")).Should().Contain("Vale Guardian");
+                File.ReadAllText(Path.Combine(directory.Path, "statistics.html")).Should().Contain("Player1.1001");
+            }
+        }
+        finally
+        {
+            foreach (var directory in directories) directory.Dispose();
+        }
     }
 
     [Fact]
