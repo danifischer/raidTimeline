@@ -48,7 +48,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 			PrepareParsing(log, playerModel);
 
 			var port = playerModel.Mechanics.GetOrDefault("Port");
-			var green = playerModel.Mechanics.GetOrDefault("Green") - playerModel.Mechanics.GetOrDefault("Stab.Green.C");
+			var green = playerModel.Mechanics.GetOrDefault("Green.C");
 			var kb = playerModel.Mechanics.GetOrDefault("KB");
 			var blackStuff = playerModel.Mechanics.GetOrDefault("Leap") + playerModel.Mechanics.GetOrDefault("Sweep") + playerModel.Mechanics.GetOrDefault("Donut");
 

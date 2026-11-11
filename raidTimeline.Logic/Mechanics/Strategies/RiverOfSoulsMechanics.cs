@@ -10,7 +10,7 @@ namespace raidTimeline.Logic.Mechanics.Strategies
 	{
 		public RiverOfSoulsMechanics()
 		{
-			EncounterIds = new[] { -1 };
+			EncounterIds = new[] { 19828, -1 };
 		}
 
 		public override string CreateHtml(RaidModel model)

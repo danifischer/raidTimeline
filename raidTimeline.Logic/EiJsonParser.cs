@@ -122,6 +122,9 @@ namespace raidTimeline.Logic
             for (var index = 0; index < log.Players.Count; index++)
             {
                 var player = log.Players[index];
+                if (player.FriendlyNPC) continue;
+
+                // Index stays the position in the log, the mechanics read the log by it.
                 var playerModel = new PlayerModel
                 {
                     Index = index,

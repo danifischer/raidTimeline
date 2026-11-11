@@ -50,6 +50,9 @@ namespace raidTimeline.Logic.EiJson
         public string Profession { get; set; } = string.Empty;
         public bool NotInSquad { get; set; }
 
+        /// <summary>Friendly npcs and gadgets (e.g. a Conjured Sword) are listed like players.</summary>
+        public bool FriendlyNPC { get; set; }
+
         /// <summary>Per target, per phase.</summary>
         public List<List<EiDps>> DpsTargets { get; set; } = new();
 
