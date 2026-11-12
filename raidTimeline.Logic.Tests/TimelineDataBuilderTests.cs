@@ -1,0 +1,100 @@
+using System;
+using System.Linq;
+using System.Text.Json;
+using raidTimeline.Models.Models;
+using Xunit;
+
+namespace raidTimeline.Logic.Tests;
+
+public class TimelineDataBuilderTests
+{
+    private static RaidModel Raid(string name, DateTime start, bool killed = true) => new("log.json")
+    {
+        EncounterName = name,
+        EncounterIcon = "https://example.org/icon.png",
+        Killed = killed,
+        OccurenceStart = start,
+        OccurenceEnd = start.AddMinutes(4)
+    };
+
+    private static JsonElement Build(bool newestFirst, params RaidModel[] models) =>
+        JsonDocument.Parse(TimelineDataBuilder.Build(models, newestFirst)).RootElement;
+
+    [Fact]
+    public void Build_RealLog_ContainsEncounterPlayersBoonsAndMechanics()
+    {
+        var model = EiJsonParser.ParseFile(TestFiles.ValeGuardianLog)!;
+
+        var log = Build(false, model).GetProperty("logs")[0];
+
+        Assert.Equal("Vale Guardian", log.GetProperty("name").GetString());
+        Assert.Equal(15438, log.GetProperty("id").GetInt32());
+        Assert.True(log.GetProperty("killed").GetBoolean());
+        Assert.Equal("vale_guardian_kill.html", log.GetProperty("url").GetString());
+        Assert.StartsWith("https://render.guildwars2.com/", log.GetProperty("icon").GetString());
+        Assert.Equal(new[] { 0d }, log.GetProperty("hpLeft").EnumerateArray().Select(v => v.GetDouble()));
+        Assert.Equal(new[] { "Ports", "Seeker", "Floor" },
+            log.GetProperty("columns").EnumerateArray().Select(c => c.GetProperty("label").GetString()));
+
+        var players = log.GetProperty("players");
+        Assert.Equal(model.Players.Count, players.GetArrayLength());
+        Assert.Equal(10, players.GetArrayLength());
+        var first = players[0];
+        Assert.Equal(model.Players[0].AccountName, first.GetProperty("account").GetString());
+        Assert.Equal(model.Players[0].Dps, first.GetProperty("dps").GetInt64());
+        Assert.Equal(model.Players[0].Buffs.Count, first.GetProperty("buffs").GetArrayLength());
+        Assert.True(first.GetProperty("buffs").GetArrayLength() > 0);
+        Assert.Equal(model.Players[0].Buffs[0].Name, first.GetProperty("buffs")[0].GetProperty("name").GetString());
+        // Keys of the mechanics are written as they are, not renamed to camel case.
+        Assert.Contains(players.EnumerateArray(), p => p.GetProperty("mechanics").TryGetProperty("vg_floor", out _));
+    }
+
+    [Fact]
+    public void Build_WritesTimesWithoutOffsetSoThePageShowsTheTimesOfTheLog()
+    {
+        var model = Raid("Gorseval", new DateTime(2026, 11, 9, 21, 1, 38));
+
+        var log = Build(false, model).GetProperty("logs")[0];
+
+        Assert.Equal("2026-11-09T21:01:38", log.GetProperty("start").GetString());
+        Assert.Equal("2026-11-09T21:05:38", log.GetProperty("end").GetString());
+    }
+
+    [Fact]
+    public void Build_OrdersTheLogsChronologicallyAndKeepsTheDayOrderFlag()
+    {
+        var late = Raid("Late", new DateTime(2026, 11, 9, 22, 0, 0));
+        var early = Raid("Early", new DateTime(2026, 11, 2, 20, 0, 0));
+
+        var root = Build(true, late, early);
+
+        Assert.True(root.GetProperty("newestFirst").GetBoolean());
+        Assert.Equal(new[] { "Early", "Late" },
+            root.GetProperty("logs").EnumerateArray().Select(l => l.GetProperty("name").GetString()));
+        Assert.False(Build(false).GetProperty("newestFirst").GetBoolean());
+    }
+
+    [Fact]
+    public void Build_NoModels_ProducesAnEmptyList()
+    {
+        Assert.Equal(@"{""newestFirst"":false,""logs"":[]}", TimelineDataBuilder.Build(Array.Empty<RaidModel>(), false));
+    }
+
+    [Fact]
+    public void Build_HostileNames_CannotEndTheScriptTagAndRoundTrip()
+    {
+        const string name = "</script><img src=x onerror=alert(1)> & \"quote\"";
+        var model = Raid(name, new DateTime(2026, 11, 9, 21, 0, 0));
+        model.Players.Add(new PlayerModel { AccountName = name, Profession = "<b>Scourge</b>", ProfessionIcon = "" });
+
+        var json = TimelineDataBuilder.Build(new[] { model }, false);
+
+        Assert.DoesNotContain("<", json);
+        Assert.DoesNotContain(">", json);
+        Assert.DoesNotContain("&", json);
+        var log = JsonDocument.Parse(json).RootElement.GetProperty("logs")[0];
+        Assert.Equal(name, log.GetProperty("name").GetString());
+        Assert.Equal(name, log.GetProperty("players")[0].GetProperty("account").GetString());
+        Assert.Equal("<b>Scourge</b>", log.GetProperty("players")[0].GetProperty("profession").GetString());
+    }
+}

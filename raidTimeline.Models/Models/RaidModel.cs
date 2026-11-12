@@ -26,7 +26,5 @@ namespace raidTimeline.Models.Models
 
         /// <summary>Columns of the boss mechanics table, empty if nothing is worth showing.</summary>
         public List<MechanicColumn> MechanicColumns { get; } = new();
-
-        public static string DoubleAsHtml(double value) => value.ToString(new CultureInfo("en-US"));
     }
 }

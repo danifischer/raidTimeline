@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
+using raidTimeline.Models.Models;
 using Xunit;
 
 namespace raidTimeline.Logic.Tests;
@@ -59,7 +60,7 @@ public class TimelineCreatorTests
     }
 
     [Fact]
-    public void BuildTimelineFile_WithModel_WritesTimelineAndStatisticsFiles()
+    public void BuildTimelineFile_WithModel_WritesOneFileWithTheRaidData()
     {
         using var temp = TestFiles.CreateTempDirectory();
         CopyFixture(temp.Path);
@@ -68,24 +69,47 @@ public class TimelineCreatorTests
         _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", models);
 
         var timeline = File.ReadAllText(Path.Combine(temp.Path, "timeline.html"));
+        Assert.Contains("<script type=\"application/json\" id=\"raid-data\">", timeline);
         Assert.Contains("Vale Guardian", timeline);
-        Assert.DoesNotContain("{{placeholder}}", timeline);
-        var statistics = File.ReadAllText(Path.Combine(temp.Path, "statistics.html"));
-        Assert.Contains("Player1.1001", statistics);
-        Assert.DoesNotContain("{{placeholder}}", statistics);
+        Assert.Contains("Player1.1001", timeline);
+        Assert.DoesNotContain("{{data}}", timeline);
     }
 
     [Fact]
-    public void BuildTimelineFile_LeavesOnlyTheTimelineAndTheStatistics()
+    public void BuildTimelineFile_LeavesOnlyTheTimeline()
     {
+        // The statistics are part of the timeline page, and no temporary file may stay behind.
         using var temp = TestFiles.CreateTempDirectory();
         CopyFixture(temp.Path);
         var models = _subjectUnderTest.ParseFilesFromDisk(temp.Path, CancellationToken.None);
 
         _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", models);
 
-        Assert.Equal(new[] { "log.json", "statistics.html", "timeline.html" },
+        Assert.Equal(new[] { "log.json", "timeline.html" },
             Directory.GetFiles(temp.Path).Select(Path.GetFileName).Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void BuildTimelineFile_WithoutModels_WritesAnEmptyPage()
+    {
+        using var temp = TestFiles.CreateTempDirectory();
+
+        _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", Array.Empty<RaidModel>());
+
+        Assert.Contains("\"logs\":[]", File.ReadAllText(Path.Combine(temp.Path, "timeline.html")));
+    }
+
+    [Fact]
+    public void BuildTimelineFile_CancelledBeforeStart_WritesNothing()
+    {
+        using var temp = TestFiles.CreateTempDirectory();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", Array.Empty<RaidModel>(),
+            cancellationToken: cancellation.Token);
+
+        Assert.False(File.Exists(Path.Combine(temp.Path, "timeline.html")));
     }
 
     [Fact]
@@ -104,7 +128,6 @@ public class TimelineCreatorTests
             foreach (var directory in directories)
             {
                 Assert.Contains("Vale Guardian", File.ReadAllText(Path.Combine(directory.Path, "timeline.html")));
-                Assert.Contains("Player1.1001", File.ReadAllText(Path.Combine(directory.Path, "statistics.html")));
             }
         }
         finally

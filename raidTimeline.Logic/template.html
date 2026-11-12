@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Raid Timeline</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:#0d1016; --surface:#151a22; --surface-2:#1d232d; --line:#283040;
+    --text:#e8ebf2; --muted:#8b94a5; --accent:#7aa8ff; --accent-2:#b48cff;
+    --ok:#3fcf9b; --fail:#f2677a; --warn:#e5b455;
+    --glow-1:rgba(122,168,255,.07); --glow-2:rgba(180,140,255,.04);
+    --shadow:0 10px 30px -12px rgba(0,0,0,.6);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg:#f3f5fb; --surface:#fff; --surface-2:#eef1f8; --line:#dde2ee;
+      --text:#1a2133; --muted:#667085; --accent:#3d6fe0; --accent-2:#8a5cf0;
+      --ok:#14a06f; --fail:#d6425a; --warn:#b7791f;
+      --glow-1:rgba(61,111,224,.12); --glow-2:rgba(138,92,240,.08); --shadow:0 10px 30px -14px rgba(30,40,80,.25);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:#f3f5fb; --surface:#fff; --surface-2:#eef1f8; --line:#dde2ee;
+    --text:#1a2133; --muted:#667085; --accent:#3d6fe0; --accent-2:#8a5cf0;
+    --ok:#14a06f; --fail:#d6425a; --warn:#b7791f;
+    --glow-1:rgba(61,111,224,.12); --glow-2:rgba(138,92,240,.08); --shadow:0 10px 30px -14px rgba(30,40,80,.25);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.45 system-ui,-apple-system,"Segoe UI",Inter,sans-serif; min-height:100vh; }
+  body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:radial-gradient(900px 500px at 12% -8%,var(--glow-1),transparent 60%),
+               radial-gradient(800px 480px at 92% 4%,var(--glow-2),transparent 60%); }
+  .num { font-variant-numeric:tabular-nums; }
+
+  /* top bar */
+  .bar { position:sticky; top:0; z-index:20; backdrop-filter:blur(14px) saturate(1.4);
+    background:color-mix(in srgb,var(--bg) 72%,transparent); border-bottom:1px solid var(--line); }
+  .bar-inner { max-width:1000px; margin:0 auto; padding:10px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .brand { font-weight:800; letter-spacing:.3px; margin-right:auto; font-size:17px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .seg { display:flex; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:3px; gap:2px; }
+  .seg button { border:0; background:none; color:var(--muted); padding:6px 13px; border-radius:999px; cursor:pointer; font:inherit; font-size:13px; transition:color .15s, background .2s; }
+  .seg button:hover { color:var(--text); }
+  .seg button[aria-pressed="true"] { background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; box-shadow:0 4px 14px -4px var(--accent); }
+  .ghost { border:1px solid var(--line); background:var(--surface); color:var(--text); border-radius:999px; padding:6px 13px; cursor:pointer; font:inherit; font-size:13px; transition:border-color .15s; }
+  .ghost:hover { border-color:var(--accent); }
+
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 90px; }
+  html, body { overflow-x:clip; }
+  .page { display:none; } .page.on { display:block; animation:fade .35s ease; }
+  @keyframes fade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  /* day */
+  .daytabs-wrap { position:sticky; top:58px; z-index:6; margin:-8px 0 18px; background:linear-gradient(var(--bg) 75%,transparent); }
+  .daytabs { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding:8px 0 12px; scroll-behavior:smooth; }
+  /* edge fade + arrow: only shown on the side where more tabs are hidden */
+  .tabnav { position:absolute; top:8px; bottom:12px; width:52px; z-index:2; border:0; cursor:pointer; color:var(--text); font-size:22px; line-height:1;
+    display:flex; align-items:center; padding:0; transition:opacity .15s; }
+  .tabnav.prev { left:0; justify-content:flex-start; padding-left:2px; border-radius:12px 0 0 12px; background:linear-gradient(90deg,var(--bg) 35%,transparent); }
+  .tabnav.next { right:0; justify-content:flex-end; padding-right:2px; border-radius:0 12px 12px 0; background:linear-gradient(270deg,var(--bg) 35%,transparent); }
+  .tabnav span { display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow); }
+  .tabnav:hover span { border-color:var(--accent); color:var(--accent); }
+  .tabnav[hidden] { display:none; }
+  .daytabs::-webkit-scrollbar { display:none; }
+  .daytab { flex:none; text-align:left; cursor:pointer; font:inherit; color:var(--muted); background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:8px 14px; display:flex; flex-direction:column; gap:2px; min-width:128px; transition:border-color .15s, color .15s, background .2s; }
+  .daytab:hover { color:var(--text); border-color:color-mix(in srgb,var(--accent) 45%,var(--line)); }
+  .daytab .d { font-weight:700; font-size:14px; color:var(--text); }
+  .daytab .r { font-size:12px; display:flex; gap:8px; }
+  .daytab .r .ok { color:var(--ok); } .daytab .r .fail { color:var(--fail); }
+  .daytab[aria-selected="true"] { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 11%,var(--surface));
+    box-shadow:inset 0 -3px 0 var(--accent); }
+  .day { margin-bottom:34px; }
+  .day[hidden] { display:none; }
+  .day-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  .day h2 { margin:0; font-size:24px; letter-spacing:-.3px; }
+  .stats { display:flex; gap:8px; flex-wrap:wrap; font-size:13px; color:var(--muted); }
+  .pill { background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:2px 10px; }
+  .pill.ok { color:var(--ok); border-color:color-mix(in srgb,var(--ok) 35%,var(--line)); }
+  .pill.fail { color:var(--fail); border-color:color-mix(in srgb,var(--fail) 35%,var(--line)); }
+
+  /* day overview strip */
+  .strip-wrap { margin:0 0 22px; padding:14px 16px 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+  .strip-wrap .cap { display:flex; flex-wrap:wrap; gap:4px 16px; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.6px; }
+  .strip-scroll { overflow-x:auto; padding:2px 0 8px; margin-bottom:-6px; scrollbar-width:thin; }
+  .strip { display:flex; align-items:flex-start; gap:3px; }
+  /* a run = consecutive pulls of one boss: the pulls on top, icon (and name when there is room) below */
+  .run { flex:var(--d) 1 0; display:flex; flex-direction:column-reverse; }
+  .run-label { container-type:inline-size; display:flex; align-items:center; justify-content:center; gap:5px; height:22px; margin-top:5px;
+    font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; }
+  .run-icon { width:18px; height:18px; flex:none; border-radius:5px; object-fit:contain; background:var(--surface-2); }
+  .run-name, .run-n { display:none; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  @container (min-width:40px) { .run-n { display:inline; } }
+  @container (min-width:96px) { .run-name { display:inline; } }
+  .run-bars { display:flex; align-items:center; gap:3px; height:34px; }
+  .strip > .seg-gap { align-self:flex-start; margin-top:10px; }
+  .seg-pull { flex:var(--d) 1 0; min-width:20px; height:34px; border:0; padding:0; border-radius:6px; cursor:pointer; position:relative;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--c) 95%,#fff),var(--c)); opacity:.85; transition:transform .15s, opacity .15s, box-shadow .15s; }
+  .seg-pull.kill { --c:var(--ok); } .seg-pull.wipe { --c:var(--fail); }
+  .seg-pull:hover, .seg-pull:focus-visible { opacity:1; transform:translateY(-2px); box-shadow:0 6px 16px -4px var(--c); outline:none; }
+  /* one tooltip element for the whole strip: css tooltips would be clipped by the scrolling strip */
+  .tip { position:fixed; z-index:50; pointer-events:none; background:var(--surface-2); border:1px solid var(--line); color:var(--text);
+    padding:3px 8px; border-radius:6px; font-size:12px; white-space:nowrap; box-shadow:var(--shadow); }
+  .tip[hidden] { display:none; }
+  .pill.down { color:var(--warn); border-color:color-mix(in srgb,var(--warn) 35%,var(--line)); }
+  .legend { display:flex; gap:10px; align-items:center; text-transform:none; letter-spacing:0; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:-4px; }
+  .legend .k { background:var(--ok); } .legend .w { background:var(--fail); }
+  .legend .g { background:repeating-linear-gradient(135deg,var(--muted) 0 2px,transparent 2px 5px); border:1px solid var(--line); }
+  .seg-gap { flex:var(--d) 1 0; min-width:6px; border-radius:4px; position:relative; align-self:center; height:14px;
+    background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--muted) 55%,transparent) 0 2px,transparent 2px 6px);
+    border:1px dashed var(--line); transition:.15s; }
+  .seg-gap.long { border-color:var(--warn); background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn) 60%,transparent) 0 2px,transparent 2px 6px); }
+  .seg-gap:hover { height:22px; }
+
+  /* downtime connector between cards on the rail */
+  .rail-gap { position:relative; height:44px; margin:0 0 18px; }
+  .gap-pill { position:absolute; left:6px; top:50%; transform:translateY(-50%); display:inline-flex; gap:8px; align-items:center; flex-wrap:wrap;
+    font-size:12.5px; color:var(--muted); background:var(--bg); border:1px dashed var(--line); border-radius:999px; padding:3px 12px; }
+  .gap-pill b { color:var(--text); font-weight:600; }
+  .gap-pill .gap-times { opacity:.7; }
+  .gap-pill em { font-style:normal; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--warn); }
+  .rail-gap.long .gap-pill { border-color:color-mix(in srgb,var(--warn) 50%,var(--line)); }
+
+
+
+  /* timeline rail */
+  .rail { position:relative; margin-left:14px; padding-left:30px; border-left:2px solid transparent;
+    border-image:linear-gradient(var(--accent),var(--accent-2) 50%,transparent) 1; }
+  .enc { position:relative; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin:0 0 18px;
+    box-shadow:var(--shadow); overflow:hidden; transition:transform .2s, border-color .2s; animation:rise .45s ease both; }
+  .enc:hover { transform:translateY(-1px); border-color:color-mix(in srgb,var(--c) 40%,var(--line)); }
+  @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .enc::before { content:""; position:absolute; left:-40px; top:26px; width:16px; height:16px; border-radius:50%;
+    background:var(--c); border:3px solid var(--bg); box-shadow:0 0 0 2px var(--c), 0 0 16px 2px color-mix(in srgb,var(--c) 70%,transparent); }
+  .enc::after { content:""; position:absolute; inset:0 0 auto 0; height:2px; background:var(--c); opacity:.55; }
+  .enc.kill { --c:var(--ok); } .enc.wipe { --c:var(--fail); }
+  .enc.flash { animation:flash 1.2s ease; }
+  @keyframes flash { 0%,100% { box-shadow:var(--shadow); } 30% { box-shadow:0 0 0 3px var(--accent), 0 0 30px var(--accent); } }
+
+  .enc-head { display:flex; gap:14px; align-items:center; padding:18px 18px 10px; flex-wrap:wrap;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--h) 7%,transparent),transparent 90%); }
+  .icon { flex:none; width:48px; height:48px; border-radius:13px; filter:drop-shadow(0 3px 5px rgba(0,0,0,.25)); }
+  .titles { min-width:0; }
+  .titles h3 { margin:0; font-size:18px; letter-spacing:-.2px; }
+  .titles .sub { color:var(--muted); font-size:12.5px; }
+  .badge { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--c);
+    background:color-mix(in srgb,var(--c) 15%,transparent); padding:3px 9px; border-radius:7px; margin-left:auto; }
+
+  /* attempts strip */
+  .attempts { display:flex; gap:6px; flex-wrap:wrap; padding:2px 18px 10px; align-items:center; }
+  .attempts .lbl { font-size:12px; color:var(--muted); margin-right:2px; }
+  .att { border:1px solid var(--line); background:var(--surface-2); color:var(--muted); border-radius:999px; padding:3px 11px; cursor:pointer; font:inherit; font-size:12.5px;
+    display:inline-flex; gap:6px; align-items:center; transition:.15s; }
+  .att i { width:8px; height:8px; border-radius:50%; background:var(--c); box-shadow:0 0 8px var(--c); }
+  .att.kill { --c:var(--ok); } .att.wipe { --c:var(--fail); }
+  .att:hover { color:var(--text); }
+  .att[aria-pressed="true"] { color:var(--text); border-color:var(--c); background:color-mix(in srgb,var(--c) 14%,var(--surface-2)); }
+  .att + .arrow { color:var(--muted); font-size:12px; }
+
+  .chips { display:flex; gap:8px; flex-wrap:wrap; padding:0 18px 12px; }
+  .chip { font-size:12px; color:var(--muted); background:var(--surface-2); border-radius:8px; padding:3px 10px; }
+  .chip b { color:var(--text); font-weight:600; }
+  .chip.bad b { color:var(--fail); }
+  .chip.delta { border:1px solid var(--line); }
+  .chip.delta b.up { color:var(--ok); } .chip.delta b.down { color:var(--fail); }
+
+  .attempt { display:none; }
+  .attempt.on { display:block; }
+  .view { display:none; padding:0 10px 12px; }
+  body[data-view="dps"] .attempt.on .view.dps, body[data-view="cc"] .attempt.on .view.cc, body[data-view="boons"] .attempt.on .view.boons,
+  body[data-view="res"] .attempt.on .view.res, body[data-view="mech"] .attempt.on .view.mech,
+  body[data-view="deaths"] .attempt.on .view.deaths { display:block; animation:fade .3s ease; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted);
+    padding:8px 8px; border-bottom:1px solid var(--line); }
+  td { padding:7px 8px; border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent); }
+  tr:last-child td { border-bottom:0; }
+  tbody tr:hover { background:var(--surface-2); }
+  td.r, th.r { text-align:right; }
+  .player { display:flex; align-items:center; gap:8px; }
+  .prof { width:20px; height:20px; border-radius:6px; display:grid; place-items:center; font-size:10px; font-weight:700; color:#fff;
+    background:linear-gradient(135deg,var(--p),color-mix(in srgb,var(--p) 60%,#000)); }
+  .bar-cell { position:relative; min-width:130px; }
+  .bar-cell i { position:absolute; inset:3px auto 3px 0; width:var(--w); border-radius:6px; transform-origin:left;
+    background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 38%,transparent),color-mix(in srgb,var(--accent-2) 24%,transparent)); animation:grow .7s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes grow { from { transform:scaleX(0); } }
+  .bar-cell span { position:relative; padding-left:6px; }
+  .heat { text-align:center; border-radius:6px; background:color-mix(in srgb,var(--ok) calc(var(--u)*0.55%),transparent); }
+  .zero { color:var(--muted); opacity:.5; }
+  .hit { color:var(--fail); background:color-mix(in srgb,var(--fail) 14%,transparent); border-radius:6px; padding:1px 8px; font-weight:600; }
+  .scroll { overflow-x:auto; }
+
+  /* statistics */
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow); }
+  .card .v { font-size:32px; font-weight:800; letter-spacing:-.5px; } .card .l { color:var(--muted); font-size:13px; }
+  .panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:8px 8px 4px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .panel h3 { margin:10px 8px 6px; font-size:15px; }
+  .rate { display:flex; align-items:center; gap:8px; }
+  .rate .track { flex:1; height:6px; background:var(--surface-2); border-radius:3px; overflow:hidden; min-width:60px; }
+  .rate .track i { display:block; height:100%; background:linear-gradient(90deg,var(--ok),color-mix(in srgb,var(--ok) 60%,var(--accent))); width:var(--w); }
+  .icons { display:flex; gap:3px; }
+  .icons .prof { width:18px; height:18px; font-size:9px; }
+  .bossname { display:flex; align-items:center; gap:10px; } .bossname .icon { width:26px; height:26px; border-radius:8px; filter:none; }
+  th.sortable { cursor:pointer; } th.sortable:hover { color:var(--text); }
+
+  @media (max-width:600px) {
+    .brand { width:100%; }
+    .seg { overflow-x:auto; max-width:100%; }
+    .badge { margin-left:0; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } html { scroll-behavior:auto; } }
+
+  /* real-data additions */
+  .prof-img { width:20px; height:20px; flex:none; object-fit:contain; }
+  .icons .prof-img { width:18px; height:18px; }
+  img.icon { object-fit:contain; background:var(--surface-2); padding:3px; }
+  .boonico { width:22px; height:22px; vertical-align:middle; }
+  th.boon { text-align:center; }
+  tr.avg td { border-top:1px solid var(--line); color:var(--muted); font-weight:600; }
+  tr.avg:hover { background:none; }
+  .empty { color:var(--muted); padding:10px 8px; margin:0; }
+  .chip.link { text-decoration:none; color:var(--accent); } .chip.link:hover { background:color-mix(in srgb,var(--accent) 15%,var(--surface-2)); }
+
+  /* boss health of a wipe */
+  .hp { margin:0 18px 12px; height:8px; border-radius:5px; position:relative; overflow:hidden;
+    background:color-mix(in srgb,var(--ok) 35%,var(--surface-2)); }
+  .hp i { position:absolute; inset:0 auto 0 0; width:var(--w); background:linear-gradient(90deg,var(--fail),color-mix(in srgb,var(--fail) 70%,#fff)); }
+  .bossname a { color:inherit; text-decoration:none; } .bossname a:hover { text-decoration:underline; }
+</style>
+</head>
+<body data-view="dps">
+<div class="bar"><div class="bar-inner">
+  <div class="brand">⏱ Raid Timeline</div>
+  <div class="seg" id="pages" role="group" aria-label="Page">
+    <button aria-pressed="true" data-page="timeline">Timeline</button>
+    <button aria-pressed="false" data-page="stats">Statistics</button>
+  </div>
+  <div class="seg" id="views" role="group" aria-label="Data view">
+    <button aria-pressed="true" data-v="dps">DPS</button>
+    <button aria-pressed="false" data-v="cc">CC</button>
+    <button aria-pressed="false" data-v="boons">Boons</button>
+    <button aria-pressed="false" data-v="res">Res</button>
+    <button aria-pressed="false" data-v="mech">Mechanics</button>
+    <button aria-pressed="false" data-v="deaths">Deaths</button>
+  </div>
+  <button class="ghost" id="theme" title="Toggle theme">◐</button>
+</div></div>
+
+<main>
+  <noscript><p class="empty">This page needs JavaScript to show the raid data.</p></noscript>
+  <section class="page on" id="timeline"></section>
+  <section class="page" id="stats"></section>
+</main>
+
+<script type="application/json" id="raid-data">{{data}}</script>
+<script>
+(function () {
+'use strict';
+
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+
+/* ---------- data (written into the page by the generator) ---------- */
+let DATA;
+try { DATA = JSON.parse($('#raid-data').textContent); } catch (e) { DATA = { newestFirst: false, logs: [] }; }
+const LOGS = DATA.logs;
+
+/* ---------- helpers ---------- */
+const toSec = t => t.split(':').reduce((a, v) => a * 60 + +v, 0);
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+const hm = s => { const h = Math.floor(s / 3600), m = Math.round(s % 3600 / 60); return h ? `${h}h ${m}m` : `${m}m`; };
+const clock = s => `${String(Math.floor(s / 3600) % 24).padStart(2, '0')}:${String(Math.floor(s % 3600 / 60)).padStart(2, '0')}`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const hue = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
+/* only http(s) and relative links; the log url comes from the logs and must never become a script url */
+const safeUrl = u => (/^https?:\/\//i.test(u) || !/^[a-z][a-z0-9+.-]*:/i.test(u)) ? u : '#';
+const LONG_BREAK = 600; /* gaps above 10 minutes are flagged as a long break */
+
+/* ---------- group the logs by raid day ---------- */
+const byDay = {};
+LOGS.forEach(l => (byDay[l.start.slice(0, 10)] ??= []).push(l));
+const dayKeys = Object.keys(byDay).sort();
+if (DATA.newestFirst) dayKeys.reverse();
+
+const days = dayKeys.map(key => {
+  const [y, m, dd] = key.split('-').map(Number);
+  const date = new Date(y, m - 1, dd).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  /* pulls are always shown in chronological order, the rail and the downtimes only make sense that way */
+  const enc = byDay[key].sort((a, b) => a.start < b.start ? -1 : 1).map(l => {
+    const sec = Math.max(0, Math.round((new Date(l.end) - new Date(l.start)) / 1000));
+    return { boss: l.name, kill: l.killed, start: l.start.slice(11), dur: mmss(sec), sec, log: l };
+  });
+  enc.forEach(e => { e.s0 = toSec(e.start); e.s1 = e.s0 + e.sec; });
+  enc.forEach((e, i) => { e.gap = i ? Math.max(0, e.s0 - enc[i - 1].s1) : 0; });
+  const fightSec = enc.reduce((s, e) => s + e.sec, 0);
+  const totalSec = Math.max(fightSec, enc[enc.length - 1].s1 - enc[0].s0);
+  return { key, date, enc, fightSec, totalSec, downSec: totalSec - fightSec };
+});
+const dayCounts = d => { const k = d.enc.filter(e => e.kill).length; return { k, f: d.enc.length - k, bosses: [...new Set(d.enc.map(e => e.boss))] }; };
+
+/* ---------- small renderers ---------- */
+const prof = pl => pl.icon
+  ? `<img class="prof-img" src="${esc(pl.icon)}" alt="${esc(pl.profession)}" title="${esc(pl.profession)}" loading="lazy">`
+  : `<span class="prof" style="--p:hsl(${hue(pl.profession)} 55% 45%)">${esc(pl.profession.slice(0, 2))}</span>`;
+const who = p => `<div class="player">${prof(p)}${esc(p.account)}</div>`;
+const tbl = (head, body) => `<div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+
+/* the boss icon comes from the log; if it can't load (offline) a generated tile with the initials is used */
+let iconN = 0;
+function bossIcon(name, cls = 'icon', url = '') {
+  const h = hue(name), id = 'g' + (iconN++);
+  const ini = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const svg = `<svg class="${cls}" viewBox="0 0 48 48" aria-hidden="true"><defs>
+    <linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h} 70% 58%)"/><stop offset="1" stop-color="hsl(${(h + 50) % 360} 65% 32%)"/></linearGradient></defs>
+    <rect width="48" height="48" rx="13" fill="url(#${id})"/>
+    <path d="M24 6 40 12v12c0 9-6.5 15-16 18C14.500 39 8 33 8 24V12z" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>
+    <text x="24" y="29.500" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="15" fill="#fff">${esc(ini)}</text></svg>`;
+  return url ? `<img class="${cls}" src="${esc(safeUrl(url))}" alt="" data-fb="${encodeURIComponent(svg)}">` : svg;
+}
+document.addEventListener('error', ev => { const t = ev.target; if (t.tagName === 'IMG' && t.dataset.fb) t.outerHTML = decodeURIComponent(t.dataset.fb); }, true);
+
+/* ---------- one pull (attempt) of a boss ---------- */
+const gdps = a => a.log.players.reduce((s, p) => s + p.dps, 0);
+
+function attemptBody(e, prev) {
+  const pls = e.log.players;
+  const byDps = [...pls].sort((a, b) => b.dps - a.dps);
+  const totalDmg = pls.reduce((s, p) => s + p.damage, 0) || 1;
+
+  const dps = byDps.map(p => `<tr><td>${who(p)}</td>
+    <td class="bar-cell"><i style="--w:${p.dps / (byDps[0].dps || 1) * 100}%"></i><span class="num" title="Total damage: ${fmt(p.damage)}">${fmt(p.dps)} dps</span></td>
+    <td class="r num">${(p.damage / totalDmg * 100).toFixed(1)}%</td></tr>`).join('');
+
+  const byCc = [...pls].sort((a, b) => b.cc - a.cc), totalCc = pls.reduce((s, p) => s + p.cc, 0) || 1;
+  const cc = byCc.map(p => `<tr><td>${who(p)}</td>
+    <td class="bar-cell"><i style="--w:${p.cc / (byCc[0].cc || 1) * 100}%"></i><span class="num" title="Total CC: ${fmt(p.cc)}">${fmt(p.cc)} cc</span></td>
+    <td class="r num">${(p.cc / totalCc * 100).toFixed(1)}%</td></tr>`).join('');
+
+  /* boons: per player, plus the squad average */
+  const boonDefs = pls[0].buffs;
+  const cell = (b, v, stacks) => {
+    const u = Math.min(100, b.stacking ? v / 25 * 100 : v);
+    const tip = b.name + (b.stacking && stacks != null ? ` · present ${Math.round(stacks)}% of the time` : '');
+    return `<td><div class="heat" style="--u:${u}" title="${esc(tip)}">${Math.round(v)}${b.stacking ? '' : '%'}</div></td>`;
+  };
+  const boons = boonDefs.length
+    ? tbl('<th>Player</th>' + boonDefs.map(b => `<th class="boon"><img class="boonico" src="${esc(safeUrl(b.icon))}" alt="${esc(b.name)}" title="${esc(b.name)}" loading="lazy"></th>`).join(''),
+        pls.map(p => `<tr><td>${who(p)}</td>${boonDefs.map((b, i) => cell(b, p.buffs[i].value, p.buffs[i].stacks)).join('')}</tr>`).join('')
+        + `<tr class="avg"><td>Squad average</td>${boonDefs.map((b, i) => cell(b, pls.reduce((s, p) => s + p.buffs[i].value, 0) / pls.length, null)).join('')}</tr>`)
+    : `<p class="empty">No boon data in this log.</p>`;
+
+  const resP = pls.filter(p => p.resAmount > 0).sort((a, b) => b.resAmount - a.resAmount);
+  const res = resP.length
+    ? tbl('<th>Player</th><th class="r">Resurrects</th><th class="r">Time</th>',
+        resP.map(p => `<tr><td>${who(p)}</td><td class="r num">${p.resAmount}×</td><td class="r num">${p.resTime.toFixed(1)}s</td></tr>`).join(''))
+    : `<p class="empty">Nobody resurrected anyone in this fight.</p>`;
+
+  const cols = e.log.columns;
+  const rankCols = cols.filter(c => c.rank);
+  const mv = (p, c) => p.mechanics[c.key] ?? 0;
+  const mechP = [...pls].sort((a, b) => rankCols.reduce((s, c) => s + mv(b, c), 0) - rankCols.reduce((s, c) => s + mv(a, c), 0));
+  const mech = cols.length
+    ? tbl('<th>Player</th>' + cols.map(c => `<th class="r" title="${esc(c.title)}">${esc(c.label)}</th>`).join(''),
+        mechP.map(p => `<tr><td>${who(p)}</td>${cols.map(c => { const v = mv(p, c); return `<td class="r">${v ? `<span class="hit">${v}</span>` : '<span class="zero">–</span>'}</td>`; }).join('')}</tr>`).join(''))
+    : `<p class="empty">No mechanics are tracked for this encounter.</p>`;
+
+  const byDeaths = [...pls].sort((a, b) => b.died - a.died || b.downed - a.downed);
+  const z = v => v ? v : '<span class="zero">–</span>';
+  const deathsTbl = tbl('<th>Player</th><th class="r">Downed</th><th class="r">Died</th>',
+    byDeaths.map(p => `<tr><td>${who(p)}</td><td class="r num">${z(p.downed)}</td><td class="r num">${z(p.died)}</td></tr>`).join(''));
+
+  const deaths = pls.reduce((s, p) => s + p.died, 0), downs = pls.reduce((s, p) => s + p.downed, 0);
+  let delta = '';
+  if (prev) {
+    const dg = (gdps(e) / gdps(prev) - 1) * 100, dt = e.sec - prev.sec;
+    const f = (v, good) => `<b class="${good ? 'up' : 'down'}">${v}</b>`;
+    delta = `<span class="chip delta">vs previous · Group DPS ${f((dg >= 0 ? '+' : '') + dg.toFixed(1) + '%', dg >= 0)}</span>
+             <span class="chip delta">Time ${f((dt >= 0 ? '+' : '−') + mmss(Math.abs(dt)), dt <= 0)}</span>
+             <span class="chip delta">⏸ Break <b class="num">${mmss(e.s0 - prev.s1)}</b></span>`;
+  }
+  const hp = e.kill ? '' : e.log.hpLeft.map(v => `<span class="chip bad">Boss HP left <b class="num">${v.toFixed(1)}%</b></span>`).join('');
+  const hpBar = e.kill ? '' : e.log.hpLeft.slice(0, 1).map(v => `<div class="hp" title="${v.toFixed(1)}% left"><i style="--w:${v}%"></i></div>`).join('');
+  return `<div class="chips">
+      <span class="chip">🕒 <b class="num">${clock(e.s0)} → ${clock(e.s1)}</b></span>
+      <span class="chip">⏱ <b class="num">${e.dur}</b></span>
+      <span class="chip">Top DPS <b>${esc(byDps[0].account)}</b></span>
+      <span class="chip">Group <b class="num">${(gdps(e) / 1000).toFixed(1)}k</b></span>
+      <span class="chip ${deaths ? 'bad' : ''}">Deaths <b>${deaths}</b></span>
+      <span class="chip ${downs ? 'bad' : ''}">Downs <b>${downs}</b></span>${hp}${delta}
+      <a class="chip link" href="${esc(safeUrl(e.log.url))}" target="_blank" rel="noopener" title="Open the full log">Log ↗</a></div>${hpBar}
+    <div class="view dps">${tbl('<th>Player</th><th>DPS</th><th class="r">Share</th>', dps)}</div>
+    <div class="view cc">${tbl('<th>Player</th><th>Breakbar damage</th><th class="r">Share</th>', cc)}</div>
+    <div class="view boons">${boons}</div>
+    <div class="view res">${res}</div>
+    <div class="view mech">${mech}</div>
+    <div class="view deaths">${deathsTbl}</div>`;
+}
+
+/* ---------- one boss card with all its attempts of the day ---------- */
+function group(d, di, boss) {
+  const list = d.enc.filter(e => e.boss === boss);
+  const last = list[list.length - 1], cls = last.kill ? 'kill' : 'wipe';
+  const kills = list.filter(e => e.kill).length;
+  const tries = list.length > 1 ? `<div class="attempts"><span class="lbl">Attempts</span>${
+    list.map((e, i) => `${i ? '<span class="arrow">→</span>' : ''}<button class="att ${e.kill ? 'kill' : 'wipe'}" aria-pressed="${i === list.length - 1}" data-i="${i}"><i></i>#${i + 1} · <span class="num">${e.dur}</span></button>`).join('')}</div>` : '';
+  const sub = `${last.log.players.length} players` + (list.length > 1 ? ` · ${list.length} attempts` : '');
+  const badge = last.kill ? (list.length > 1 ? `Kill after ${list.length - 1} wipe${list.length > 2 ? 's' : ''}` : 'Kill') : (kills ? 'Mixed' : 'Wipe');
+  return `<article class="enc ${cls}" id="g-${di}-${boss.replace(/\W/g, '')}" style="--h:hsl(${hue(boss)} 70% 55%)">
+    <div class="enc-head">${bossIcon(boss, 'icon', last.log.icon)}<div class="titles"><h3>${esc(boss)}</h3><div class="sub">${sub}</div></div>
+      <span class="badge">${badge}</span></div>
+    ${tries}
+    ${list.map((e, i) => `<div class="attempt ${i === list.length - 1 ? 'on' : ''}" data-i="${i}">${attemptBody(e, list[i - 1])}</div>`).join('')}
+  </article>`;
+}
+
+/* ---------- day overview strip ---------- */
+function dayStrip(d, di) {
+  const idx = {};
+  const items = d.enc.map(e => { idx[e.boss] = (idx[e.boss] ?? -1) + 1; return { e, i: idx[e.boss] }; });
+  /* runs: consecutive pulls of the same boss share one label */
+  const runs = [];
+  items.forEach(it => { const last = runs[runs.length - 1]; if (last && last[0].e.boss === it.e.boss) last.push(it); else runs.push([it]); });
+  /* gap segments are drawn at most 240 "units" wide so one long break doesn't flatten the pulls */
+  const units = e => Math.min(e.gap, 240);
+  const gapEl = e => `<span class="seg-gap ${e.gap > LONG_BREAK ? 'long' : ''}" style="--d:${units(e)}" data-tip="⏸ ${mmss(e.gap)} downtime · ${clock(e.s0 - e.gap)} → ${clock(e.s0)}"></span>`;
+  const pull = ({ e, i }) => `<button class="seg-pull ${e.kill ? 'kill' : 'wipe'}" style="--d:${Math.max(e.sec, 1)}" data-g="g-${di}-${e.boss.replace(/\W/g, '')}" data-i="${i}" data-tip="${esc(e.boss)} · ${e.kill ? 'Kill' : 'Wipe'} · ${e.dur} · ${clock(e.s0)}" aria-label="${esc(e.boss)} ${e.kill ? 'kill' : 'wipe'} ${e.dur}"></button>`;
+  const run = r => {
+    const boss = r[0].e.boss, kills = r.filter(it => it.e.kill).length;
+    const weight = r.reduce((s, it, k) => s + Math.max(it.e.sec, 1) + (k && it.e.gap > 0 ? units(it.e) : 0), 0);
+    const tip = r.length > 1 ? `${boss} · ${r.length} pulls (${kills} kill${kills === 1 ? '' : 's'}, ${r.length - kills} wipe${r.length - kills === 1 ? '' : 's'})` : boss;
+    return `<div class="run" style="--d:${weight}"><div class="run-label" data-tip="${esc(tip)}">${bossIcon(boss, 'run-icon', r[0].e.log.icon)}<span class="run-name">${esc(boss)}</span>${r.length > 1 ? `<span class="run-n">×${r.length}</span>` : ''}</div>
+      <div class="run-bars">${r.map((it, k) => (k && it.e.gap > 0 ? gapEl(it.e) : '') + pull(it)).join('')}</div></div>`;
+  };
+  return `<div class="strip-wrap"><div class="cap"><span>Pulls · ${d.enc.length}</span>
+      <span class="legend"><i class="k"></i>Kill <i class="w"></i>Wipe <i class="g"></i>Downtime</span>
+      <span class="num">${hm(d.fightSec)} fighting · ${hm(d.downSec)} down</span></div>
+    <div class="strip-scroll"><div class="strip">${runs.map((r, k) => (k && r[0].e.gap > 0 ? gapEl(r[0].e) : '') + run(r)).join('')}</div></div></div>`;
+}
+
+/* ---------- downtime connector on the rail between two boss cards ---------- */
+function railGap(secs, from, to) {
+  return `<div class="rail-gap ${secs > LONG_BREAK ? 'long' : ''}"><span class="gap-pill"><b class="num">⏸ ${mmss(secs)}</b> downtime<span class="gap-times num">${clock(from)} → ${clock(to)}</span>${secs > LONG_BREAK ? '<em>long break</em>' : ''}</span></div>`;
+}
+function railFor(d, di, bosses) {
+  return bosses.map((b, i) => {
+    const list = d.enc.filter(e => e.boss === b);
+    let gap = '';
+    if (i) {
+      const prev = d.enc.filter(e => e.boss === bosses[i - 1]);
+      const pe = prev[prev.length - 1].s1, g = list[0].s0 - pe;
+      if (g > 0) gap = railGap(g, pe, list[0].s0);
+    }
+    return gap + group(d, di, b);
+  }).join('');
+}
+
+/* ---------- timeline page ---------- */
+$('#timeline').innerHTML = !days.length
+  ? `<p class="empty">No logs found yet.</p>`
+  : `<div class="daytabs-wrap"><button class="tabnav prev" aria-label="Show earlier tabs" hidden><span>‹</span></button><button class="tabnav next" aria-label="Show more tabs" hidden><span>›</span></button>
+   <div class="daytabs" role="tablist" aria-label="Raid days">${days.map((d, di) => { const { k, f } = dayCounts(d);
+    return `<button class="daytab" role="tab" id="tab-${di}" aria-controls="day-${di}" aria-selected="${di === 0}" tabindex="${di === 0 ? 0 : -1}" data-day="${di}">
+      <span class="d">${esc(d.date)}</span><span class="r num"><span class="ok">✓ ${k}</span><span class="fail">✗ ${f}</span><span>${hm(d.totalSec)}</span></span></button>`; }).join('')}</div></div>`
+  + days.map((d, di) => {
+    const { k, f, bosses } = dayCounts(d);
+    return `<section class="day" role="tabpanel" id="day-${di}" aria-labelledby="tab-${di}" ${di === 0 ? '' : 'hidden'}>
+      <div class="day-head"><h2>${esc(d.date)}</h2><div class="stats">
+      <span class="pill ok">✓ ${k} kills</span><span class="pill fail">✗ ${f} wipes</span>
+      <span class="pill">${bosses.length} bosses</span><span class="pill num">Total ${hm(d.totalSec)}</span><span class="pill num">Fight ${hm(d.fightSec)}</span><span class="pill num down">Down ${hm(d.downSec)} · ${Math.round(d.downSec / d.totalSec * 100)}%</span></div></div>
+      ${dayStrip(d, di)}
+      <div class="rail">${railFor(d, di, bosses)}</div></section>`;
+  }).join('');
+
+/* ---------- statistics page ---------- */
+const allEnc = days.flatMap(d => d.enc);
+const kills = allEnc.filter(e => e.kill).length;
+const squadOf = log => log.players.filter(p => !p.isNpc).sort((a, b) => a.group - b.group || a.account.localeCompare(b.account));
+const bossStats = {};
+allEnc.forEach(e => {
+  const b = bossStats[e.boss] ??= { tries: 0, kills: 0, sec: 0 };
+  b.tries++; if (e.kill) b.kills++; b.sec += e.sec;
+  b.log = e.log; /* encounters are in chronological order, so this ends up as the latest try */
+});
+const acct = {};
+allEnc.filter(e => e.kill).forEach(e => e.log.players.filter(p => !p.isNpc).forEach(p => {
+  const a = acct[p.account] ??= { p, downed: 0, died: 0 }; a.downed += p.downed; a.died += p.died;
+}));
+$('#stats').innerHTML = !days.length ? `<p class="empty">No logs found yet.</p>` : `
+ <div class="cards">
+   <div class="card"><div class="v num">${days.length}</div><div class="l">Raid days</div></div>
+   <div class="card"><div class="v num" style="color:var(--ok)">${kills}</div><div class="l">Kills</div></div>
+   <div class="card"><div class="v num" style="color:var(--fail)">${allEnc.length - kills}</div><div class="l">Wipes</div></div>
+   <div class="card"><div class="v num">${hm(days.reduce((s, d) => s + d.totalSec, 0))}</div><div class="l">Time in raid</div></div>
+ </div>
+ <div class="panel"><h3>Encounters</h3>${tbl('<th>Encounter</th><th>Kill rate</th><th class="r">Tries</th><th class="r">Fight time</th><th>Squad</th>',
+   Object.entries(bossStats).map(([name, b]) => `<tr><td><div class="bossname">${bossIcon(name, 'icon', b.log.icon)}<a href="${esc(safeUrl(b.log.url))}" target="_blank" rel="noopener">${esc(name)}</a></div></td>
+     <td><div class="rate"><div class="track"><i style="--w:${b.kills / b.tries * 100}%"></i></div><span class="num">${b.kills}/${b.tries}</span></div></td>
+     <td class="r num">${b.tries}</td><td class="r num">${mmss(b.sec)}</td><td><div class="icons">${squadOf(b.log).map(prof).join('')}</div></td></tr>`).join(''))}</div>
+ <div class="panel"><h3>Downs &amp; deaths (kills only)</h3>${tbl('<th>Player</th><th class="r">Downed</th><th class="r">Died</th>',
+   Object.values(acct).sort((a, b) => b.died - a.died || b.downed - a.downed || a.p.account.localeCompare(b.p.account))
+     .map(a => `<tr><td>${who(a.p)}</td><td class="r num">${a.downed}</td><td class="r num">${a.died}</td></tr>`).join(''))}</div>`;
+
+/* ---------- tooltip for the strip ---------- */
+const tip = document.createElement('div');
+tip.className = 'tip'; tip.hidden = true; document.body.appendChild(tip);
+function showTip(el) {
+  tip.textContent = el.dataset.tip; tip.hidden = false;
+  const r = el.getBoundingClientRect(), w = tip.getBoundingClientRect();
+  tip.style.left = Math.max(8, Math.min(innerWidth - w.width - 8, r.left + r.width / 2 - w.width / 2)) + 'px';
+  tip.style.top = Math.max(8, r.top - w.height - 8) + 'px';
+}
+document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); });
+document.addEventListener('mouseout', e => { if (e.target.closest('[data-tip]')) tip.hidden = true; });
+document.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); });
+document.addEventListener('focusout', () => { tip.hidden = true; });
+addEventListener('scroll', () => { tip.hidden = true; }, true);
+
+/* ---------- behaviour ---------- */
+function store(key, value) { try { if (value === undefined) return localStorage.getItem(key); localStorage.setItem(key, value); } catch (e) { return null; } }
+
+function pick(art, i) {
+  art.querySelectorAll('.att').forEach(b => b.setAttribute('aria-pressed', b.dataset.i == i));
+  art.querySelectorAll('.attempt').forEach(a => a.classList.toggle('on', a.dataset.i == i));
+  const e = art.querySelector(`.att[data-i="${i}"]`);
+  if (e) art.style.setProperty('--c', e.classList.contains('kill') ? 'var(--ok)' : 'var(--fail)');
+  const badge = art.querySelector('.badge');
+  if (badge && e) {
+    badge.dataset.final ??= badge.textContent;
+    const isLast = !e.nextElementSibling;
+    badge.textContent = isLast ? badge.dataset.final : `Attempt #${+i + 1} · ${e.classList.contains('kill') ? 'Kill' : 'Wipe'}`;
+  }
+}
+$$('.att').forEach(b => b.onclick = () => pick(b.closest('.enc'), b.dataset.i));
+$$('.seg-pull').forEach(b => b.onclick = () => {
+  const art = document.getElementById(b.dataset.g);
+  pick(art, b.dataset.i);
+  art.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  art.classList.remove('flash'); void art.offsetWidth; art.classList.add('flash');
+});
+
+function setView(v) {
+  if (!$(`#views button[data-v="${v}"]`)) v = 'dps';
+  document.body.dataset.view = v;
+  $$('#views button').forEach(x => x.setAttribute('aria-pressed', x.dataset.v === v));
+  store('rt-view', v);
+}
+$$('#views button').forEach(b => b.onclick = () => setView(b.dataset.v));
+setView(store('rt-view') || 'dps');
+
+$$('#pages button').forEach(b => b.onclick = () => {
+  $$('.page').forEach(p => p.classList.toggle('on', p.id === b.dataset.page));
+  $$('#pages button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  $('#views').style.display = b.dataset.page === 'timeline' ? '' : 'none';
+});
+
+function showDay(i, focus) {
+  $$('.daytab').forEach(t => {
+    const on = t.dataset.day == i;
+    t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1;
+    if (on && focus) t.focus();
+    if (on) t.scrollIntoView({ inline: 'center', block: 'nearest' });
+  });
+  $$('.day').forEach(p => p.hidden = p.id !== 'day-' + i);
+  try { history.replaceState(null, '', '#day-' + days[i].key); } catch (e) { }
+}
+$$('.daytab').forEach(t => {
+  t.onclick = () => showDay(t.dataset.day);
+  t.onkeydown = e => {
+    const n = days.length, i = +t.dataset.day;
+    if (e.key === 'ArrowRight') showDay((i + 1) % n, true); else if (e.key === 'ArrowLeft') showDay((i + n - 1) % n, true);
+    else if (e.key === 'Home') showDay(0, true); else if (e.key === 'End') showDay(n - 1, true); else return;
+    e.preventDefault();
+  };
+});
+const startDay = /^#day-(\d{4}-\d{2}-\d{2})$/.exec(location.hash);
+if (startDay) { const i = days.findIndex(d => d.key === startDay[1]); if (i > 0) showDay(i); }
+
+/* scroll hints for the day tabs: arrows + edge fade appear only on the side with hidden tabs */
+const bar = $('.daytabs');
+if (bar) {
+  const prev = $('.tabnav.prev'), next = $('.tabnav.next');
+  const update = () => {
+    prev.hidden = bar.scrollLeft <= 2;
+    next.hidden = bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 2;
+  };
+  prev.onclick = () => bar.scrollBy({ left: -bar.clientWidth * 0.7 });
+  next.onclick = () => bar.scrollBy({ left: bar.clientWidth * 0.7 });
+  bar.addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', update);
+  /* the vertical mouse wheel scrolls the tabs sideways while hovering them */
+  bar.addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && bar.scrollWidth > bar.clientWidth) { bar.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
+  update(); requestAnimationFrame(update);
+}
+
+/* theme: follows the system, the button overrides it and is remembered */
+const root = document.documentElement, dark = matchMedia('(prefers-color-scheme: dark)');
+const saved = store('rt-theme'); if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+$('#theme').onclick = () => {
+  const now = root.dataset.theme || (dark.matches ? 'dark' : 'light');
+  root.dataset.theme = now === 'dark' ? 'light' : 'dark';
+  store('rt-theme', root.dataset.theme);
+};
+})();
+</script>
+</body>
+</html>

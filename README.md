@@ -131,16 +131,22 @@ Elite Insights 3.x is required, logs in the old html-only format are not support
 
 #### How is the timeline created
 
-The timeline takes the json files created by Elite Insights (or the json provided by dps.report) and creates an overview page where you can:
+The timeline takes the json files created by Elite Insights (or the json provided by dps.report) and creates a single
+html page (`index.html`) where you can:
 
-* See how long your raids (ordered by days) took and how long you where in and out of combat
-* See how many bosses you tried / killed / failed
-* See the order of your tries and their status
-* See the top dps, rez, mechanic fails and the boon uptime
+* Switch between your raid days with tabs and see how long a day took and how long you were in and out of combat
+* See an overview strip of all pulls of a day, including the downtime between them
+* See how many bosses you tried / killed / failed; several tries of one boss are grouped, with a comparison to the previous try
+* See the damage, crowd control, boon uptime, resurrects, mechanic fails, downs and deaths of every player
+* See the health of the boss when you wiped
+* See the statistics over all days (kill rate and time per encounter, downs and deaths) on the statistics page
 * Click on the try to go to the log (the html log of Elite Insights, or the dps.report page)
 
 This is done by parsing the Elite Insights json files and combining the information from the log files.
 The format is documented at https://baaron4.github.io/GW2-Elite-Insights-Parser/Json/index.html.
+
+The page contains the parsed data as json and draws everything in the browser, so it needs JavaScript. The layout lives
+in `raidTimeline.Logic/template.html`; `TimelineDataBuilder` writes the data into it.
 
 The table with the players who failed the most mechanics comes from the encounter (trigger) id of the log.
 Encounters without a definition (strikes, fractals, new content) show the three mechanics the players triggered most.
