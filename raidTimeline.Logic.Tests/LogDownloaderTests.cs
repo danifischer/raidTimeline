@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Newtonsoft.Json;
 using raidTimeline.Logic.DpsReport;
 using Xunit;
@@ -32,8 +31,12 @@ public class LogDownloaderTests
 
         var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
-        models.Select(m => m.LogUrl).Should().Equal(BaseUrl + "one", BaseUrl + "two");
-        models.Should().OnlyContain(m => m.EncounterName == "Vale Guardian" && m.Players.Count == 10);
+        Assert.Equal(new[] { BaseUrl + "one", BaseUrl + "two" }, models.Select(m => m.LogUrl));
+        Assert.All(models, m =>
+        {
+            Assert.Equal("Vale Guardian", m.EncounterName);
+            Assert.Equal(10, m.Players.Count);
+        });
     }
 
     [Fact]
@@ -45,8 +48,8 @@ public class LogDownloaderTests
 
         var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
-        models.Select(m => m.LogUrl).Should().Equal(BaseUrl + "today");
-        handler.Requests.Should().NotContain(r => r.Contains("other"));
+        Assert.Equal(new[] { BaseUrl + "today" }, models.Select(m => m.LogUrl));
+        Assert.DoesNotContain(handler.Requests, r => r.Contains("other"));
     }
 
     [Fact]
@@ -59,8 +62,8 @@ public class LogDownloaderTests
 
         var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
-        models.Should().HaveCount(2);
-        handler.Requests.Count(r => r.Contains("getUploads")).Should().Be(2);
+        Assert.Equal(2, models.Count);
+        Assert.Equal(2, handler.Requests.Count(r => r.Contains("getUploads")));
     }
 
     [Fact]
@@ -72,7 +75,7 @@ public class LogDownloaderTests
 
         var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
 
-        models.Select(m => m.LogUrl).Should().Equal(BaseUrl + "good");
+        Assert.Equal(new[] { BaseUrl + "good" }, models.Select(m => m.LogUrl));
     }
 
     [Fact]
@@ -82,7 +85,7 @@ public class LogDownloaderTests
 
         await Create(handler).DownloadLogsForOneDayAsync("a&b=c", Day(LogTime), default);
 
-        handler.Requests.Single().Should().Contain("userToken=a%26b%3Dc");
+        Assert.Contains("userToken=a%26b%3Dc", Assert.Single(handler.Requests));
     }
 
     [Fact]
@@ -94,8 +97,8 @@ public class LogDownloaderTests
 
         var models = await Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), cts.Token);
 
-        models.Should().BeEmpty();
-        handler.Requests.Should().BeEmpty();
+        Assert.Empty(models);
+        Assert.Empty(handler.Requests);
     }
 
     [Fact]
@@ -103,9 +106,8 @@ public class LogDownloaderTests
     {
         var handler = new StubHandler();
 
-        var act = () => Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default);
-
-        await act.Should().ThrowAsync<HttpRequestException>();
+        await Assert.ThrowsAsync<HttpRequestException>(
+            () => Create(handler).DownloadLogsForOneDayAsync(Token, Day(LogTime), default));
     }
 
     private static LogDownloader Create(StubHandler handler) => new(new HttpClient(handler));

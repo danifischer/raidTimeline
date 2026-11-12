@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using FluentAssertions;
 using raidTimeline.Models.Models;
 using Xunit;
 
@@ -28,24 +27,26 @@ public class TimelineDataBuilderTests
 
         var log = Build(false, model).GetProperty("logs")[0];
 
-        log.GetProperty("name").GetString().Should().Be("Vale Guardian");
-        log.GetProperty("id").GetInt32().Should().Be(15438);
-        log.GetProperty("killed").GetBoolean().Should().BeTrue();
-        log.GetProperty("url").GetString().Should().Be("vale_guardian_kill.html");
-        log.GetProperty("icon").GetString().Should().StartWith("https://render.guildwars2.com/");
-        log.GetProperty("hpLeft").EnumerateArray().Select(v => v.GetDouble()).Should().Equal(0d);
-        log.GetProperty("columns").EnumerateArray().Select(c => c.GetProperty("label").GetString())
-            .Should().Equal("Ports", "Seeker", "Floor");
+        Assert.Equal("Vale Guardian", log.GetProperty("name").GetString());
+        Assert.Equal(15438, log.GetProperty("id").GetInt32());
+        Assert.True(log.GetProperty("killed").GetBoolean());
+        Assert.Equal("vale_guardian_kill.html", log.GetProperty("url").GetString());
+        Assert.StartsWith("https://render.guildwars2.com/", log.GetProperty("icon").GetString());
+        Assert.Equal(new[] { 0d }, log.GetProperty("hpLeft").EnumerateArray().Select(v => v.GetDouble()));
+        Assert.Equal(new[] { "Ports", "Seeker", "Floor" },
+            log.GetProperty("columns").EnumerateArray().Select(c => c.GetProperty("label").GetString()));
 
         var players = log.GetProperty("players");
-        players.GetArrayLength().Should().Be(model.Players.Count).And.Be(10);
+        Assert.Equal(model.Players.Count, players.GetArrayLength());
+        Assert.Equal(10, players.GetArrayLength());
         var first = players[0];
-        first.GetProperty("account").GetString().Should().Be(model.Players[0].AccountName);
-        first.GetProperty("dps").GetInt64().Should().Be(model.Players[0].Dps);
-        first.GetProperty("buffs").GetArrayLength().Should().Be(model.Players[0].Buffs.Count).And.BeGreaterThan(0);
-        first.GetProperty("buffs")[0].GetProperty("name").GetString().Should().Be(model.Players[0].Buffs[0].Name);
+        Assert.Equal(model.Players[0].AccountName, first.GetProperty("account").GetString());
+        Assert.Equal(model.Players[0].Dps, first.GetProperty("dps").GetInt64());
+        Assert.Equal(model.Players[0].Buffs.Count, first.GetProperty("buffs").GetArrayLength());
+        Assert.True(first.GetProperty("buffs").GetArrayLength() > 0);
+        Assert.Equal(model.Players[0].Buffs[0].Name, first.GetProperty("buffs")[0].GetProperty("name").GetString());
         // Keys of the mechanics are written as they are, not renamed to camel case.
-        players.EnumerateArray().Any(p => p.GetProperty("mechanics").TryGetProperty("vg_floor", out _)).Should().BeTrue();
+        Assert.Contains(players.EnumerateArray(), p => p.GetProperty("mechanics").TryGetProperty("vg_floor", out _));
     }
 
     [Fact]
@@ -55,8 +56,8 @@ public class TimelineDataBuilderTests
 
         var log = Build(false, model).GetProperty("logs")[0];
 
-        log.GetProperty("start").GetString().Should().Be("2026-11-09T21:01:38");
-        log.GetProperty("end").GetString().Should().Be("2026-11-09T21:05:38");
+        Assert.Equal("2026-11-09T21:01:38", log.GetProperty("start").GetString());
+        Assert.Equal("2026-11-09T21:05:38", log.GetProperty("end").GetString());
     }
 
     [Fact]
@@ -67,16 +68,16 @@ public class TimelineDataBuilderTests
 
         var root = Build(true, late, early);
 
-        root.GetProperty("newestFirst").GetBoolean().Should().BeTrue();
-        root.GetProperty("logs").EnumerateArray().Select(l => l.GetProperty("name").GetString())
-            .Should().Equal("Early", "Late");
-        Build(false).GetProperty("newestFirst").GetBoolean().Should().BeFalse();
+        Assert.True(root.GetProperty("newestFirst").GetBoolean());
+        Assert.Equal(new[] { "Early", "Late" },
+            root.GetProperty("logs").EnumerateArray().Select(l => l.GetProperty("name").GetString()));
+        Assert.False(Build(false).GetProperty("newestFirst").GetBoolean());
     }
 
     [Fact]
     public void Build_NoModels_ProducesAnEmptyList()
     {
-        TimelineDataBuilder.Build(Array.Empty<RaidModel>(), false).Should().Be(@"{""newestFirst"":false,""logs"":[]}");
+        Assert.Equal(@"{""newestFirst"":false,""logs"":[]}", TimelineDataBuilder.Build(Array.Empty<RaidModel>(), false));
     }
 
     [Fact]
@@ -88,10 +89,12 @@ public class TimelineDataBuilderTests
 
         var json = TimelineDataBuilder.Build(new[] { model }, false);
 
-        json.Should().NotContain("<").And.NotContain(">").And.NotContain("&");
+        Assert.DoesNotContain("<", json);
+        Assert.DoesNotContain(">", json);
+        Assert.DoesNotContain("&", json);
         var log = JsonDocument.Parse(json).RootElement.GetProperty("logs")[0];
-        log.GetProperty("name").GetString().Should().Be(name);
-        log.GetProperty("players")[0].GetProperty("account").GetString().Should().Be(name);
-        log.GetProperty("players")[0].GetProperty("profession").GetString().Should().Be("<b>Scourge</b>");
+        Assert.Equal(name, log.GetProperty("name").GetString());
+        Assert.Equal(name, log.GetProperty("players")[0].GetProperty("account").GetString());
+        Assert.Equal("<b>Scourge</b>", log.GetProperty("players")[0].GetProperty("profession").GetString());
     }
 }

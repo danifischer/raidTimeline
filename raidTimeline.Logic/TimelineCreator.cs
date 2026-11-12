@@ -138,7 +138,20 @@ namespace raidTimeline.Logic
             }
 
             // The json cannot contain "</script>" (see TimelineDataBuilder), so it is safe inside the script tag.
-            File.WriteAllText(htmlFilePath, html.Replace("{{data}}", json));
+            html = html.Replace("{{data}}", json);
+
+            // Write next to the target and move it over, so a timeline that cannot be written completely
+            // never replaces a good one (and nothing is written to the current directory).
+            var temporaryPath = $"{htmlFilePath}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                File.WriteAllText(temporaryPath, html);
+                File.Move(temporaryPath, htmlFilePath, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+            }
         }
     }
 }

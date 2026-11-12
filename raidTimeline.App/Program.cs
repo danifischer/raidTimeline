@@ -19,6 +19,16 @@ var paths = AppPaths.Create();
 builder.Configuration.AddAppConfigFiles(paths);
 builder.Services.AddSingleton(paths);
 
+// Your own boss definitions in the user folder extend the shipped ones (see "rta config mechanics").
+try
+{
+    CustomMechanics.Load(paths.UserMechanicsFile);
+}
+catch (Exception e) when (e is InvalidDataException or IOException or UnauthorizedAccessException)
+{
+    Console.Error.WriteLine($"Ignoring {paths.UserMechanicsFile}: {e.Message}");
+}
+
 var serilog = new LoggerConfiguration()
     .MinimumLevel.Verbose()
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
@@ -36,6 +46,8 @@ builder.Services.AddTransient<IParserService, ParserService>();
 builder.Services.AddTransient<IFileHandlingService, FileHandlingService>();
 builder.Services.AddTransient<IUploadService, UploadService>();
 builder.Services.AddTransient<IEndpointUploadService, EndpointUploadService>();
+// dps.report builds the report before it answers, which can take minutes
+builder.Services.AddSingleton(_ => new DpsReportClient(new HttpClient { Timeout = TimeSpan.FromMinutes(10) }));
 builder.Services.AddTransient<IDpsReportUploadService, DpsReportUploadService>();
 builder.Services.RegisterDatabaseServices();
 

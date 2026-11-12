@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Xunit;
 
 namespace raidTimeline.Logic.Tests;
 
@@ -11,6 +13,16 @@ internal static class TestFiles
     /// <c>test_log.zevtc</c> and shrunk with <c>trim_ei_json.py</c>.
     /// </summary>
     internal static string ValeGuardianLog => Path.Combine(AppContext.BaseDirectory, "Files", "vale_guardian_kill.json");
+
+    /// <summary>Asserts that the dictionary contains each key with exactly the given count.</summary>
+    internal static void AssertCounts(IReadOnlyDictionary<string, int> actual, params (string Key, int Count)[] expected)
+    {
+        foreach (var (key, count) in expected)
+        {
+            Assert.True(actual.TryGetValue(key, out var value), $"'{key}' is missing");
+            Assert.True(count == value, $"'{key}': expected {count}, but was {value}");
+        }
+    }
 
     /// <summary>Creates a fresh temp directory which is deleted when the returned object is disposed.</summary>
     internal static TempDirectory CreateTempDirectory() => new();

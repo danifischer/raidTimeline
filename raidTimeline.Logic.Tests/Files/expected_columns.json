@@ -1,0 +1,198 @@
+{
+  "adina_kill": {
+    "encounterId": 22006, "players": 4,
+    "columns": {
+      "adina_blind": [1, 4, 4, 3],
+      "adina_curse": [12, 12, 12, 12],
+      "adina_pulse": [0, 0, 3, 0],
+      "adina_mines": [0, 0, 4, 0],
+      "adina_eye": [1, 2, 1, 1]
+    }
+  },
+  "bandit_trio_kill": {
+    "encounterId": 16088, "players": 4,
+    "columns": {
+      "trio_cone": [1, 1, 7, 2],
+      "trio_tornado": [42, 32, 21, 37]
+    }
+  },
+  "cairn_kill": {
+    "encounterId": 17194, "players": 4,
+    "columns": {
+      "cairn_port": [0, 2, 0, 1],
+      "cairn_green": [2, 0, 0, 0],
+      "cairn_kb": [20, 9, 9, 11],
+      "cairn_blackStuff": [0, 0, 0, 1]
+    }
+  },
+  "conjured_amalgamate_kill": {
+    "encounterId": 43974, "players": 4,
+    "columns": {
+      "ca_arm": [0, 0, 1, 3],
+      "ca_balls": [11, 7, 6, 3],
+      "ca_junk": [3, 1, 0, 2],
+      "ca_tremor": [2, 2, 2, 3]
+    }
+  },
+  "deimos_kill": {
+    "encounterId": 17154, "players": 4,
+    "columns": {
+      "dei_oil": [0, 0, 1, 1],
+      "dei_pizza": [0, 3, 0, 1],
+      "dei_tear": [5, 4, 4, 3]
+    }
+  },
+  "dhuum_kill": {
+    "encounterId": 19450, "players": 4,
+    "columns": {
+      "dhuum_cone": [0, 0, 0, 0],
+      "dhuum_crack": [0, 1, 0, 0],
+      "dhuum_mark": [2, 4, 6, 10],
+      "dhuum_dip": [2, 0, 0, 0],
+      "dhuum_echo": [0, 0, 0, 0]
+    }
+  },
+  "gorseval_kill": {
+    "encounterId": 15429, "players": 4,
+    "columns": {
+      "gors_slam": [2, 2, 2, 0],
+      "gors_egg": [5, 0, 0, 0],
+      "gors_kick": [0, 0, 0, 1],
+      "gors_black": [25, 50, 50, 50]
+    }
+  },
+  "keep_construct_kill": {
+    "encounterId": 16235, "players": 4,
+    "columns": {
+      "kc_debris": [0, 0, 2, 3],
+      "kc_pizza": [26, 24, 25, 13],
+      "kc_jump": [2, 1, 1, 1]
+    }
+  },
+  "matthias_kill": {
+    "encounterId": 16115, "players": 4,
+    "columns": {
+      "matt_jump": [22, 2, 12, 3],
+      "matt_enviroment": [43, 22, 21, 30],
+      "matt_kd": [0, 1, 0, 1],
+      "matt_spirit": [2, 0, 0, 2]
+    }
+  },
+  "mursaat_overseer_kill": {
+    "encounterId": 17172, "players": 4,
+    "columns": {
+      "mo_jade": [13, 9, 11, 12],
+      "mo_explo": [1, 2, 1, 2]
+    }
+  },
+  "qadim_kill": {
+    "encounterId": 20934, "players": 4,
+    "columns": {
+      "qadim_wvyern": [3, 1, 0, 2],
+      "qadim_destroyer": [6, 7, 8, 1],
+      "qadim_qadim": [3, 11, 11, 4],
+      "qadim_port": [0, 1, 0, 1]
+    }
+  },
+  "qadim_peerless_kill": {
+    "encounterId": 22000, "players": 4,
+    "columns": {
+      "prlqadim_push": [1, 1, 1, 3],
+      "prlqadim_lightning": [5, 8, 9, 8],
+      "prlqadim_fire": [1, 0, 0, 0],
+      "prlqadim_ball": [1, 1, 2, 0]
+    }
+  },
+  "river_of_souls_kill": {
+    "encounterId": 19828, "players": 4,
+    "columns": {
+      "river_stun": [2, 2, 0, 0]
+    }
+  },
+  "sabetha_kill": {
+    "encounterId": 15375, "players": 4,
+    "columns": {
+      "sab_flak": [0, 1, 17, 2],
+      "sab_cannon": [25, 22, 11, 15],
+      "sab_flamethrower": [5, 3, 1, 6]
+    }
+  },
+  "sabir_kill": {
+    "encounterId": 21964, "players": 4,
+    "columns": {
+      "sabir_shockwave": [1, 0, 1, 1]
+    }
+  },
+  "samarog_kill": {
+    "encounterId": 17188, "players": 4,
+    "columns": {
+      "sam_attacks": [2, 2, 4, 0],
+      "sam_friendFail": [0, 0, 0, 1],
+      "sam_spear": [1, 1, 1, 0]
+    }
+  },
+  "slothasor_kill": {
+    "encounterId": 16123, "players": 4,
+    "columns": {
+      "sloth_tantrum": [0, 0, 4, 0],
+      "sloth_breath": [15, 4, 4, 4],
+      "sloth_poisonDmg": [0, 1, 0, 6],
+      "sloth_floor": [28, 11, 6, 11]
+    }
+  },
+  "soulless_horror_kill": {
+    "encounterId": 19767, "players": 4,
+    "columns": {
+      "sh_donutIn": [3, 4, 3, 5],
+      "sh_donutOut": [2, 1, 1, 0],
+      "sh_scythe": [0, 2, 0, 1],
+      "sh_slices": [4, 5, 4, 3]
+    }
+  },
+  "statue_of_darkness_kill": {
+    "encounterId": 19844, "players": 4,
+    "columns": {
+      "eyes_orb": [9, 7, 9, 0],
+      "eyes_detonate": [0, 7, 7, 0],
+      "eyes_beam": [0, 0, 0, 4]
+    }
+  },
+  "statue_of_death_kill": {
+    "encounterId": 19536, "players": 4,
+    "columns": {
+      "souleater_vomit": [9, 7, 12, 10]
+    }
+  },
+  "statue_of_ice_kill": {
+    "encounterId": 19691, "players": 4,
+    "columns": {
+      "brokenking_cone": [6, 15, 4, 3],
+      "brokenking_cracks": [1, 0, 1, 23],
+      "brokenking_green": [6, 5, 5, 0]
+    }
+  },
+  "twin_largos_kill": {
+    "encounterId": 21105, "players": 4,
+    "columns": {
+      "twinlargos_debuff": [14, 4, 17, 8],
+      "twinlargos_kenut": [14, 3, 22, 8],
+      "twinlargos_nikare": [15, 14, 11, 7]
+    }
+  },
+  "vale_guardian_kill": {
+    "encounterId": 15438, "players": 10,
+    "columns": {
+      "vg_tp": [2, 1, 1, 3, 4, 3, 3, 0, 3, 0],
+      "vg_seeker": [3, 0, 4, 2, 1, 5, 2, 3, 2, 4],
+      "vg_floor": [7, 0, 5, 7, 7, 2, 20, 5, 2, 4]
+    }
+  },
+  "xera_kill": {
+    "encounterId": 16246, "players": 4,
+    "columns": {
+      "xera_orb": [1, 0, 2, 1],
+      "xera_orbAoe": [8, 16, 20, 15],
+      "xera_stacks": [40, 46, 72, 48]
+    }
+  }
+}

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Cocona;
 using Microsoft.Extensions.Configuration;
 using raidTimeline.App.Helpers;
+using raidTimeline.Logic;
 
 namespace raidTimeline.App.Commands;
 
@@ -31,6 +32,21 @@ internal static class ConfigCommands
                         Console.WriteLine(paths.UserConfigFile);
                     })
                     .WithDescription("Prints the path of your settings file.");
+
+                command.AddCommand("mechanics", (
+                        [FromService] AppPaths paths) =>
+                    {
+                        if (!File.Exists(paths.UserMechanicsFile))
+                        {
+                            Directory.CreateDirectory(paths.ConfigDirectory);
+                            File.WriteAllText(paths.UserMechanicsFile, CustomMechanics.Template);
+                            Console.WriteLine($"Created {paths.UserMechanicsFile}");
+                        }
+
+                        Console.WriteLine(paths.UserMechanicsFile);
+                        Open(paths.UserMechanicsFile);
+                    })
+                    .WithDescription("Opens your own boss definitions (and creates the file if it does not exist).");
 
                 command.AddCommand("log", (
                         [FromService] AppPaths paths) =>

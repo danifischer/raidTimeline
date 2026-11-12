@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using raidTimeline.App.Helpers;
 using Xunit;
@@ -42,12 +41,12 @@ public sealed class ConfigurationTests : IDisposable
     {
         var paths = AppPaths.Create("program", null);
 
-        paths.BaseDirectory.Should().Be("program");
-        paths.ConfigDirectory.Should().Be(
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "rta"));
-        paths.LogDirectory.Should().Be(
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "rta"));
-        paths.UserConfigFile.Should().EndWith(Path.Combine("rta", "config.json"));
+        Assert.Equal("program", paths.BaseDirectory);
+        Assert.Equal(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "rta"),
+            paths.ConfigDirectory);
+        Assert.Equal(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "rta"),
+            paths.LogDirectory);
+        Assert.EndsWith(Path.Combine("rta", "config.json"), paths.UserConfigFile);
     }
 
     [Theory]
@@ -56,7 +55,7 @@ public sealed class ConfigurationTests : IDisposable
     [InlineData("   ")]
     public void AppPaths_EmptyHome_IsIgnored(string? home)
     {
-        AppPaths.Create("program", home).ConfigDirectory.Should().EndWith("rta");
+        Assert.EndsWith("rta", AppPaths.Create("program", home).ConfigDirectory);
     }
 
     [Fact]
@@ -64,9 +63,9 @@ public sealed class ConfigurationTests : IDisposable
     {
         var paths = AppPaths.Create("program", _root);
 
-        paths.ConfigDirectory.Should().Be(Path.GetFullPath(_root));
-        paths.LogDirectory.Should().Be(Path.GetFullPath(_root));
-        paths.UserConfigFile.Should().Be(Path.Combine(Path.GetFullPath(_root), "config.json"));
+        Assert.Equal(Path.GetFullPath(_root), paths.ConfigDirectory);
+        Assert.Equal(Path.GetFullPath(_root), paths.LogDirectory);
+        Assert.Equal(Path.Combine(Path.GetFullPath(_root), "config.json"), paths.UserConfigFile);
     }
 
     [Fact]
@@ -76,9 +75,9 @@ public sealed class ConfigurationTests : IDisposable
 
         var configuration = Load();
 
-        configuration["eiPath"].Should().Be("default");
-        configuration["bossEncounterIdFilter"].Should().Be("0x3C4E");
-        Directory.Exists(_paths.ConfigDirectory).Should().BeFalse("reading must not create anything");
+        Assert.Equal("default", configuration["eiPath"]);
+        Assert.Equal("0x3C4E", configuration["bossEncounterIdFilter"]);
+        Assert.False(Directory.Exists(_paths.ConfigDirectory), "reading must not create anything");
     }
 
     [Fact]
@@ -90,9 +89,9 @@ public sealed class ConfigurationTests : IDisposable
 
         var configuration = Load();
 
-        configuration["a"].Should().Be("default");
-        configuration["b"].Should().Be("local");
-        configuration["c"].Should().Be("user");
+        Assert.Equal("default", configuration["a"]);
+        Assert.Equal("local", configuration["b"]);
+        Assert.Equal("user", configuration["c"]);
     }
 
     [Fact]
@@ -106,15 +105,13 @@ public sealed class ConfigurationTests : IDisposable
             }
             """);
 
-        Load()["eiPath"].Should().Be(@"C:\ei\ei.exe");
+        Assert.Equal(@"C:\ei\ei.exe", Load()["eiPath"]);
     }
 
     [Fact]
     public void AddAppConfigFiles_MissingDefaultFile_Throws()
     {
-        var act = () => Load();
-
-        act.Should().Throw<FileNotFoundException>();
+        Assert.ThrowsAny<FileNotFoundException>(() => Load());
     }
 
     [Fact]
@@ -127,14 +124,15 @@ public sealed class ConfigurationTests : IDisposable
 
         var created = ConfigurationSources.CreateUserConfigIfMissing(_paths, Load());
 
-        created.Should().BeTrue();
-        File.Exists(_paths.UserConfigFile).Should().BeTrue();
+        Assert.True(created);
+        Assert.True(File.Exists(_paths.UserConfigFile));
         var reloaded = Load();
-        reloaded["eiPath"].Should().Be(@"C:\Tools\ei.exe");
-        reloaded["dpsReportToken"].Should().Be("abc\"def");
-        reloaded["logPath"].Should().BeEmpty();
-        reloaded["bossEncounterIdFilter"].Should().Be("0x3C4E", "the default filter stays in the shipped config.json");
-        File.ReadAllText(_paths.UserConfigFile).Should().NotContain("bossEncounterIdFilter\":");
+        Assert.Equal(@"C:\Tools\ei.exe", reloaded["eiPath"]);
+        Assert.Equal("abc\"def", reloaded["dpsReportToken"]);
+        Assert.Equal("", reloaded["logPath"]);
+        // the default filter stays in the shipped config.json
+        Assert.Equal("0x3C4E", reloaded["bossEncounterIdFilter"]);
+        Assert.DoesNotContain("bossEncounterIdFilter\":", File.ReadAllText(_paths.UserConfigFile));
     }
 
     [Fact]
@@ -147,7 +145,7 @@ public sealed class ConfigurationTests : IDisposable
         var configuration = Load();
         foreach (var key in ConfigurationSources.UserKeys)
         {
-            configuration.GetChildren().Select(c => c.Key).Should().Contain(key);
+            Assert.Contains(key, configuration.GetChildren().Select(c => c.Key));
         }
     }
 
@@ -159,18 +157,18 @@ public sealed class ConfigurationTests : IDisposable
 
         var created = ConfigurationSources.CreateUserConfigIfMissing(_paths, Load());
 
-        created.Should().BeFalse();
-        File.ReadAllText(_paths.UserConfigFile).Should().Be("""{ "eiPath": "mine" }""");
+        Assert.False(created);
+        Assert.Equal("""{ "eiPath": "mine" }""", File.ReadAllText(_paths.UserConfigFile));
     }
 
     [Fact]
     public void CreateUserConfigIfMissing_CreatesTheFolder()
     {
         WriteDefault("{ }");
-        Directory.Exists(_paths.ConfigDirectory).Should().BeFalse();
+        Assert.False(Directory.Exists(_paths.ConfigDirectory));
 
         ConfigurationSources.CreateUserConfigIfMissing(_paths, Load());
 
-        Directory.Exists(_paths.ConfigDirectory).Should().BeTrue();
+        Assert.True(Directory.Exists(_paths.ConfigDirectory));
     }
 }

@@ -41,17 +41,21 @@ internal class ParserService : IParserService
             var files = Directory.GetFiles(_configurationHelper.Configuration.LogPath,
                 $"{day}*.zevtc", SearchOption.AllDirectories);
 
-            for (var i = 0; i < files.Length; i++)
+            var failed = 0;
+            for (var i = 0; i < files.Length && !cancellationToken.IsCancellationRequested; i++)
             {
                 spinner.Text = $"Parsing logs for {day}: {i + 1}/{files.Length}";
-                _eliteInsightsService.ParseEiFile(files[i],
-                    _configurationHelper.Configuration.ConfigurationPath,
-                    _configurationHelper.Configuration.EliteInsightsPath);
-
-                if (cancellationToken.IsCancellationRequested)
+                if (!_eliteInsightsService.ParseEiFile(files[i],
+                        _configurationHelper.Configuration.ConfigurationPath,
+                        _configurationHelper.Configuration.EliteInsightsPath, cancellationToken))
                 {
-                    spinner.Info("Log parsing canceled.");
+                    failed++;
                 }
+            }
+
+            if (failed > 0 && !cancellationToken.IsCancellationRequested)
+            {
+                spinner.Warn($"Elite Insights failed for {failed} of {files.Length} logs (see the log file).");
             }
 
             spinner.Text = $"Parsing json files";
@@ -153,8 +157,8 @@ internal class ParserService : IParserService
                 seenFiles.Add(e.FullPath);
                 spinner.Text = $"arcdps watcher: parsing {e.Name}...";
                 _eliteInsightsService.ParseEiFile(e.FullPath,
-                   _configurationHelper.Configuration.ConfigurationPath,
-                   _configurationHelper.Configuration.EliteInsightsPath);
+                    _configurationHelper.Configuration.ConfigurationPath,
+                    _configurationHelper.Configuration.EliteInsightsPath);
                 spinner.Text = "arcdps watcher: idle...";
             }
         };
