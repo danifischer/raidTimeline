@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="templateStatistics.html" />
-    <None Remove="templateTimeline.html" />
+    <None Remove="template.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,10 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="templateStatistics.html" Pack="true">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="templateTimeline.html" Pack="true">
+    <EmbeddedResource Include="template.html" Pack="true">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

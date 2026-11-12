@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using FluentAssertions;
+using raidTimeline.Models.Models;
 using Xunit;
 
 namespace raidTimeline.Logic.Tests;
@@ -58,7 +60,7 @@ public class TimelineCreatorTests
     }
 
     [Fact]
-    public void BuildTimelineFile_WithModel_WritesTimelineAndStatisticsFiles()
+    public void BuildTimelineFile_WithModel_WritesOneFileWithTheRaidData()
     {
         using var temp = TestFiles.CreateTempDirectory();
         CopyFixture(temp.Path);
@@ -67,9 +69,33 @@ public class TimelineCreatorTests
         _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", models);
 
         var timeline = File.ReadAllText(Path.Combine(temp.Path, "timeline.html"));
-        timeline.Should().Contain("Vale Guardian").And.NotContain("{{placeholder}}");
-        File.ReadAllText(Path.Combine(temp.Path, "statistics.html")).Should().Contain("Player1.1001")
-            .And.NotContain("{{placeholder}}");
+        timeline.Should().Contain(@"<script type=""application/json"" id=""raid-data"">")
+            .And.Contain("Vale Guardian").And.Contain("Player1.1001")
+            .And.NotContain("{{data}}");
+        File.Exists(Path.Combine(temp.Path, "statistics.html")).Should().BeFalse("statistics are part of the timeline page");
+    }
+
+    [Fact]
+    public void BuildTimelineFile_WithoutModels_WritesAnEmptyPage()
+    {
+        using var temp = TestFiles.CreateTempDirectory();
+
+        _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", Array.Empty<RaidModel>());
+
+        File.ReadAllText(Path.Combine(temp.Path, "timeline.html")).Should().Contain(@"""logs"":[]");
+    }
+
+    [Fact]
+    public void BuildTimelineFile_CancelledBeforeStart_WritesNothing()
+    {
+        using var temp = TestFiles.CreateTempDirectory();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        _subjectUnderTest.BuildTimelineFile(temp.Path, "timeline.html", Array.Empty<RaidModel>(),
+            cancellationToken: cancellation.Token);
+
+        File.Exists(Path.Combine(temp.Path, "timeline.html")).Should().BeFalse();
     }
 
     [Fact]
