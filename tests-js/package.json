@@ -1,0 +1,11 @@
+{
+  "name": "raidtimeline-page-tests",
+  "private": true,
+  "description": "Tests for the JavaScript in raidTimeline.Logic/template.html",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  }
+}

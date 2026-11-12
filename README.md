@@ -175,6 +175,12 @@ The `raidTimeline.Logic.<version>.nupkg` is attached to every release.
 Feel free to use the `raidTimeline.Logic.dll`, it provides an interface `ITimelineCreator` and the `TimelineCreator`.  
 With these you can build your own tools if you want.
 
+### Page tests
+
+The JavaScript of the timeline page is tested with [Node](https://nodejs.org) and jsdom: `npm ci` and `npm test` in
+the `tests-js` folder (they load `raidTimeline.Logic/template.html` with small hand-made data).
+The data has the shape `TimelineDataBuilder` writes; if you change that json, change `tests-js/page.js` as well.
+
 ### Boss mechanics
 
 The columns of the mechanics table are data, not code: `raidTimeline.Logic/Mechanics/mechanics.json`.
