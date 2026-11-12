@@ -139,7 +139,7 @@ html page (`index.html`) where you can:
 * See how many bosses you tried / killed / failed; several tries of one boss are grouped, with a comparison to the previous try
 * See the damage, crowd control, boon uptime, resurrects, mechanic fails, downs and deaths of every player
 * See the health of the boss when you wiped
-* See the statistics over all days (kill rate and time per encounter, downs and deaths) on the statistics page
+* See the statistics over all days (kill rate and time per encounter, downs and deaths) on the Statistics tab
 * Click on the try to go to the log (the html log of Elite Insights, or the dps.report page)
 
 This is done by parsing the Elite Insights json files and combining the information from the log files.
@@ -147,6 +147,8 @@ The format is documented at https://baaron4.github.io/GW2-Elite-Insights-Parser/
 
 The page contains the parsed data as json and draws everything in the browser, so it needs JavaScript. The layout lives
 in `raidTimeline.Logic/template.html`; `TimelineDataBuilder` writes the data into it.
+Older versions also wrote a `statistics.html`; it is not created anymore (the statistics are part of `index.html`) and
+an old one next to it is left alone, you can delete it.
 
 The table with the players who failed the most mechanics comes from the encounter (trigger) id of the log.
 Encounters without a definition (strikes, fractals, new content) show the three mechanics the players triggered most.
