@@ -16,3 +16,13 @@ jobs:
       - run: dotnet build raidTimeline.sln -c Release
       # Integration tests need network access and a local Elite Insights install.
       - run: dotnet test raidTimeline.sln -c Release --no-build --filter "Category!=Integration"
+      # The page (raidTimeline.Logic/template.html) is JavaScript; these tests run it in jsdom.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tests-js/package-lock.json
+      - run: npm ci
+        working-directory: tests-js
+      - run: npm test
+        working-directory: tests-js
