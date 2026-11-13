@@ -58,5 +58,6 @@ app.RegisterParserCommands();
 app.RegisterFileCommands();
 app.RegisterUploadCommands();
 app.RegisterDatabaseCommands();
+app.RegisterUpdateCommands();
 
 app.Run();
