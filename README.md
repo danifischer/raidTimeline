@@ -24,6 +24,7 @@ Commands:
   clean     Commands to clean log file folders and free up space.
   size      Commands to show the disk space taken by logs.
   upload    Commands for uploading html and log files.
+  update    Installs the latest release from GitHub if it is newer than this version.
 ```
 
 ### Features
@@ -44,7 +45,7 @@ Commands:
 dotnet tool install -g rta
 ```
 
-Update with `dotnet tool update -g rta`. The tool is also attached to every
+Update with `rta update` (or `dotnet tool update -g rta`). The tool is also attached to every
 [release](https://github.com/danifischer/raidTimeline/releases/latest) as `rta.<version>.nupkg`; install that file with
 `dotnet tool install -g rta --add-source <folder with the nupkg> --version <version>`.
 
@@ -53,7 +54,7 @@ Update with `dotnet tool update -g rta`. The tool is also attached to every
 1. Download `rta-v<version>-win-x64.zip` from the [latest release](https://github.com/danifischer/raidTimeline/releases/latest)
    (`SHA256SUMS.txt` lets you verify the download)
 2. Unpack the zip file and run `rta.exe` via command line (you can put the folder in your `PATH` variable for easy access)
-3. To update, replace the files with the ones of the new zip; your settings stay (see Configuration)
+3. To update, run `rta update` (it downloads the new zip, checks it against `SHA256SUMS.txt` and replaces the files); your settings stay (see Configuration)
 
 Then run `rta config edit` and enter the options you need (see Configuration).
 
