@@ -231,6 +231,18 @@
   .hp { margin:0 18px 12px; height:8px; border-radius:5px; position:relative; overflow:hidden;
     background:color-mix(in srgb,var(--ok) 35%,var(--surface-2)); }
   .hp i { position:absolute; inset:0 auto 0 0; width:var(--w); background:linear-gradient(90deg,var(--fail),color-mix(in srgb,var(--fail) 70%,#fff)); }
+  /* boss page */
+  .pickers { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+  .pickers select { background:var(--surface); color:var(--text); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font:inherit; font-size:14px; max-width:100%; }
+  .pickers select:focus-visible { outline:2px solid var(--accent); }
+  .card .v.sm { font-size:24px; }
+  .trend { display:flex; align-items:flex-end; gap:3px; height:130px; padding:6px 8px 0; border-bottom:1px solid var(--line); overflow-x:auto; }
+  .tb { flex:1 0 14px; max-width:44px; height:var(--h); min-height:4px; border:0; padding:0; border-radius:5px 5px 0 0; cursor:default;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--c) 95%,#fff),var(--c)); opacity:.85; }
+  .tb:hover { opacity:1; }
+  .tb.kill { --c:var(--ok); } .tb.wipe { --c:var(--fail); } .tb.unk { --c:var(--muted); }
+  .trend-cap { display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--muted); padding:6px 10px 10px; }
+  .boss-link { margin-left:8px; }
   .bossname a { color:inherit; text-decoration:none; } .bossname a:hover { text-decoration:underline; }
 </style>
 </head>
@@ -240,6 +252,7 @@
   <div class="seg" id="pages" role="group" aria-label="Page">
     <button aria-pressed="true" data-page="timeline">Timeline</button>
     <button aria-pressed="false" data-page="stats">Statistics</button>
+    <button aria-pressed="false" data-page="boss">Boss</button>
   </div>
   <div class="seg" id="views" role="group" aria-label="Data view">
     <button aria-pressed="true" data-v="dps">DPS</button>
@@ -256,6 +269,7 @@
   <noscript><p class="empty">This page needs JavaScript to show the raid data.</p></noscript>
   <section class="page on" id="timeline"></section>
   <section class="page" id="stats"></section>
+  <section class="page" id="boss"></section>
 </main>
 
 <script type="application/json" id="raid-data">{{data}}</script>
@@ -294,7 +308,7 @@ const days = dayKeys.map(key => {
   /* pulls are always shown in chronological order, the rail and the downtimes only make sense that way */
   const enc = byDay[key].sort((a, b) => a.start < b.start ? -1 : 1).map(l => {
     const sec = Math.max(0, Math.round((new Date(l.end) - new Date(l.start)) / 1000));
-    return { boss: l.name, kill: l.killed, start: l.start.slice(11), dur: mmss(sec), sec, log: l };
+    return { boss: l.name, kill: l.killed, day: key, start: l.start.slice(11), dur: mmss(sec), sec, log: l };
   });
   enc.forEach(e => { e.s0 = toSec(e.start); e.s1 = e.s0 + e.sec; });
   enc.forEach((e, i) => { e.gap = i ? Math.max(0, e.s0 - enc[i - 1].s1) : 0; });
@@ -413,7 +427,7 @@ function group(d, di, boss) {
   const badge = last.kill ? (list.length > 1 ? `Kill after ${list.length - 1} wipe${list.length > 2 ? 's' : ''}` : 'Kill') : (kills ? 'Mixed' : 'Wipe');
   return `<article class="enc ${cls}" id="g-${di}-${boss.replace(/\W/g, '')}" style="--h:hsl(${hue(boss)} 70% 55%)">
     <div class="enc-head">${bossIcon(boss, 'icon', last.log.icon)}<div class="titles"><h3>${esc(boss)}</h3><div class="sub">${sub}</div></div>
-      <span class="badge">${badge}</span></div>
+      <span class="badge">${badge}</span><button class="ghost boss-link" data-boss="${esc(boss)}" data-day="${esc(d.key)}" title="Statistics of all tries of this boss">Stats →</button></div>
     ${tries}
     ${list.map((e, i) => `<div class="attempt ${i === list.length - 1 ? 'on' : ''}" data-i="${i}">${attemptBody(e, list[i - 1])}</div>`).join('')}
   </article>`;
@@ -506,6 +520,84 @@ $('#stats').innerHTML = !days.length ? `<p class="empty">No logs found yet.</p>`
    Object.values(acct).sort((a, b) => b.died - a.died || b.downed - a.downed || a.p.account.localeCompare(b.p.account))
      .map(a => `<tr><td>${who(a.p)}</td><td class="r num">${a.downed}</td><td class="r num">${a.died}</td></tr>`).join(''))}</div>`;
 
+/* ---------- boss page: all tries of one boss ---------- */
+const bossNames = Object.keys(bossStats).sort((a, b) => bossStats[b].tries - bossStats[a].tries || a.localeCompare(b));
+const hp0 = e => e.log.hpLeft.length ? e.log.hpLeft[0] : null;
+const dash = '<span class="zero">–</span>';
+function bossBody(name, dayKey) {
+  const tries = allEnc.filter(e => e.boss === name && (dayKey === 'all' || e.day === dayKey));
+  const kills = tries.filter(e => e.kill), wipes = tries.filter(e => !e.kill);
+  const fastest = kills.length ? Math.min(...kills.map(e => e.sec)) : null;
+  const hps = wipes.map(hp0).filter(v => v !== null);
+  const bestWipe = hps.length ? Math.min(...hps) : null;
+  const avgDps = tries.reduce((s, e) => s + gdps(e), 0) / (tries.length || 1);
+  const cards = `<div class="cards">
+    <div class="card"><div class="v num">${tries.length}</div><div class="l">Tries</div></div>
+    <div class="card"><div class="v num" style="color:var(--ok)">${kills.length}</div><div class="l">Kills · ${Math.round(kills.length / (tries.length || 1) * 100)}% kill rate</div></div>
+    <div class="card"><div class="v sm num">${fastest === null ? '–' : mmss(fastest)}</div><div class="l">Fastest kill</div></div>
+    <div class="card"><div class="v sm num">${bestWipe === null ? '–' : bestWipe.toFixed(1) + '%'}</div><div class="l">Best wipe (boss HP left)</div></div>
+    <div class="card"><div class="v sm num">${(avgDps / 1000).toFixed(1)}k</div><div class="l">Average group DPS</div></div></div>`;
+
+  const bars = tries.map((e, i) => {
+    const h = hp0(e), cls = e.kill ? 'kill' : h === null ? 'unk' : 'wipe';
+    const height = e.kill ? 6 : h === null ? 10 : Math.max(h, 4);
+    const label = `#${i + 1} · ${e.kill ? 'Kill' : h === null ? 'Wipe' : 'Wipe, ' + h.toFixed(1) + '% left'} · ${e.dur}` + (dayKey === 'all' ? ` · ${e.day}` : '') + ` · ${clock(e.s0)}`;
+    return `<button class="tb ${cls}" style="--h:${height}%" data-tip="${esc(label)}" aria-label="${esc(label)}"></button>`;
+  }).join('');
+  const trend = `<div class="panel"><h3>Boss health left per try</h3><div class="trend">${bars}</div>
+    <div class="trend-cap"><span>First try</span><span>Lower is better, a kill is the small green bar</span><span>Last try</span></div></div>`;
+
+  const showDay = dayKey === 'all';
+  const rows = tries.map((e, i) => {
+    const h = hp0(e), deaths = e.log.players.reduce((s, p) => s + p.died, 0), downs = e.log.players.reduce((s, p) => s + p.downed, 0);
+    return `<tr><td class="num">${i + 1}</td>${showDay ? `<td class="num">${esc(e.day)}</td>` : ''}<td class="num">${clock(e.s0)}</td>
+      <td><span class="pill ${e.kill ? 'ok' : 'fail'}">${e.kill ? 'Kill' : 'Wipe'}</span></td><td class="r num">${e.dur}</td>
+      <td class="r num">${e.kill ? '–' : h === null ? '?' : h.toFixed(1) + '%'}</td><td class="r num">${(gdps(e) / 1000).toFixed(1)}k</td>
+      <td class="r num">${deaths}</td><td class="r num">${downs}</td>
+      <td class="r"><a class="chip link" href="${esc(safeUrl(e.log.url))}" target="_blank" rel="noopener">Log ↗</a></td></tr>`;
+  }).join('');
+  const triesTbl = `<div class="panel"><h3>All tries</h3>${tbl(`<th>#</th>${showDay ? '<th>Day</th>' : ''}<th>Start</th><th>Result</th><th class="r">Time</th><th class="r">HP left</th><th class="r">Group DPS</th><th class="r">Deaths</th><th class="r">Downs</th><th></th>`, rows)}</div>`;
+
+  const pl = {};
+  tries.forEach(e => e.log.players.filter(p => !p.isNpc).forEach(p => {
+    const a = pl[p.account] ??= { p, n: 0, dps: 0, best: 0, downed: 0, died: 0, mech: 0 };
+    a.n++; a.dps += p.dps; a.best = Math.max(a.best, p.dps); a.downed += p.downed; a.died += p.died;
+    a.mech += e.log.columns.filter(c => c.rank).reduce((s, c) => s + (p.mechanics[c.key] ?? 0), 0);
+    a.p = p;
+  }));
+  const plRows = Object.values(pl).sort((a, b) => b.dps / b.n - a.dps / a.n).map(a => `<tr><td>${who(a.p)}</td><td class="r num">${a.n}</td>
+    <td class="r num">${fmt(a.dps / a.n)}</td><td class="r num">${fmt(a.best)}</td>
+    <td class="r num">${a.mech ? `<span class="hit">${a.mech}</span>` : dash}</td>
+    <td class="r num">${a.downed || dash}</td><td class="r num">${a.died || dash}</td></tr>`).join('');
+  const players = `<div class="panel"><h3>Players</h3>${tbl('<th>Player</th><th class="r">Tries</th><th class="r">Avg DPS</th><th class="r">Best DPS</th><th class="r" title="Failed mechanics of this boss">Mech fails</th><th class="r">Downed</th><th class="r">Died</th>', plRows)}</div>`;
+  return cards + trend + triesTbl + players;
+}
+function renderBoss(i, dayKey) {
+  const name = bossNames[i];
+  const dayKeys = [...new Set(allEnc.filter(e => e.boss === name).map(e => e.day))];
+  if (dayKey !== 'all' && !dayKeys.includes(dayKey)) dayKey = 'all';
+  $('#boss').innerHTML = `<div class="pickers">
+      <select id="boss-pick" aria-label="Boss">${bossNames.map((n, k) => `<option value="${k}" ${k === i ? 'selected' : ''}>${esc(n)} (${bossStats[n].tries})</option>`).join('')}</select>
+      <select id="boss-day" aria-label="Day"><option value="all">All days</option>${days.filter(d => dayKeys.includes(d.key)).map(d => `<option value="${esc(d.key)}" ${d.key === dayKey ? 'selected' : ''}>${esc(d.date)}</option>`).join('')}</select></div>
+    <div id="boss-body">${bossBody(name, dayKey)}</div>`;
+  $('#boss-pick').onchange = ev => renderBoss(+ev.target.value, 'all');
+  $('#boss-day').onchange = ev => renderBoss(i, ev.target.value);
+}
+function openBoss(name, dayKey) {
+  const i = bossNames.indexOf(name);
+  if (i < 0) return;
+  renderBoss(i, dayKey || 'all');
+  showPage('boss');
+}
+if (!days.length) $('#boss').innerHTML = `<p class="empty">No logs found yet.</p>`;
+else {
+  /* the boss with the most tries on the newest day: that is usually the one you are working on */
+  const latest = days.reduce((m, d) => d.key > m.key ? d : m);
+  const counts = {}; latest.enc.forEach(e => counts[e.boss] = (counts[e.boss] ?? 0) + 1);
+  const top = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+  renderBoss(bossNames.indexOf(top), latest.key);
+}
+
 /* ---------- tooltip for the strip ---------- */
 const tip = document.createElement('div');
 tip.className = 'tip'; tip.hidden = true; document.body.appendChild(tip);
@@ -553,11 +645,14 @@ function setView(v) {
 $$('#views button').forEach(b => b.onclick = () => setView(b.dataset.v));
 setView(store('rt-view') || 'dps');
 
-$$('#pages button').forEach(b => b.onclick = () => {
-  $$('.page').forEach(p => p.classList.toggle('on', p.id === b.dataset.page));
-  $$('#pages button').forEach(x => x.setAttribute('aria-pressed', x === b));
-  $('#views').style.display = b.dataset.page === 'timeline' ? '' : 'none';
-});
+function showPage(page) {
+  $$('.page').forEach(p => p.classList.toggle('on', p.id === page));
+  $$('#pages button').forEach(x => x.setAttribute('aria-pressed', x.dataset.page === page));
+  $('#views').style.display = page === 'timeline' ? '' : 'none';
+  window.scrollTo(0, 0);
+}
+$$('#pages button').forEach(b => b.onclick = () => showPage(b.dataset.page));
+$$('.boss-link').forEach(b => b.onclick = () => openBoss(b.dataset.boss, b.dataset.day));
 
 function showDay(i, focus) {
   $$('.daytab').forEach(t => {

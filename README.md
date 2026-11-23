@@ -141,6 +141,7 @@ html page (`index.html`) where you can:
 * See the damage, crowd control, boon uptime, resurrects, mechanic fails, downs and deaths of every player
 * See the health of the boss when you wiped
 * See the statistics over all days (kill rate and time per encounter, downs and deaths) on the Statistics tab
+* Look at one boss in detail on the Boss tab (or with "Stats →" on a boss card): all tries of a day or of all days, boss health left per try, fastest kill, best wipe, and per player average/best DPS, mechanic fails, downs and deaths
 * Click on the try to go to the log (the html log of Elite Insights, or the dps.report page)
 
 This is done by parsing the Elite Insights json files and combining the information from the log files.

@@ -368,3 +368,66 @@ test('the data can contain a closing script tag without breaking the page', () =
   assert.equal(w.pwned, undefined);
   assert.equal(days(w).length, 1);
 });
+
+/* ---------- boss page ---------- */
+
+const tonight = () => ({
+  newestFirst: false,
+  logs: [
+    log('Gorseval', '2026-03-01T20:00:00', '2026-03-01T20:05:00'),
+    ...[60, 40, 15].map((hp, i) => log('Sabetha', `2026-03-02T20:${10 + i * 10}:00`, `2026-03-02T20:${14 + i * 10}:00`,
+      { killed: false, hpLeft: [hp], players: [player('A.1111', { dps: 2000 + i * 1000, died: i }), player('B.2222')] })),
+    log('Sabetha', '2026-03-02T20:50:00', '2026-03-02T20:53:00', { players: [player('A.1111', { dps: 6000 }), player('B.2222')] }),
+  ],
+});
+const boss = w => w.document.querySelector('#boss');
+const bossCards = w => [...boss(w).querySelectorAll('.card')].map(c => text(c));
+
+test('boss page: opens on the boss with the most tries of the newest day and lists every try', () => {
+  const w = load(tonight());
+  assert.deepEqual(w.errors, []);
+  assert.equal(w.document.querySelector('#boss-pick').selectedOptions[0].textContent, 'Sabetha (4)');
+  assert.equal(w.document.querySelector('#boss-day').value, '2026-03-02');
+  assert.equal(boss(w).querySelectorAll('.panel tbody tr').length >= 4, true);
+  assert.equal(boss(w).querySelectorAll('.tb').length, 4);
+  assert.equal(boss(w).querySelectorAll('.tb.kill').length, 1);
+});
+
+test('boss page: summary cards show tries, kills, fastest kill and the best wipe', () => {
+  const w = load(tonight());
+  const cards = bossCards(w);
+  assert.match(cards[0], /4 Tries/);
+  assert.match(cards[1], /1 Kills · 25% kill rate/);
+  assert.match(cards[2], /3:00 Fastest kill/);
+  assert.match(cards[3], /15\.0% Best wipe/);
+});
+
+test('boss page: players get their average and best dps over the tries', () => {
+  const w = load(tonight());
+  const row = [...boss(w).querySelectorAll('tbody tr')].find(r => text(r).startsWith('A.1111'));
+  assert.match(text(row), /A\.1111 4 3,750 6,000 – – 3/);
+});
+
+test('boss page: picking another boss or all days changes the tries', () => {
+  const w = load(tonight());
+  w.document.querySelector('#boss-day').value = 'all';
+  w.document.querySelector('#boss-day').dispatchEvent(new w.Event('change'));
+  assert.equal(boss(w).querySelectorAll('.tb').length, 4);
+  const pick = w.document.querySelector('#boss-pick');
+  pick.value = [...pick.options].findIndex(o => o.textContent.startsWith('Gorseval'));
+  pick.dispatchEvent(new w.Event('change'));
+  assert.match(bossCards(w)[0], /1 Tries/);
+});
+
+test('boss page: the stats button on a boss card opens it for that day', () => {
+  const w = load(tonight());
+  click(w.document.querySelector('#day-0 .boss-link'));
+  assert.equal(w.document.querySelector('#boss').classList.contains('on'), true);
+  assert.equal(w.document.querySelector('#boss-pick').selectedOptions[0].textContent, 'Gorseval (1)');
+  assert.equal(w.document.querySelector('#boss-day').value, '2026-03-01');
+});
+
+test('boss page: no logs says so', () => {
+  const w = load({ newestFirst: false, logs: [] });
+  assert.match(text(boss(w)), /No logs found yet/);
+});
