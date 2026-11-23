@@ -23,10 +23,14 @@ internal static class ParserCommands
                             [Option('f',
                                 Description =
                                     "Only uses the logs that are in the list of boss ids (in the config.json file) for the timeline.")]
-                            bool filter
+                            bool filter,
+                            [Option('H', Description =
+                                "Only regenerates the html timeline from the existing json files, Elite Insights is not run.")]
+                            bool htmlOnly
                         ) =>
                         {
-                            parserService.ParseLogsFromDisk(day, reverse, killOnly, filter, null!, context.CancellationToken);
+                            parserService.ParseLogsFromDisk(day, reverse, killOnly, filter, null!,
+                                context.CancellationToken, htmlOnly);
                         })
                     .WithDescription("Parses local log files with Elite Insights.");
                 
