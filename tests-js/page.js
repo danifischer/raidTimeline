@@ -27,6 +27,7 @@ function load(data, { hash = '', storage = {}, dark = true } = {}) {
       window.matchMedia = query => ({ matches: dark && query.includes('dark'), addEventListener() {}, removeEventListener() {} });
       window.Element.prototype.scrollIntoView = function () { window.scrolled = this; };
       window.Element.prototype.scrollBy = function () {};
+      window.scrollTo = function () {};
       for (const [key, value] of Object.entries(storage)) window.localStorage.setItem(key, value);
       window.addEventListener('error', e => errors.push(e.error || e.message));
     },

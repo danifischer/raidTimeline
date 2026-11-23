@@ -23,39 +23,42 @@ internal class ParserService : IParserService
     }
 
     public void ParseLogsFromDisk(string? day, bool reverse, bool killOnly, bool filter,
-        IEncounterService encounterService, CancellationToken cancellationToken)
+        IEncounterService encounterService, CancellationToken cancellationToken, bool htmlOnly = false)
     {
-        Spinner.Start($"Parsing logs for {day}", spinner =>
+        Spinner.Start(htmlOnly ? "Regenerating the timeline" : $"Parsing logs for {day}", spinner =>
         {
             day ??= $"{DateTime.Now:yyyyMMdd}";
 
-            if (!_configurationHelper.Configuration.EliteInsightsOptionsReadable)
+            if (!htmlOnly)
             {
-                spinner.Fail("Elite Insights configuration could not be read.");
-            }
-            else if (!HasJsonOutput(spinner))
-            {
-                return;
-            }
-
-            var files = Directory.GetFiles(_configurationHelper.Configuration.LogPath,
-                $"{day}*.zevtc", SearchOption.AllDirectories);
-
-            var failed = 0;
-            for (var i = 0; i < files.Length && !cancellationToken.IsCancellationRequested; i++)
-            {
-                spinner.Text = $"Parsing logs for {day}: {i + 1}/{files.Length}";
-                if (!_eliteInsightsService.ParseEiFile(files[i],
-                        _configurationHelper.Configuration.ConfigurationPath,
-                        _configurationHelper.Configuration.EliteInsightsPath, cancellationToken))
+                if (!_configurationHelper.Configuration.EliteInsightsOptionsReadable)
                 {
-                    failed++;
+                    spinner.Fail("Elite Insights configuration could not be read.");
                 }
-            }
+                else if (!HasJsonOutput(spinner))
+                {
+                    return;
+                }
 
-            if (failed > 0 && !cancellationToken.IsCancellationRequested)
-            {
-                spinner.Warn($"Elite Insights failed for {failed} of {files.Length} logs (see the log file).");
+                var files = Directory.GetFiles(_configurationHelper.Configuration.LogPath,
+                    $"{day}*.zevtc", SearchOption.AllDirectories);
+
+                var failed = 0;
+                for (var i = 0; i < files.Length && !cancellationToken.IsCancellationRequested; i++)
+                {
+                    spinner.Text = $"Parsing logs for {day}: {i + 1}/{files.Length}";
+                    if (!_eliteInsightsService.ParseEiFile(files[i],
+                            _configurationHelper.Configuration.ConfigurationPath,
+                            _configurationHelper.Configuration.EliteInsightsPath, cancellationToken))
+                    {
+                        failed++;
+                    }
+                }
+
+                if (failed > 0 && !cancellationToken.IsCancellationRequested)
+                {
+                    spinner.Warn($"Elite Insights failed for {failed} of {files.Length} logs (see the log file).");
+                }
             }
 
             spinner.Text = $"Parsing json files";
