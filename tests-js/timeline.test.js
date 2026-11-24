@@ -447,21 +447,22 @@ test('boss page: copy for discord puts the summary and every try with a link to 
   const w = load(tonight());
   const md = await copied(w);
   assert.match(md, /^## Sabetha · /);
-  assert.match(md, /\*\*4\*\* tries · ✅ \*\*1\*\* kill \(25%\)/);
+  assert.match(md, /\*\*4\*\* tries · \*\*1\*\* kill \(25%\)/);
   assert.match(md, /Fastest kill \*\*3:00\*\*/);
   assert.match(md, /Best wipe \*\*15\.0% left\*\*/);
-  assert.match(md, /🟥🟥🟧🟩/);
-  assert.match(md, /🟥 \*\*1\*\* 20:10 · Wipe 60\.0% · 4:00 · \[Log\]\(<https:\/\/dps\.report\/abc>\)/);
-  assert.match(md, /🟩 \*\*4\*\* 20:50 · Kill · 3:00 · \[Log\]/);
-  assert.equal(md.match(/\[Log\]/g).length, 4);
-  assert.doesNotMatch(md, /Players|A\.1111|```/);
+  assert.doesNotMatch(md, /\p{Extended_Pictographic}/u);
+  assert.match(md, /```\n# {2}Start {2}Result {2}Time {2}HP left\n1 {2}20:10 {2}Wipe {4}4:00 {4}60\.0%\n/);
+  assert.match(md, /\n4 {2}20:50 {2}Kill {4}3:00 {8}–\n```/);
+  assert.match(md, /\*\*Logs:\*\* \[1\]\(<https:\/\/dps\.report\/abc>\) \[2\]\(<[^>]+>\) \[3\]\(<[^>]+>\) \[4\]\(<[^>]+>\)$/);
+  assert.doesNotMatch(md, /Players|A\.1111/);
   assert.equal(w.document.querySelector('#boss-copy').textContent, 'Copied ✓');
 });
 
 test('boss page: a try without a web link gets no link in the discord text', async () => {
   const w = load({ newestFirst: false, logs: [log('Sabetha', '2026-03-02T20:00:00', '2026-03-02T20:03:00', { url: 'logs/a.html' })] });
   const md = await copied(w);
-  assert.match(md, /🟩 \*\*1\*\* 20:00 · Kill · 3:00$/);
+  assert.match(md, /Kill {4}3:00 {8}–\n```$/);
+  assert.doesNotMatch(md, /Logs/);
 });
 
 test('boss page: the discord text stays under the 2000 character limit', async () => {
