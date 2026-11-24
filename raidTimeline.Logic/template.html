@@ -524,13 +524,25 @@ $('#stats').innerHTML = !days.length ? `<p class="empty">No logs found yet.</p>`
 const bossNames = Object.keys(bossStats).sort((a, b) => bossStats[b].tries - bossStats[a].tries || a.localeCompare(b));
 const hp0 = e => e.log.hpLeft.length ? e.log.hpLeft[0] : null;
 const dash = '<span class="zero">–</span>';
-function bossBody(name, dayKey) {
+function bossData(name, dayKey) {
   const tries = allEnc.filter(e => e.boss === name && (dayKey === 'all' || e.day === dayKey));
   const kills = tries.filter(e => e.kill), wipes = tries.filter(e => !e.kill);
   const fastest = kills.length ? Math.min(...kills.map(e => e.sec)) : null;
   const hps = wipes.map(hp0).filter(v => v !== null);
   const bestWipe = hps.length ? Math.min(...hps) : null;
   const avgDps = tries.reduce((s, e) => s + gdps(e), 0) / (tries.length || 1);
+  const pl = {};
+  tries.forEach(e => e.log.players.filter(p => !p.isNpc).forEach(p => {
+    const a = pl[p.account] ??= { p, n: 0, dps: 0, best: 0, downed: 0, died: 0, mech: 0 };
+    a.n++; a.dps += p.dps; a.best = Math.max(a.best, p.dps); a.downed += p.downed; a.died += p.died;
+    a.mech += e.log.columns.filter(c => c.rank).reduce((s, c) => s + (p.mechanics[c.key] ?? 0), 0);
+    a.p = p;
+  }));
+  const players = Object.values(pl).sort((a, b) => b.dps / b.n - a.dps / a.n);
+  return { tries, kills, wipes, fastest, bestWipe, avgDps, players };
+}
+function bossBody(name, dayKey) {
+  const { tries, kills, fastest, bestWipe, avgDps, players: plist } = bossData(name, dayKey);
   const cards = `<div class="cards">
     <div class="card"><div class="v num">${tries.length}</div><div class="l">Tries</div></div>
     <div class="card"><div class="v num" style="color:var(--ok)">${kills.length}</div><div class="l">Kills · ${Math.round(kills.length / (tries.length || 1) * 100)}% kill rate</div></div>
@@ -558,19 +570,97 @@ function bossBody(name, dayKey) {
   }).join('');
   const triesTbl = `<div class="panel"><h3>All tries</h3>${tbl(`<th>#</th>${showDay ? '<th>Day</th>' : ''}<th>Start</th><th>Result</th><th class="r">Time</th><th class="r">HP left</th><th class="r">Group DPS</th><th class="r">Deaths</th><th class="r">Downs</th><th></th>`, rows)}</div>`;
 
-  const pl = {};
-  tries.forEach(e => e.log.players.filter(p => !p.isNpc).forEach(p => {
-    const a = pl[p.account] ??= { p, n: 0, dps: 0, best: 0, downed: 0, died: 0, mech: 0 };
-    a.n++; a.dps += p.dps; a.best = Math.max(a.best, p.dps); a.downed += p.downed; a.died += p.died;
-    a.mech += e.log.columns.filter(c => c.rank).reduce((s, c) => s + (p.mechanics[c.key] ?? 0), 0);
-    a.p = p;
-  }));
-  const plRows = Object.values(pl).sort((a, b) => b.dps / b.n - a.dps / a.n).map(a => `<tr><td>${who(a.p)}</td><td class="r num">${a.n}</td>
+  const plRows = plist.map(a => `<tr><td>${who(a.p)}</td><td class="r num">${a.n}</td>
     <td class="r num">${fmt(a.dps / a.n)}</td><td class="r num">${fmt(a.best)}</td>
     <td class="r num">${a.mech ? `<span class="hit">${a.mech}</span>` : dash}</td>
     <td class="r num">${a.downed || dash}</td><td class="r num">${a.died || dash}</td></tr>`).join('');
   const players = `<div class="panel"><h3>Players</h3>${tbl('<th>Player</th><th class="r">Tries</th><th class="r">Avg DPS</th><th class="r">Best DPS</th><th class="r" title="Failed mechanics of this boss">Mech fails</th><th class="r">Downed</th><th class="r">Died</th>', plRows)}</div>`;
   return cards + trend + triesTbl + players;
+}
+/* ---------- copy the boss statistics as Discord markdown ---------- */
+const DISCORD_LIMIT = 2000;
+function bossDiscord(name, dayKey) {
+  const { tries, kills, fastest, bestWipe, avgDps, players } = bossData(name, dayKey);
+  const all = dayKey === 'all';
+  const day = all ? 'All days' : (days.find(d => d.key === dayKey)?.date ?? dayKey);
+  const safe = t => String(t).replace(/`/g, "'");
+  const header = [`## ${safe(name)} · ${safe(day)}`,
+    `**${tries.length}** ${tries.length === 1 ? 'try' : 'tries'} · **${kills.length}** ${kills.length === 1 ? 'kill' : 'kills'} (${Math.round(kills.length / (tries.length || 1) * 100)}%)`,
+    `Fastest kill **${fastest === null ? '–' : mmss(fastest)}** · Best wipe **${bestWipe === null ? '–' : bestWipe.toFixed(1) + '% left'}** · Ø group DPS **${(avgDps / 1000).toFixed(1)}k**`].join('\n');
+  /* Discord has no tables: the tries are aligned in a code block, which cannot hold links, so the links to the logs follow below it (only real http(s) links work in Discord) */
+  const head = all ? ['#', 'Day', 'Start', 'Result', 'Time', 'HP left'] : ['#', 'Start', 'Result', 'Time', 'HP left'];
+  const table = rows => {
+    const cells = [head, ...rows.map(({ e, i }) => { const h = hp0(e); return [String(i + 1).padStart(2, '0'), ...(all ? [e.day] : []), clock(e.s0), e.kill ? 'Kill' : 'Wipe', e.dur, e.kill ? '–' : h === null ? '?' : h.toFixed(1) + '%']; })];
+    const w = head.map((_, c) => Math.max(...cells.map(r => String(r[c]).length)));
+    const left = c => ['#', 'Day', 'Start', 'Result'].includes(head[c]);
+    const line = r => r.map((v, c) => String(v)[left(c) ? 'padEnd' : 'padStart'](w[c])).join('  ').trimEnd();
+    return '```\n' + cells.map(line).join('\n') + '\n```';
+  };
+  const links = rows => {
+    const l = rows.filter(({ e }) => /^https?:\/\//i.test(e.log.url)).map(({ e, i }) => `[${String(i + 1).padStart(2, '0')}](<${e.log.url.replace(/>/g, '%3E')}>)`);
+    return l.length ? '**Logs:** ' + l.join(' ') : '';
+  };
+  const build = rows => [header, rows.length ? table(rows) : '', links(rows)].filter(Boolean).join('\n');
+  const indexed = tries.map((e, i) => ({ e, i }));
+  /* Discord cuts messages at 2000 characters: drop the oldest tries instead of sending a cut-off message */
+  for (let n = indexed.length; n >= 0; n--) { const text = build(indexed.slice(indexed.length - n)); if (text.length <= DISCORD_LIMIT) return text; }
+  return header.slice(0, DISCORD_LIMIT);
+}
+/* ---------- image: boss health left per try (a kill is the small green bar) ---------- */
+function bossImage(name, dayKey) {
+  const { tries } = bossData(name, dayKey);
+  const day = dayKey === 'all' ? 'All days' : (days.find(d => d.key === dayKey)?.date ?? dayKey);
+  const colW = 34, left = 56, right = 24, top = 78, plotH = 280, bottom = 44;
+  const W = Math.max(640, left + right + tries.length * colW), H = top + plotH + bottom;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  const font = (px, w = '') => `${w} ${px}px "Segoe UI", system-ui, sans-serif`.trim();
+  g.fillStyle = '#171a22'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#e8eaf0'; g.font = font(22, '700'); g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  g.fillText(`${name} · ${day}`, left, 34);
+  const kills = tries.filter(e => e.kill).length;
+  g.fillStyle = '#9aa1b2'; g.font = font(14);
+  g.fillText(`Boss health left per try · ${tries.length} ${tries.length === 1 ? 'try' : 'tries'} · ${kills} ${kills === 1 ? 'kill' : 'kills'} (${Math.round(kills / (tries.length || 1) * 100)}%)`, left, 58);
+  g.textAlign = 'right'; g.textBaseline = 'middle'; g.font = font(12);
+  for (const v of [0, 25, 50, 75, 100]) {
+    const y = top + plotH - plotH * v / 100;
+    g.strokeStyle = v === 0 ? '#4a5064' : '#2a2f3d'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(left, y + .5); g.lineTo(W - right, y + .5); g.stroke();
+    g.fillStyle = '#9aa1b2'; g.fillText(v + '%', left - 8, y);
+  }
+  g.textAlign = 'center';
+  tries.forEach((e, i) => {
+    const h = e.kill ? null : hp0(e), x = left + i * colW + 4, w = colW - 8;
+    const hh = e.kill ? 6 : h === null ? 10 : Math.max(h, 1.5);
+    const bh = Math.max(plotH * hh / 100, 4), y = top + plotH - bh;
+    g.fillStyle = e.kill ? '#3fcf9b' : h === null ? '#6b7285' : h <= 25 ? '#e5b455' : '#f2677a';
+    g.fillRect(x, y, w, bh);
+    g.fillStyle = '#e8eaf0'; g.textBaseline = 'bottom'; g.font = font(11, '600');
+    g.fillText(e.kill ? '✓' : h === null ? '?' : Math.round(h) + '', x + w / 2, y - 3);
+    g.fillStyle = '#9aa1b2'; g.textBaseline = 'top'; g.font = font(11);
+    g.fillText(String(i + 1), x + w / 2, top + plotH + 8);
+  });
+  g.fillStyle = '#6b7285'; g.textAlign = 'left'; g.textBaseline = 'top'; g.font = font(11);
+  g.fillText('Try number · bar = % boss health left · green ✓ = kill · orange = wipe under 25%', left, top + plotH + 26);
+  return cv;
+}
+async function copyImage(cv, fileName) {
+  const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+  if (!blob) return false;
+  try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); return 'copied'; } catch (e) { }
+  const a = document.createElement('a'); /* no clipboard access (e.g. a local file): save the png instead */
+  a.href = URL.createObjectURL(blob); a.download = fileName; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  return 'saved';
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) { }
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { }
+  ta.remove();
+  return ok;
 }
 function renderBoss(i, dayKey) {
   const name = bossNames[i];
@@ -578,10 +668,24 @@ function renderBoss(i, dayKey) {
   if (dayKey !== 'all' && !dayKeys.includes(dayKey)) dayKey = 'all';
   $('#boss').innerHTML = `<div class="pickers">
       <select id="boss-pick" aria-label="Boss">${bossNames.map((n, k) => `<option value="${k}" ${k === i ? 'selected' : ''}>${esc(n)} (${bossStats[n].tries})</option>`).join('')}</select>
-      <select id="boss-day" aria-label="Day"><option value="all">All days</option>${days.filter(d => dayKeys.includes(d.key)).map(d => `<option value="${esc(d.key)}" ${d.key === dayKey ? 'selected' : ''}>${esc(d.date)}</option>`).join('')}</select></div>
+      <select id="boss-day" aria-label="Day"><option value="all">All days</option>${days.filter(d => dayKeys.includes(d.key)).map(d => `<option value="${esc(d.key)}" ${d.key === dayKey ? 'selected' : ''}>${esc(d.date)}</option>`).join('')}</select>
+      <button class="ghost" id="boss-copy" title="Copy these statistics as formatted text for Discord">Copy for Discord</button>
+      <button class="ghost" id="boss-img" title="Copy a picture of the boss health left per try, to paste into Discord next to the text">Copy image</button></div>
     <div id="boss-body">${bossBody(name, dayKey)}</div>`;
   $('#boss-pick').onchange = ev => renderBoss(+ev.target.value, 'all');
   $('#boss-day').onchange = ev => renderBoss(i, ev.target.value);
+  $('#boss-copy').onclick = async ev => {
+    const btn = ev.currentTarget;
+    btn.textContent = (await copyText(bossDiscord(name, dayKey))) ? 'Copied ✓' : 'Copy failed';
+    setTimeout(() => { btn.textContent = 'Copy for Discord'; }, 1800);
+  };
+  $('#boss-img').onclick = async ev => {
+    const btn = ev.currentTarget;
+    let r = false;
+    try { r = await copyImage(bossImage(name, dayKey), `${name.replace(/[^\w.-]+/g, '_')}_${dayKey}.png`); } catch (e) { }
+    btn.textContent = r === 'copied' ? 'Copied ✓' : r === 'saved' ? 'Saved as file ✓' : 'Image failed';
+    setTimeout(() => { btn.textContent = 'Copy image'; }, 1800);
+  };
 }
 function openBoss(name, dayKey) {
   const i = bossNames.indexOf(name);
