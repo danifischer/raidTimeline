@@ -587,20 +587,18 @@ function bossDiscord(name, dayKey) {
   const header = [`## ${safe(name)} · ${safe(day)}`,
     `**${tries.length}** ${tries.length === 1 ? 'try' : 'tries'} · **${kills.length}** ${kills.length === 1 ? 'kill' : 'kills'} (${Math.round(kills.length / (tries.length || 1) * 100)}%)`,
     `Fastest kill **${fastest === null ? '–' : mmss(fastest)}** · Best wipe **${bestWipe === null ? '–' : bestWipe.toFixed(1) + '% left'}** · Ø group DPS **${(avgDps / 1000).toFixed(1)}k**`].join('\n');
-  /* Discord has no tables: the tries are aligned in a code block, which cannot hold links, so the links to the logs follow below it (only real http(s) links work in Discord) */
-  const head = all ? ['#', 'Day', 'Start', 'Result', 'Time', 'HP left'] : ['#', 'Start', 'Result', 'Time', 'HP left'];
-  const table = rows => {
-    const cells = [head, ...rows.map(({ e, i }) => { const h = hp0(e); return [i + 1, ...(all ? [e.day] : []), clock(e.s0), e.kill ? 'Kill' : 'Wipe', e.dur, e.kill ? '–' : h === null ? '?' : h.toFixed(1) + '%']; })];
-    const w = head.map((_, c) => Math.max(...cells.map(r => String(r[c]).length)));
-    const left = c => ['Day', 'Start', 'Result'].includes(head[c]);
-    const line = r => r.map((v, c) => String(v)[left(c) ? 'padEnd' : 'padStart'](w[c])).join('  ').trimEnd();
-    return '```\n' + cells.map(line).join('\n') + '\n```';
+  /* Discord has no tables and a code block cannot hold links, so every try is a line with fixed fields; the numbers are padded with
+     figure spaces (as wide as a digit) so the columns line up as well as a proportional font allows. Only real http(s) links work in Discord. */
+  const FS = '\u2007', pad = (v, n, left) => left ? FS.repeat(Math.max(0, n - v.length)) + v : v + FS.repeat(Math.max(0, n - v.length));
+  const build = rows => {
+    const f = rows.map(({ e, i }) => { const h = hp0(e); return { e, no: String(i + 1), time: e.dur, hp: e.kill ? '–' : h === null ? '?' : h.toFixed(1) + '%' }; });
+    const w = k => Math.max(0, ...f.map(r => r[k].length));
+    const lines = f.map(r => {
+      const url = /^https?:\/\//i.test(r.e.log.url) ? ` · [Log](<${r.e.log.url.replace(/>/g, '%3E')}>)` : '';
+      return `**${r.no}**${pad('', w('no') - r.no.length)} · ${all ? safe(r.e.day) + ' · ' : ''}${clock(r.e.s0)} · ${r.e.kill ? 'Kill' : 'Wipe'} · ${pad(r.time, w('time'), true)} · ${pad(r.hp, w('hp'), true)}${url}`;
+    });
+    return [header, ...lines].join('\n');
   };
-  const links = rows => {
-    const l = rows.filter(({ e }) => /^https?:\/\//i.test(e.log.url)).map(({ e, i }) => `[${i + 1}](<${e.log.url.replace(/>/g, '%3E')}>)`);
-    return l.length ? '**Logs:** ' + l.join(' ') : '';
-  };
-  const build = rows => [header, rows.length ? table(rows) : '', links(rows)].filter(Boolean).join('\n');
   const indexed = tries.map((e, i) => ({ e, i }));
   /* Discord cuts messages at 2000 characters: drop the oldest tries instead of sending a cut-off message */
   for (let n = indexed.length; n >= 0; n--) { const text = build(indexed.slice(indexed.length - n)); if (text.length <= DISCORD_LIMIT) return text; }
