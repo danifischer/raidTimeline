@@ -431,3 +431,45 @@ test('boss page: no logs says so', () => {
   const w = load({ newestFirst: false, logs: [] });
   assert.match(text(boss(w)), /No logs found yet/);
 });
+
+/* ---------- copy for discord ---------- */
+
+async function copied(w, dayKey) {
+  let out = null;
+  Object.defineProperty(w.navigator, 'clipboard', { value: { writeText: async t => { out = t; } }, configurable: true });
+  if (dayKey) { const d = w.document.querySelector('#boss-day'); d.value = dayKey; d.dispatchEvent(new w.Event('change')); }
+  click(w.document.querySelector('#boss-copy'));
+  await new Promise(r => setTimeout(r, 10));
+  return out;
+}
+
+test('boss page: copy for discord puts a formatted summary, the tries and the players on the clipboard', async () => {
+  const w = load(tonight());
+  const md = await copied(w);
+  assert.match(md, /^## Sabetha · /);
+  assert.match(md, /\*\*4\*\* tries · ✅ \*\*1\*\* kill \(25%\)/);
+  assert.match(md, /Fastest kill \*\*3:00\*\*/);
+  assert.match(md, /Best wipe \*\*15\.0% left\*\*/);
+  assert.match(md, /🟥🟥🟧🟩/);
+  assert.match(md, /```\n#/);
+  assert.match(md, /A\.1111\s+4\s+3,750\s+6,000/);
+  assert.equal(w.document.querySelector('#boss-copy').textContent, 'Copied ✓');
+});
+
+test('boss page: the discord text stays under the 2000 character limit', async () => {
+  const many = Array.from({ length: 60 }, (_, i) => log('Sabetha', `2026-03-02T20:${String(i).padStart(2, '0')}:00`, `2026-03-02T20:${String(i).padStart(2, '0')}:30`,
+    { killed: false, hpLeft: [50], players: Array.from({ length: 10 }, (_, k) => player(`Player${k}.${1000 + k}`)) }));
+  const w = load({ newestFirst: false, logs: many });
+  const md = await copied(w);
+  assert.equal(md.length <= 2000, true);
+  assert.match(md, /^## Sabetha/);
+});
+
+test('boss page: copying falls back to the old copy command without clipboard access', async () => {
+  const w = load(tonight());
+  Object.defineProperty(w.navigator, 'clipboard', { value: { writeText: async () => { throw new Error('denied'); } }, configurable: true });
+  w.document.execCommand = () => true;
+  click(w.document.querySelector('#boss-copy'));
+  await new Promise(r => setTimeout(r, 10));
+  assert.equal(w.document.querySelector('#boss-copy').textContent, 'Copied ✓');
+});
