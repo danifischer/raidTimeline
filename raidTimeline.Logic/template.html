@@ -584,27 +584,70 @@ function bossDiscord(name, dayKey) {
   const all = dayKey === 'all';
   const day = all ? 'All days' : (days.find(d => d.key === dayKey)?.date ?? dayKey);
   const safe = t => String(t).replace(/`/g, "'");
-  const table = (head, rows) => {
-    const cells = [head, ...rows], w = head.map((_, c) => Math.max(...cells.map(r => String(r[c]).length)));
-    const line = r => r.map((v, c) => c === 0 ? String(v).padEnd(w[c]) : String(v).padStart(w[c])).join('  ').trimEnd();
-    return '```\n' + cells.map(line).join('\n') + '\n```';
-  };
   const header = [`## ${safe(name)} · ${safe(day)}`,
     `🎯 **${tries.length}** ${tries.length === 1 ? 'try' : 'tries'} · ✅ **${kills.length}** ${kills.length === 1 ? 'kill' : 'kills'} (${Math.round(kills.length / (tries.length || 1) * 100)}%)`,
     `⏱️ Fastest kill **${fastest === null ? '–' : mmss(fastest)}** · 💥 Best wipe **${bestWipe === null ? '–' : bestWipe.toFixed(1) + '% left'}** · ⚔️ Ø group DPS **${(avgDps / 1000).toFixed(1)}k**`].join('\n');
   const strip = tries.map(e => e.kill ? '🟩' : hp0(e) === null ? '⬛' : hp0(e) <= 25 ? '🟧' : '🟥').join('');
   const trend = `**Tries** (🟩 kill · 🟧 wipe under 25% HP · 🟥 wipe)\n${strip}`;
-  const triesTbl = rows => '**All tries**\n' + table(all ? ['#', 'Day', 'Start', 'Result', 'Time', 'HP left'] : ['#', 'Start', 'Result', 'Time', 'HP left'],
-    rows.map(({ e, i }) => { const h = hp0(e); return [i + 1, ...(all ? [e.day] : []), clock(e.s0), e.kill ? 'Kill' : 'Wipe', e.dur, e.kill ? '–' : h === null ? '?' : h.toFixed(1) + '%']; }));
-  const playerTbl = rows => '**Players**\n' + table(['Player', 'Tries', 'Avg DPS', 'Best DPS', 'Mech', 'Down', 'Died'],
-    rows.map(a => [safe(a.p.account), a.n, fmt(a.dps / a.n), fmt(a.best), a.mech, a.downed, a.died]));
-  const build = (tryRows, plRows) => [header, trend, tryRows.length ? triesTbl(tryRows) : '', plRows.length ? playerTbl(plRows) : ''].filter(Boolean).join('\n');
+  /* a code block cannot hold links, so every try is its own line with a link to the log (only real http(s) links work in Discord) */
+  const tryLine = ({ e, i }) => {
+    const h = hp0(e), url = /^https?:\/\//i.test(e.log.url) ? ` · [Log](<${e.log.url.replace(/>/g, '%3E')}>)` : '';
+    return `${e.kill ? '🟩' : h === null ? '⬛' : h <= 25 ? '🟧' : '🟥'} **${i + 1}**${all ? ` ${safe(e.day)}` : ''} ${clock(e.s0)} · ${e.kill ? 'Kill' : 'Wipe' + (h === null ? '' : ' ' + h.toFixed(1) + '%')} · ${e.dur}${url}`;
+  };
+  const build = (rows, withStrip) => [header, withStrip ? trend : '', rows.length ? rows.map(tryLine).join('\n') : ''].filter(Boolean).join('\n');
   const indexed = tries.map((e, i) => ({ e, i }));
-  /* Discord cuts messages at 2000 characters: show less detail instead of a cut-off message */
-  for (const tryRows of [indexed, indexed.slice(-10), []]) {
-    for (let n = players.length; n >= 0; n--) { const text = build(tryRows, players.slice(0, n)); if (text.length <= DISCORD_LIMIT) return text; }
+  /* Discord cuts messages at 2000 characters: drop the oldest tries (and the color strip) instead of sending a cut-off message */
+  for (const withStrip of [true, false]) {
+    for (let n = indexed.length; n >= 0; n--) { const text = build(indexed.slice(indexed.length - n), withStrip); if (text.length <= DISCORD_LIMIT) return text; }
   }
   return header.slice(0, DISCORD_LIMIT);
+}
+/* ---------- image: boss health left per try (a kill is the small green bar) ---------- */
+function bossImage(name, dayKey) {
+  const { tries } = bossData(name, dayKey);
+  const day = dayKey === 'all' ? 'All days' : (days.find(d => d.key === dayKey)?.date ?? dayKey);
+  const colW = 34, left = 56, right = 24, top = 78, plotH = 280, bottom = 44;
+  const W = Math.max(640, left + right + tries.length * colW), H = top + plotH + bottom;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  const font = (px, w = '') => `${w} ${px}px "Segoe UI", system-ui, sans-serif`.trim();
+  g.fillStyle = '#171a22'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#e8eaf0'; g.font = font(22, '700'); g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  g.fillText(`${name} · ${day}`, left, 34);
+  const kills = tries.filter(e => e.kill).length;
+  g.fillStyle = '#9aa1b2'; g.font = font(14);
+  g.fillText(`Boss health left per try · ${tries.length} ${tries.length === 1 ? 'try' : 'tries'} · ${kills} ${kills === 1 ? 'kill' : 'kills'} (${Math.round(kills / (tries.length || 1) * 100)}%)`, left, 58);
+  g.textAlign = 'right'; g.textBaseline = 'middle'; g.font = font(12);
+  for (const v of [0, 25, 50, 75, 100]) {
+    const y = top + plotH - plotH * v / 100;
+    g.strokeStyle = v === 0 ? '#4a5064' : '#2a2f3d'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(left, y + .5); g.lineTo(W - right, y + .5); g.stroke();
+    g.fillStyle = '#9aa1b2'; g.fillText(v + '%', left - 8, y);
+  }
+  g.textAlign = 'center';
+  tries.forEach((e, i) => {
+    const h = e.kill ? null : hp0(e), x = left + i * colW + 4, w = colW - 8;
+    const hh = e.kill ? 6 : h === null ? 10 : Math.max(h, 1.5);
+    const bh = Math.max(plotH * hh / 100, 4), y = top + plotH - bh;
+    g.fillStyle = e.kill ? '#3fcf9b' : h === null ? '#6b7285' : h <= 25 ? '#e5b455' : '#f2677a';
+    g.fillRect(x, y, w, bh);
+    g.fillStyle = '#e8eaf0'; g.textBaseline = 'bottom'; g.font = font(11, '600');
+    g.fillText(e.kill ? '✓' : h === null ? '?' : Math.round(h) + '', x + w / 2, y - 3);
+    g.fillStyle = '#9aa1b2'; g.textBaseline = 'top'; g.font = font(11);
+    g.fillText(String(i + 1), x + w / 2, top + plotH + 8);
+  });
+  g.fillStyle = '#6b7285'; g.textAlign = 'left'; g.textBaseline = 'top'; g.font = font(11);
+  g.fillText('Try number · bar = % boss health left · green ✓ = kill · orange = wipe under 25%', left, top + plotH + 26);
+  return cv;
+}
+async function copyImage(cv, fileName) {
+  const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+  if (!blob) return false;
+  try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); return 'copied'; } catch (e) { }
+  const a = document.createElement('a'); /* no clipboard access (e.g. a local file): save the png instead */
+  a.href = URL.createObjectURL(blob); a.download = fileName; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  return 'saved';
 }
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch (e) { }
@@ -622,7 +665,8 @@ function renderBoss(i, dayKey) {
   $('#boss').innerHTML = `<div class="pickers">
       <select id="boss-pick" aria-label="Boss">${bossNames.map((n, k) => `<option value="${k}" ${k === i ? 'selected' : ''}>${esc(n)} (${bossStats[n].tries})</option>`).join('')}</select>
       <select id="boss-day" aria-label="Day"><option value="all">All days</option>${days.filter(d => dayKeys.includes(d.key)).map(d => `<option value="${esc(d.key)}" ${d.key === dayKey ? 'selected' : ''}>${esc(d.date)}</option>`).join('')}</select>
-      <button class="ghost" id="boss-copy" title="Copy these statistics as formatted text for Discord">Copy for Discord</button></div>
+      <button class="ghost" id="boss-copy" title="Copy these statistics as formatted text for Discord">Copy for Discord</button>
+      <button class="ghost" id="boss-img" title="Copy a picture of the boss health left per try, to paste into Discord next to the text">Copy image</button></div>
     <div id="boss-body">${bossBody(name, dayKey)}</div>`;
   $('#boss-pick').onchange = ev => renderBoss(+ev.target.value, 'all');
   $('#boss-day').onchange = ev => renderBoss(i, ev.target.value);
@@ -630,6 +674,13 @@ function renderBoss(i, dayKey) {
     const btn = ev.currentTarget;
     btn.textContent = (await copyText(bossDiscord(name, dayKey))) ? 'Copied ✓' : 'Copy failed';
     setTimeout(() => { btn.textContent = 'Copy for Discord'; }, 1800);
+  };
+  $('#boss-img').onclick = async ev => {
+    const btn = ev.currentTarget;
+    let r = false;
+    try { r = await copyImage(bossImage(name, dayKey), `${name.replace(/[^\w.-]+/g, '_')}_${dayKey}.png`); } catch (e) { }
+    btn.textContent = r === 'copied' ? 'Copied ✓' : r === 'saved' ? 'Saved as file ✓' : 'Image failed';
+    setTimeout(() => { btn.textContent = 'Copy image'; }, 1800);
   };
 }
 function openBoss(name, dayKey) {

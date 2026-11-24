@@ -443,7 +443,7 @@ async function copied(w, dayKey) {
   return out;
 }
 
-test('boss page: copy for discord puts a formatted summary, the tries and the players on the clipboard', async () => {
+test('boss page: copy for discord puts the summary and every try with a link to its log on the clipboard', async () => {
   const w = load(tonight());
   const md = await copied(w);
   assert.match(md, /^## Sabetha · /);
@@ -451,9 +451,17 @@ test('boss page: copy for discord puts a formatted summary, the tries and the pl
   assert.match(md, /Fastest kill \*\*3:00\*\*/);
   assert.match(md, /Best wipe \*\*15\.0% left\*\*/);
   assert.match(md, /🟥🟥🟧🟩/);
-  assert.match(md, /```\n#/);
-  assert.match(md, /A\.1111\s+4\s+3,750\s+6,000/);
+  assert.match(md, /🟥 \*\*1\*\* 20:10 · Wipe 60\.0% · 4:00 · \[Log\]\(<https:\/\/dps\.report\/abc>\)/);
+  assert.match(md, /🟩 \*\*4\*\* 20:50 · Kill · 3:00 · \[Log\]/);
+  assert.equal(md.match(/\[Log\]/g).length, 4);
+  assert.doesNotMatch(md, /Players|A\.1111|```/);
   assert.equal(w.document.querySelector('#boss-copy').textContent, 'Copied ✓');
+});
+
+test('boss page: a try without a web link gets no link in the discord text', async () => {
+  const w = load({ newestFirst: false, logs: [log('Sabetha', '2026-03-02T20:00:00', '2026-03-02T20:03:00', { url: 'logs/a.html' })] });
+  const md = await copied(w);
+  assert.match(md, /🟩 \*\*1\*\* 20:00 · Kill · 3:00$/);
 });
 
 test('boss page: the discord text stays under the 2000 character limit', async () => {
@@ -472,4 +480,44 @@ test('boss page: copying falls back to the old copy command without clipboard ac
   click(w.document.querySelector('#boss-copy'));
   await new Promise(r => setTimeout(r, 10));
   assert.equal(w.document.querySelector('#boss-copy').textContent, 'Copied ✓');
+});
+
+/* ---------- image of the health left per try ---------- */
+
+/* jsdom has no canvas: record what is drawn */
+function fakeCanvas(w) {
+  const drawn = { texts: [], rects: [], fills: [], size: null };
+  const ctx = new Proxy({}, { get: (t, k) => k === 'fillText' ? (s) => drawn.texts.push(s)
+    : k === 'fillRect' ? (...a) => drawn.rects.push(a)
+    : k === 'measureText' ? () => ({ width: 10 }) : () => { }, set: (t, k, v) => { if (k === 'fillStyle') drawn.fills.push(v); return true; } });
+  w.HTMLCanvasElement.prototype.getContext = function () { drawn.size = [this.width, this.height]; return ctx; };
+  w.HTMLCanvasElement.prototype.toBlob = function (cb) { cb(new w.Blob(['png'], { type: 'image/png' })); };
+  return drawn;
+}
+
+test('boss page: copy image draws a bar per try and puts the png on the clipboard', async () => {
+  const w = load(tonight());
+  const drawn = fakeCanvas(w);
+  let item = null;
+  w.ClipboardItem = class { constructor(o) { this.o = o; } };
+  Object.defineProperty(w.navigator, 'clipboard', { value: { write: async i => { item = i[0]; } }, configurable: true });
+  click(w.document.querySelector('#boss-img'));
+  await new Promise(r => setTimeout(r, 10));
+  assert.deepEqual(Object.keys(item.o), ['image/png']);
+  assert.ok(drawn.texts.includes('Sabetha · ' + w.document.querySelector('#boss-day').selectedOptions[0].text) || drawn.texts.some(t => t.startsWith('Sabetha · ')));
+  assert.deepEqual(['60', '40', '15', '✓'].filter(t => !drawn.texts.includes(t)), []);
+  assert.equal(drawn.rects.length, 1 + 4);
+  assert.equal(w.document.querySelector('#boss-img').textContent, 'Copied ✓');
+});
+
+test('boss page: copy image saves the png when the clipboard cannot take images', async () => {
+  const w = load(tonight());
+  fakeCanvas(w);
+  let saved = null;
+  w.URL.createObjectURL = () => 'blob:x'; w.URL.revokeObjectURL = () => { };
+  w.HTMLAnchorElement.prototype.click = function () { saved = this.download; };
+  click(w.document.querySelector('#boss-img'));
+  await new Promise(r => setTimeout(r, 10));
+  assert.match(saved, /^Sabetha_.*\.png$/);
+  assert.equal(w.document.querySelector('#boss-img').textContent, 'Saved as file ✓');
 });
